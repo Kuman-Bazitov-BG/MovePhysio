@@ -7,25 +7,7 @@ function renderPageContent(pathname) {
   if (pathname === '/') {
     return `
       <section class="home-screen container">
-        <div class="home-surface">
-          <div class="hero-content">
-            <p class="hero-kicker">Move Better. Recover Stronger.</p>
-            <h1 class="hero-title">Personalized Physiotherapy for a Pain-Free Life</h1>
-            <p class="hero-subtitle">
-              Modern rehabilitation and movement care designed to help you return to sport,
-              work, and everyday life with confidence.
-            </p>
-
-            <div class="hero-actions">
-              <button id="hero-auth-btn" class="btn btn-primary btn-glow px-4 py-2">
-                <i class="bi bi-person-plus-fill me-2"></i>Get Started
-              </button>
-              <button class="btn btn-outline-light px-4 py-2" disabled>
-                <i class="bi bi-calendar2-week me-2"></i>Book Session (Soon)
-              </button>
-            </div>
-          </div>
-        </div>
+        <div class="home-surface"></div>
       </section>
     `
   }
