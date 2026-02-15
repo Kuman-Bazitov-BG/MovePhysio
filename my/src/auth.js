@@ -25,18 +25,32 @@ function setStatus(message, type = 'info') {
   statusElement.dataset.type = type
 }
 
-function updateAuthUI(session) {
+async function updateAuthUI(session) {
   const openButton = document.querySelector('#auth-open-btn')
   const logoutButton = document.querySelector('#logout-btn')
+  const adminButton = document.querySelector('#admin-btn')
 
   if (!openButton || !logoutButton) return
 
   if (session?.user) {
     openButton.classList.add('d-none')
     logoutButton.classList.remove('d-none')
+    
+    // Check if user is admin and show/hide admin button
+    if (adminButton) {
+      const isAdmin = await checkUserIsAdmin()
+      if (isAdmin) {
+        adminButton.classList.remove('d-none')
+      } else {
+        adminButton.classList.add('d-none')
+      }
+    }
   } else {
     openButton.classList.remove('d-none')
     logoutButton.classList.add('d-none')
+    if (adminButton) {
+      adminButton.classList.add('d-none')
+    }
   }
 }
 
@@ -97,6 +111,39 @@ async function logout() {
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
+}
+
+export async function checkUserIsAdmin() {
+  if (!supabase) {
+    return false
+  }
+
+  try {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+
+    if (sessionError || !sessionData.session) {
+      return false
+    }
+
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('user_role')
+      .eq('user_id', sessionData.session.user.id)
+      .single()
+
+    if (roleError) {
+      return false
+    }
+
+    return roleData.user_role === 'admin'
+  } catch (error) {
+    console.error('Error checking admin status:', error)
+    return false
+  }
+}
+
+export function getSupabaseClient() {
+  return supabase
 }
 
 export function initAuth() {

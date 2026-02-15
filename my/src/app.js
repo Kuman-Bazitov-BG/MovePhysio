@@ -145,6 +145,9 @@ export function renderApp(pathname = '/') {
           </nav>
 
           <div class="auth-actions d-flex align-items-center gap-2">
+            <a href="/admin.html" id="admin-btn" class="btn btn-warning d-none">
+              <i class="bi bi-shield-lock me-2"></i>Admin
+            </a>
             <button id="auth-open-btn" class="btn btn-primary btn-glow px-4">
               <i class="bi bi-person-circle me-2"></i>Register / Login
             </button>
