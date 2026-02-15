@@ -54,12 +54,21 @@ body {
   position: relative;
 }
 
+.header-nav {
+  flex-wrap: wrap;
+}
+
+.site-nav {
+  margin: 0;
+}
+
 .site-nav .nav-link {
   color: var(--text-subtle);
   border: 1px solid rgba(173, 231, 255, 0.2);
   border-radius: 999px;
   padding: 0.45rem 1rem;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  font-size: 0.9rem;
 }
 
 .site-nav .nav-link:hover {
@@ -138,7 +147,10 @@ body {
 
 .home-screen {
   flex: 1;
-  padding-bottom: 3rem;
+  display: flex;
+  align-items: center;
+  padding: 1rem 0 2rem;
+  min-height: calc(100vh - 280px);
 }
 
 .page-screen {
@@ -175,9 +187,9 @@ body {
 }
 
 .home-surface {
-  width: min(825px, 92%);
+  width: min(624px, 74%);
   aspect-ratio: 803 / 767;
-  margin: 1.5rem auto 0;
+  margin: 0 auto;
   padding: 0;
   border-radius: var(--radius-lg);
   background:
@@ -296,10 +308,54 @@ body {
   color: var(--success);
 }
 
+.site-footer {
+  border-top: 1px solid rgba(173, 231, 255, 0.15);
+  background: rgba(6, 18, 31, 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.footer-content {
+  font-size: 0.9rem;
+  color: var(--text-subtle);
+}
+
+.footer-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--accent-strong);
+}
+
 @media (max-width: 767px) {
   .physio-text {
     margin-left: 2.2rem;
     letter-spacing: 0.23em;
+  }
+
+  .header-nav {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .brand-wrap {
+    text-align: center;
+  }
+
+  .site-nav {
+    justify-content: center;
+    order: 3;
+    margin-top: 1rem;
+  }
+
+  .auth-actions {
+    justify-content: center;
+  }
+
+  .home-screen {
+    min-height: calc(100vh - 360px);
   }
 
   .home-surface {

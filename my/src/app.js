@@ -43,6 +43,48 @@ function renderPageContent(pathname) {
     `
   }
 
+  if (pathname === '/physiotherapy') {
+    return `
+      <section class="page-screen container">
+        <div class="page-surface">
+          <h1 class="page-title">Physiotherapy</h1>
+          <p class="page-copy mb-2">
+            Our physiotherapy services focus on restoring movement, reducing pain, and improving overall function.
+            We use evidence-based techniques tailored to your specific needs.
+          </p>
+          <ul class="page-list mb-0">
+            <li>Manual therapy and soft tissue mobilization</li>
+            <li>Exercise prescription and rehabilitation programs</li>
+            <li>Sports injury assessment and treatment</li>
+            <li>Post-operative rehabilitation</li>
+            <li>Pain management strategies</li>
+          </ul>
+        </div>
+      </section>
+    `
+  }
+
+  if (pathname === '/pilates') {
+    return `
+      <section class="page-screen container">
+        <div class="page-surface">
+          <h1 class="page-title">Pilates</h1>
+          <p class="page-copy mb-2">
+            Our Pilates sessions combine core strengthening, flexibility, and mindful movement to enhance
+            body awareness and functional strength for everyday activities.
+          </p>
+          <ul class="page-list mb-0">
+            <li>Mat and equipment-based Pilates sessions</li>
+            <li>Clinical Pilates for injury recovery</li>
+            <li>One-on-one and small group classes</li>
+            <li>Specialized programs for athletes</li>
+            <li>Pre and postnatal Pilates</li>
+          </ul>
+        </div>
+      </section>
+    `
+  }
+
   if (pathname === '/contact') {
     return `
       <section class="page-screen container">
@@ -77,8 +119,8 @@ export function renderApp(pathname = '/') {
     <canvas id="live-bg-canvas" class="live-bg-canvas"></canvas>
 
     <main class="site-shell">
-      <header class="site-header container py-4 py-md-5">
-        <nav class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+      <header class="site-header container py-3 py-md-4">
+        <nav class="header-nav d-flex justify-content-between align-items-center gap-3">
           <div class="brand-wrap">
             <div class="move-logo" aria-label="Move Physio logo">
               <span class="bar left one"></span>
@@ -89,8 +131,16 @@ export function renderApp(pathname = '/') {
               <span class="bar right two"></span>
               <span class="bar right one"></span>
             </div>
-            <div class="physio-text">PHYSIO</div>
           </div>
+
+          <nav class="site-nav nav nav-pills gap-2" aria-label="Main navigation">
+            <a href="/" data-nav class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
+            <a href="/about" data-nav class="nav-link ${currentPath === '/about' ? 'active' : ''}">About</a>
+            <a href="/services" data-nav class="nav-link ${currentPath === '/services' ? 'active' : ''}">Services</a>
+            <a href="/physiotherapy" data-nav class="nav-link ${currentPath === '/physiotherapy' ? 'active' : ''}">Physiotherapy</a>
+            <a href="/pilates" data-nav class="nav-link ${currentPath === '/pilates' ? 'active' : ''}">Pilates</a>
+            <a href="/contact" data-nav class="nav-link ${currentPath === '/contact' ? 'active' : ''}">Contact</a>
+          </nav>
 
           <div class="auth-actions d-flex align-items-center gap-2">
             <button id="auth-open-btn" class="btn btn-primary btn-glow px-4">
@@ -101,16 +151,16 @@ export function renderApp(pathname = '/') {
             </button>
           </div>
         </nav>
-
-        <nav class="site-nav nav nav-pills gap-2 mt-4" aria-label="Main navigation">
-          <a href="/" data-nav class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
-          <a href="/about" data-nav class="nav-link ${currentPath === '/about' ? 'active' : ''}">About</a>
-          <a href="/services" data-nav class="nav-link ${currentPath === '/services' ? 'active' : ''}">Services</a>
-          <a href="/contact" data-nav class="nav-link ${currentPath === '/contact' ? 'active' : ''}">Contact</a>
-        </nav>
       </header>
 
       ${renderPageContent(currentPath)}
+
+      <footer class="site-footer container py-4">
+        <div class="footer-content text-center">
+          <p class="mb-2">&copy; ${new Date().getFullYear()} Move Physio & Pilates. All rights reserved.</p>
+          <p class="mb-0 text-subtle">Christoforos Stavrou | <a href="tel:+35794604515" class="footer-link">+357 94604515</a> | <a href="https://instagram.com/move.physio.pilates" target="_blank" class="footer-link">@move.physio.pilates</a></p>
+        </div>
+      </footer>
     </main>
 
     <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
