@@ -30,7 +30,7 @@ Main app is in `my/`:
 2. Add environment variables (copy `my/.env.example` to `my/.env`):
 
 	- `VITE_SUPABASE_URL`
-	- `VITE_SUPABASE_ANON_KEY`
+	- `VITE_SUPABASE_ANON_KEY` (or `VITE_SUPABASE_PUBLISHABLE_KEY`)
 
 3. Run development server:
 
