@@ -1,4 +1,96 @@
-export function renderApp() {
+function normalizePath(pathname = '/') {
+  if (!pathname || pathname === '/') return '/'
+  return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
+}
+
+function renderPageContent(pathname) {
+  if (pathname === '/') {
+    return `
+      <section class="home-screen container">
+        <div class="home-surface">
+          <div class="hero-content">
+            <p class="hero-kicker">Move Better. Recover Stronger.</p>
+            <h1 class="hero-title">Personalized Physiotherapy for a Pain-Free Life</h1>
+            <p class="hero-subtitle">
+              Modern rehabilitation and movement care designed to help you return to sport,
+              work, and everyday life with confidence.
+            </p>
+
+            <div class="hero-actions">
+              <button id="hero-auth-btn" class="btn btn-primary btn-glow px-4 py-2">
+                <i class="bi bi-person-plus-fill me-2"></i>Get Started
+              </button>
+              <button class="btn btn-outline-light px-4 py-2" disabled>
+                <i class="bi bi-calendar2-week me-2"></i>Book Session (Soon)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    `
+  }
+
+  if (pathname === '/about') {
+    return `
+      <section class="page-screen container">
+        <div class="page-surface">
+          <h1 class="page-title">About Move Physio</h1>
+          <p class="page-copy">
+            We focus on evidence-based rehabilitation, movement quality, and long-term health outcomes.
+            Every therapy plan is personalized to your goals, your daily demands, and your recovery timeline.
+          </p>
+        </div>
+      </section>
+    `
+  }
+
+  if (pathname === '/services') {
+    return `
+      <section class="page-screen container">
+        <div class="page-surface">
+          <h1 class="page-title">Services</h1>
+          <p class="page-copy mb-2">Our current core services include:</p>
+          <ul class="page-list mb-0">
+            <li>Musculoskeletal assessments and treatment</li>
+            <li>Post-surgery rehabilitation plans</li>
+            <li>Sports injury recovery and return-to-play support</li>
+            <li>Posture and movement optimization programs</li>
+          </ul>
+        </div>
+      </section>
+    `
+  }
+
+  if (pathname === '/contact') {
+    return `
+      <section class="page-screen container">
+        <div class="page-surface">
+          <h1 class="page-title">Contact</h1>
+          <p class="page-copy mb-0">
+            Reach us at <strong>contact@movephysio.com</strong> or call <strong>+359 000 000 000</strong>.
+            Online booking is coming soon.
+          </p>
+        </div>
+      </section>
+    `
+  }
+
+  return `
+    <section class="page-screen container">
+      <div class="page-surface">
+        <h1 class="page-title">Page Not Found</h1>
+        <p class="page-copy">
+          The page you requested does not exist. Return to
+          <a href="/" data-nav class="text-info-emphasis">home</a>.
+        </p>
+      </div>
+    </section>
+  `
+}
+
+export function renderApp(pathname = '/') {
+  const currentPath = normalizePath(pathname)
+
   return `
     <canvas id="live-bg-canvas" class="live-bg-canvas"></canvas>
 
@@ -25,29 +117,16 @@ export function renderApp() {
             </button>
           </div>
         </nav>
+
+        <nav class="site-nav nav nav-pills gap-2 mt-4" aria-label="Main navigation">
+          <a href="/" data-nav class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
+          <a href="/about" data-nav class="nav-link ${currentPath === '/about' ? 'active' : ''}">About</a>
+          <a href="/services" data-nav class="nav-link ${currentPath === '/services' ? 'active' : ''}">Services</a>
+          <a href="/contact" data-nav class="nav-link ${currentPath === '/contact' ? 'active' : ''}">Contact</a>
+        </nav>
       </header>
 
-      <section class="home-screen container">
-        <div class="home-surface">
-          <div class="hero-content">
-            <p class="hero-kicker">Move Better. Recover Stronger.</p>
-            <h1 class="hero-title">Personalized Physiotherapy for a Pain-Free Life</h1>
-            <p class="hero-subtitle">
-              Modern rehabilitation and movement care designed to help you return to sport,
-              work, and everyday life with confidence.
-            </p>
-
-            <div class="hero-actions">
-              <button id="hero-auth-btn" class="btn btn-primary btn-glow px-4 py-2">
-                <i class="bi bi-person-plus-fill me-2"></i>Get Started
-              </button>
-              <button class="btn btn-outline-light px-4 py-2" disabled>
-                <i class="bi bi-calendar2-week me-2"></i>Book Session (Soon)
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      ${renderPageContent(currentPath)}
     </main>
 
     <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">

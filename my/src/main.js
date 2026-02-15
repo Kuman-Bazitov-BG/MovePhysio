@@ -3,9 +3,12 @@ import { initAuth } from './auth.js'
 import { renderApp } from './app.js'
 
 function initLiveBackground(canvas) {
+  if (!canvas) return () => {}
+
   const context = canvas.getContext('2d')
   const particles = []
   const particleCount = 70
+  let frameId = 0
 
   const setSize = () => {
     const ratio = window.devicePixelRatio || 1
@@ -68,21 +71,50 @@ function initLiveBackground(canvas) {
       }
     })
 
-    requestAnimationFrame(animate)
+    frameId = requestAnimationFrame(animate)
   }
 
   setSize()
   animate()
   window.addEventListener('resize', setSize)
+
+  return () => {
+    cancelAnimationFrame(frameId)
+    window.removeEventListener('resize', setSize)
+  }
 }
 
 function bootstrap() {
   const root = document.querySelector('#app')
-  root.innerHTML = renderApp()
+  if (!root) return
 
-  const backgroundCanvas = document.querySelector('#live-bg-canvas')
-  initLiveBackground(backgroundCanvas)
-  initAuth()
+  let cleanupBackground = () => {}
+
+  const renderRoute = () => {
+    cleanupBackground()
+    root.innerHTML = renderApp(window.location.pathname)
+
+    const backgroundCanvas = document.querySelector('#live-bg-canvas')
+    cleanupBackground = initLiveBackground(backgroundCanvas)
+    initAuth()
+  }
+
+  root.addEventListener('click', (event) => {
+    const navLink = event.target.closest('a[data-nav]')
+    if (!navLink) return
+
+    const href = navLink.getAttribute('href')
+    if (!href) return
+
+    event.preventDefault()
+    if (href === window.location.pathname) return
+
+    window.history.pushState({}, '', href)
+    renderRoute()
+  })
+
+  window.addEventListener('popstate', renderRoute)
+  renderRoute()
 }
 
 bootstrap()
