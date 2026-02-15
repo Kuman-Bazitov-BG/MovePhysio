@@ -93,10 +93,14 @@ body {
 }
 
 .move-logo .bar.one {
-  height: 2.4rem;
+  height: 2.1rem;
 }
 
 .move-logo .bar.two {
+  height: 2.9rem;
+}
+
+.move-logo .bar.three {
   height: 3.6rem;
 }
 

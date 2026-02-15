@@ -101,9 +101,11 @@ export function renderApp(pathname = '/') {
             <div class="move-logo" aria-label="Move Physio logo">
               <span class="bar left one"></span>
               <span class="bar left two"></span>
+              <span class="bar left three"></span>
               <span class="wordmark">Move</span>
-              <span class="bar right one"></span>
+              <span class="bar right three"></span>
               <span class="bar right two"></span>
+              <span class="bar right one"></span>
             </div>
             <div class="physio-text">PHYSIO</div>
           </div>
