@@ -87,6 +87,19 @@ body {
   flex-direction: column;
 }
 
+.logo-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.logo-link:hover {
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
 .move-logo {
   display: flex;
   align-items: center;

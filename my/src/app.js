@@ -122,15 +122,17 @@ export function renderApp(pathname = '/') {
       <header class="site-header container py-3 py-md-4">
         <nav class="header-nav d-flex justify-content-between align-items-center gap-3">
           <div class="brand-wrap">
-            <div class="move-logo" aria-label="Move Physio logo">
-              <span class="bar left one"></span>
-              <span class="bar left two"></span>
-              <span class="bar left three"></span>
-              <span class="wordmark">Move</span>
-              <span class="bar right three"></span>
-              <span class="bar right two"></span>
-              <span class="bar right one"></span>
-            </div>
+            <a href="/" data-nav class="logo-link">
+              <div class="move-logo" aria-label="Move Physio logo">
+                <span class="bar left one"></span>
+                <span class="bar left two"></span>
+                <span class="bar left three"></span>
+                <span class="wordmark">Move</span>
+                <span class="bar right three"></span>
+                <span class="bar right two"></span>
+                <span class="bar right one"></span>
+              </div>
+            </a>
           </div>
 
           <nav class="site-nav nav nav-pills gap-2" aria-label="Main navigation">
