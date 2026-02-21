@@ -625,16 +625,28 @@ async function renderAdminPanel() {
         </div>
 
         <div class="admin-card">
-          <div class="admin-card-header">
+          <div class="admin-card-header admin-card-header-drawer">
             <h2 class="admin-card-title">
               <i class="bi bi-info-circle me-2"></i>System Information
             </h2>
+            <button
+              type="button"
+              class="action-btn drawer-toggle-btn"
+              data-bs-toggle="collapse"
+              data-bs-target="#system-information-drawer"
+              aria-expanded="false"
+              aria-controls="system-information-drawer"
+            >
+              <i class="bi bi-chevron-down me-1"></i>Drawer
+            </button>
           </div>
-          <div class="admin-card-body">
-            <p><strong>Application:</strong> Move Physio & Pilates</p>
-            <p><strong>Version:</strong> 1.0.0</p>
-            <p><strong>Environment:</strong> ${import.meta.env.MODE || 'development'}</p>
-            <p class="mb-0"><strong>Supabase:</strong> ${hasConfig ? 'Connected' : 'Not Configured'}</p>
+          <div id="system-information-drawer" class="collapse inline-drawer-panel">
+            <div class="admin-card-body">
+              <p><strong>Application:</strong> Move Physio & Pilates</p>
+              <p><strong>Version:</strong> 1.0.0</p>
+              <p><strong>Environment:</strong> ${import.meta.env.MODE || 'development'}</p>
+              <p class="mb-0"><strong>Supabase:</strong> ${hasConfig ? 'Connected' : 'Not Configured'}</p>
+            </div>
           </div>
         </div>
       </div>
