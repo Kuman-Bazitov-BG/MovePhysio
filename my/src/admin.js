@@ -674,9 +674,6 @@ async function renderAdminPanel() {
           <div class="d-flex justify-content-between align-items-center">
             <h1><i class="bi bi-shield-check me-2"></i>Admin Panel</h1>
             <div class="admin-actions">
-              <button id="open-users-drawer-btn" class="btn btn-outline-info">
-                <i class="bi bi-people me-2"></i>User Management
-              </button>
               <a href="/admin-tasks.html" class="btn btn-outline-info">
                 <i class="bi bi-list-check me-2"></i>Task Workspace
               </a>
@@ -947,7 +944,6 @@ async function initAdminPanel() {
     appElement.innerHTML = await renderAdminPanel()
 
     const totalUsersCard = document.querySelector('#stat-total-users')
-    const openUsersDrawerBtn = document.querySelector('#open-users-drawer-btn')
     const userManagementDrawerElement = document.querySelector('#userManagementDrawer')
     const userManagementDrawer = userManagementDrawerElement
       ? window.bootstrap?.Offcanvas.getOrCreateInstance(userManagementDrawerElement)
@@ -959,7 +955,6 @@ async function initAdminPanel() {
     }
 
     totalUsersCard?.addEventListener('click', openUserManagement)
-    openUsersDrawerBtn?.addEventListener('click', openUserManagement)
     totalUsersCard?.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
