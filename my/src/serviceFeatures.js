@@ -55,6 +55,137 @@ function serviceLabel(service) {
   return service === 'physiotherapy' ? 'Physiotherapy' : 'Pilates'
 }
 
+function toIsoDateKey(dateInput) {
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
+  if (Number.isNaN(date.getTime())) return ''
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return localDate.toISOString().slice(0, 10)
+}
+
+function getMonthStart(referenceDate = new Date()) {
+  return new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1)
+}
+
+function getCalendarMonth(referenceValue) {
+  const parsedReference = referenceValue ? new Date(`${referenceValue}T00:00:00`) : new Date()
+  const safeReference = Number.isNaN(parsedReference.getTime()) ? new Date() : parsedReference
+  return getMonthStart(safeReference)
+}
+
+function isWeekendDate(date) {
+  const day = date.getDay()
+  return day === 0 || day === 6
+}
+
+function createMonthLabel(date) {
+  return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+}
+
+function getTimeSlotOptions(slotMinutes, workStartHour, workEndHour) {
+  const safeSlotMinutes = Number(slotMinutes) > 0 ? Number(slotMinutes) : 60
+  const startMinutes = Math.max(0, Number(workStartHour) || 0) * 60
+  const endMinutes = Math.min(24, Number(workEndHour) || 24) * 60
+  const slots = []
+
+  for (let current = startMinutes; current < endMinutes; current += safeSlotMinutes) {
+    const hour = Math.floor(current / 60)
+    const minute = current % 60
+    const value = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+    slots.push(value)
+  }
+
+  return slots.length ? slots : ['08:00']
+}
+
+function buildCalendarDays(options) {
+  const {
+    items,
+    monthDate,
+    allowWeekends,
+    selectedDate,
+    isAuthenticated,
+    canCreateAppointments
+  } = options
+
+  const today = new Date()
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+  const appointmentDays = new Set(
+    items
+      .map((item) => toIsoDateKey(item.appointment_at))
+      .filter(Boolean)
+  )
+
+  const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
+  const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+  const gridStart = new Date(monthStart)
+  gridStart.setDate(monthStart.getDate() - monthStart.getDay())
+
+  const days = []
+  for (let index = 0; index < 42; index += 1) {
+    const currentDate = new Date(gridStart)
+    currentDate.setDate(gridStart.getDate() + index)
+
+    const inCurrentMonth = currentDate >= monthStart && currentDate <= monthEnd
+    const dayKey = toIsoDateKey(currentDate)
+    const hasBusySlots = appointmentDays.has(dayKey)
+    const isPast = currentDate < todayStart
+    const nonWorking = isPast || (!allowWeekends && isWeekendDate(currentDate)) || !inCurrentMonth
+    const isOpen = inCurrentMonth && !nonWorking && !hasBusySlots
+    const disabled = !isAuthenticated || !canCreateAppointments || !isOpen
+
+    days.push({
+      dayKey,
+      dayNumber: currentDate.getDate(),
+      inCurrentMonth,
+      hasBusySlots,
+      nonWorking,
+      isOpen,
+      isSelected: selectedDate === dayKey,
+      disabled
+    })
+  }
+
+  return days
+}
+
+function renderAppointmentsList(items, options = {}) {
+  const { isAdmin = false, sessionUserId = null } = options
+
+  if (!items.length) {
+    return '<p class="service-note mb-0 mt-3">No appointments yet.</p>'
+  }
+
+  return `
+    <ul class="service-list mb-0 mt-3">
+      ${items
+        .map(
+          (item) => `
+            <li class="service-list-item">
+              <div class="service-list-main">
+                <strong>${canViewAppointmentDetails(item, sessionUserId, isAdmin) ? escapeHtml(item.title) : 'BUSY'}</strong>
+                <span>${formatDateTime(item.appointment_at)}</span>
+              </div>
+              ${canViewAppointmentDetails(item, sessionUserId, isAdmin)
+                ? `<p class="service-note mb-2">${escapeHtml(item.name || '—')} · ${escapeHtml(item.telephone || '—')}</p>`
+                : ''}
+              ${canViewAppointmentDetails(item, sessionUserId, isAdmin) && item.notes ? `<p class="service-note mb-2">${escapeHtml(item.notes)}</p>` : ''}
+              ${canManageAppointment(item, sessionUserId, isAdmin)
+                ? `
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light appointment-edit-btn" data-appointment-id="${item.id}">Edit</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger appointment-delete-btn" data-appointment-id="${item.id}">Delete</button>
+                  </div>
+                `
+                : ''}
+            </li>
+          `
+        )
+        .join('')}
+    </ul>
+  `
+}
+
 function toDateTimeLocal(value) {
   const date = value ? new Date(value) : new Date()
   if (Number.isNaN(date.getTime())) return ''
@@ -91,40 +222,130 @@ function canManageAppointment(item, sessionUserId, isAdmin) {
   return item.created_by === sessionUserId
 }
 
-function renderAppointments(items, options = {}) {
-  const { isAdmin = false, sessionUserId = null } = options
+function renderAppointmentCalendar(items, options = {}) {
+  const {
+    monthReference,
+    selectedDate,
+    selectedTime,
+    allowWeekends = false,
+    slotMinutes = 60,
+    workStartHour = 8,
+    workEndHour = 20,
+    isAuthenticated = false,
+    canCreateAppointments = false
+  } = options
 
-  if (!items.length) {
-    return '<p class="service-note mb-0">No appointments yet.</p>'
-  }
+  const activeMonth = getCalendarMonth(monthReference)
+  const previousMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1)
+  const nextMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1)
+  const monthLabel = createMonthLabel(activeMonth)
+  const currentYear = new Date().getFullYear()
+  const yearOptions = Array.from({ length: 6 }, (_, index) => currentYear - 1 + index)
+  const timeOptions = getTimeSlotOptions(slotMinutes, workStartHour, workEndHour)
+  const activeTime = timeOptions.includes(selectedTime) ? selectedTime : timeOptions[0]
+  const calendarDays = buildCalendarDays({
+    items,
+    monthDate: activeMonth,
+    allowWeekends,
+    selectedDate,
+    isAuthenticated,
+    canCreateAppointments
+  })
 
   return `
-    <ul class="service-list mb-0">
-      ${items
-        .map(
-          (item) => `
-            <li class="service-list-item">
-              <div class="service-list-main">
-                <strong>${canViewAppointmentDetails(item, sessionUserId, isAdmin) ? escapeHtml(item.title) : 'BUSY'}</strong>
-                <span>${formatDateTime(item.appointment_at)}</span>
-              </div>
-              ${canViewAppointmentDetails(item, sessionUserId, isAdmin)
-                ? `<p class="service-note mb-2">${escapeHtml(item.name || '—')} · ${escapeHtml(item.telephone || '—')}</p>`
-                : ''}
-              ${canViewAppointmentDetails(item, sessionUserId, isAdmin) && item.notes ? `<p class="service-note mb-2">${escapeHtml(item.notes)}</p>` : ''}
-              ${canManageAppointment(item, sessionUserId, isAdmin)
-                ? `
-                  <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-light appointment-edit-btn" data-appointment-id="${item.id}">Edit</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger appointment-delete-btn" data-appointment-id="${item.id}">Delete</button>
-                  </div>
-                `
-                : ''}
-            </li>
-          `
-        )
-        .join('')}
-    </ul>
+    <div class="appointment-calendar" data-calendar-root>
+      <div class="appointment-calendar-head">
+        <button
+          type="button"
+          class="appointment-calendar-nav"
+          data-calendar-nav="prev"
+          data-calendar-month="${toIsoDateKey(previousMonth)}"
+          aria-label="Previous month"
+        >
+          ‹
+        </button>
+        <h3 class="appointment-calendar-title mb-0">${escapeHtml(monthLabel)}</h3>
+        <button
+          type="button"
+          class="appointment-calendar-nav"
+          data-calendar-nav="next"
+          data-calendar-month="${toIsoDateKey(nextMonth)}"
+          aria-label="Next month"
+        >
+          ›
+        </button>
+      </div>
+
+      <div class="appointment-calendar-pickers">
+        <label class="appointment-picker">
+          <span>Month</span>
+          <select data-calendar-month-select>
+            ${Array.from({ length: 12 }, (_, monthIndex) => {
+              const monthDate = new Date(activeMonth.getFullYear(), monthIndex, 1)
+              const monthName = monthDate.toLocaleString('en-US', { month: 'short' })
+              const selected = monthIndex === activeMonth.getMonth() ? 'selected' : ''
+              return `<option value="${monthIndex}" ${selected}>${escapeHtml(monthName)}</option>`
+            }).join('')}
+          </select>
+        </label>
+
+        <label class="appointment-picker">
+          <span>Year</span>
+          <select data-calendar-year-select>
+            ${yearOptions
+              .map((year) => `<option value="${year}" ${year === activeMonth.getFullYear() ? 'selected' : ''}>${year}</option>`)
+              .join('')}
+          </select>
+        </label>
+
+        <label class="appointment-picker">
+          <span>Hour</span>
+          <select data-calendar-time ${!isAuthenticated || !canCreateAppointments || !selectedDate ? 'disabled' : ''}>
+            ${timeOptions
+              .map((timeValue) => `<option value="${timeValue}" ${timeValue === activeTime ? 'selected' : ''}>${timeValue}</option>`)
+              .join('')}
+          </select>
+        </label>
+      </div>
+
+      <div class="appointment-calendar-weekdays" aria-hidden="true">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+
+      <div class="appointment-calendar-grid" role="grid" aria-label="Appointment date calendar">
+        ${calendarDays
+          .map((day) => {
+            const classes = [
+              'appointment-calendar-day',
+              day.inCurrentMonth ? '' : 'is-outside-month',
+              day.nonWorking ? 'is-non-working' : '',
+              day.hasBusySlots ? 'is-busy' : '',
+              day.isOpen ? 'is-open' : '',
+              day.isSelected ? 'is-selected' : ''
+            ]
+              .filter(Boolean)
+              .join(' ')
+
+            return `
+              <button
+                type="button"
+                class="${classes}"
+                data-calendar-date="${day.dayKey}"
+                ${day.disabled ? 'disabled' : ''}
+              >
+                <span>${day.dayNumber}</span>
+              </button>
+            `
+          })
+          .join('')}
+      </div>
+
+      <div class="appointment-calendar-legend">
+        <span class="legend-item"><i class="legend-dot legend-open"></i>Open day</span>
+        <span class="legend-item"><i class="legend-dot legend-busy"></i>Busy day</span>
+        <span class="legend-item"><i class="legend-dot legend-off"></i>Not working day</span>
+      </div>
+    </div>
   `
 }
 
@@ -187,7 +408,7 @@ async function loadTasks(supabase, service) {
 async function loadAppointmentConfiguration(supabase, service) {
   const { data, error } = await supabase
     .from('appointment_configurations')
-    .select('slot_minutes')
+    .select('slot_minutes, work_start_hour, work_end_hour, allow_weekends')
     .eq('service', service)
     .single()
 
@@ -220,16 +441,36 @@ async function renderServiceContent(root, service) {
   const session = sessionData?.session
   const sessionUserId = session?.user?.id || null
   const isAuthenticated = Boolean(session?.user)
+  const canCreateAppointments = isAuthenticated
   const isAdmin = isAuthenticated ? await checkUserIsAdmin() : false
   const configResult = await loadAppointmentConfiguration(supabase, service)
   const slotMinutes = configResult.data?.slot_minutes || 60
+  const workStartHour = configResult.data?.work_start_hour ?? 8
+  const workEndHour = configResult.data?.work_end_hour ?? 20
+  const allowWeekends = Boolean(configResult.data?.allow_weekends)
+  const monthReference = root.dataset.calendarMonth || toIsoDateKey(getMonthStart(new Date()))
+  const selectedDate = root.dataset.selectedDate || ''
+  const selectedTime = root.dataset.selectedTime || `${String(workStartHour).padStart(2, '0')}:00`
 
   const appointmentsResult = await loadAppointments(supabase, service)
   if (appointmentsList) {
-    appointmentsList.innerHTML = renderAppointments(appointmentsResult.data, {
-      isAdmin,
-      sessionUserId
-    })
+    appointmentsList.innerHTML = `
+      ${renderAppointmentCalendar(appointmentsResult.data, {
+        monthReference,
+        selectedDate,
+        selectedTime,
+        allowWeekends,
+        slotMinutes,
+        workStartHour,
+        workEndHour,
+        isAuthenticated,
+        canCreateAppointments
+      })}
+      ${renderAppointmentsList(appointmentsResult.data, {
+        isAdmin,
+        sessionUserId
+      })}
+    `
   }
   if (appointmentsStatus) {
     appointmentsStatus.dataset.type = appointmentsResult.error ? 'error' : 'info'
@@ -247,6 +488,7 @@ async function renderServiceContent(root, service) {
     const dateInput = appointmentForm.querySelector('input[name="appointment_at"]')
     if (dateInput) {
       dateInput.step = String(slotMinutes * 60)
+      dateInput.min = toDateTimeLocal(new Date().toISOString())
       if (!dateInput.value) {
         dateInput.value = alignDateTimeLocal(new Date().toISOString(), slotMinutes)
       }
@@ -303,6 +545,75 @@ async function renderServiceContent(root, service) {
       await renderServiceContent(root, service)
     })
   }
+
+  appointmentsList?.querySelectorAll('[data-calendar-nav]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const nextMonth = button.dataset.calendarMonth
+      if (!nextMonth) return
+      root.dataset.calendarMonth = nextMonth
+      await renderServiceContent(root, service)
+    })
+  })
+
+  const monthSelect = appointmentsList?.querySelector('[data-calendar-month-select]')
+  const yearSelect = appointmentsList?.querySelector('[data-calendar-year-select]')
+  const updateCalendarMonth = async () => {
+    const monthValue = Number(monthSelect?.value)
+    const yearValue = Number(yearSelect?.value)
+    if (!Number.isInteger(monthValue) || !Number.isInteger(yearValue)) return
+    root.dataset.calendarMonth = toIsoDateKey(new Date(yearValue, monthValue, 1))
+    await renderServiceContent(root, service)
+  }
+
+  monthSelect?.addEventListener('change', updateCalendarMonth)
+  yearSelect?.addEventListener('change', updateCalendarMonth)
+
+  const applyDateTimeToInput = () => {
+    const dateInput = appointmentForm?.querySelector('input[name="appointment_at"]')
+    if (!dateInput) return
+
+    const dateKey = root.dataset.selectedDate || ''
+    const timeValue = root.dataset.selectedTime || `${String(workStartHour).padStart(2, '0')}:00`
+    if (!dateKey) return
+
+    const localDate = new Date(`${dateKey}T${timeValue}:00`)
+    if (Number.isNaN(localDate.getTime())) return
+
+    const alignedValue = alignDateTimeLocal(localDate.toISOString(), slotMinutes)
+    dateInput.value = alignedValue
+  }
+
+  appointmentsList?.querySelector('[data-calendar-time]')?.addEventListener('change', (event) => {
+    const nextTime = String(event.target.value || '').trim()
+    if (!nextTime) return
+    root.dataset.selectedTime = nextTime
+    applyDateTimeToInput()
+  })
+
+  appointmentsList?.querySelectorAll('[data-calendar-date]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.disabled) return
+      const dateKey = button.dataset.calendarDate
+      if (!dateKey) return
+
+      root.dataset.selectedDate = dateKey
+      if (!root.dataset.selectedTime) {
+        root.dataset.selectedTime = `${String(workStartHour).padStart(2, '0')}:00`
+      }
+
+      applyDateTimeToInput()
+
+      appointmentsList
+        .querySelectorAll('.appointment-calendar-day.is-selected')
+        .forEach((cell) => cell.classList.remove('is-selected'))
+      button.classList.add('is-selected')
+
+      const timeSelect = appointmentsList.querySelector('[data-calendar-time]')
+      if (timeSelect) {
+        timeSelect.disabled = false
+      }
+    })
+  })
 
   appointmentsList?.querySelectorAll('.appointment-edit-btn').forEach((button) => {
     button.addEventListener('click', async () => {
