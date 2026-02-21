@@ -70,6 +70,13 @@
   margin-bottom: 1.5rem;
 }
 
+.admin-card-header-drawer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .admin-card-title {
   color: #78dbff;
   font-family: 'Orbitron', sans-serif;
@@ -200,6 +207,19 @@
   background: rgba(120, 219, 255, 0.25);
   border-color: #78dbff;
   box-shadow: 0 0 12px rgba(120, 219, 255, 0.4);
+}
+
+.drawer-toggle-btn {
+  white-space: nowrap;
+}
+
+.inline-drawer-panel {
+  overflow: hidden;
+}
+
+.inline-drawer-panel:not(.show) {
+  display: block;
+  height: 0;
 }
 
 .appointment-delete-btn {

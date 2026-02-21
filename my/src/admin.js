@@ -522,12 +522,23 @@ async function renderAdminPanel() {
         </div>
 
         <div class="admin-card">
-          <div class="admin-card-header">
+          <div class="admin-card-header admin-card-header-drawer">
             <h2 class="admin-card-title">
               <i class="bi bi-sliders me-2"></i>Appointment Calendar Configuration
             </h2>
+            <button
+              type="button"
+              class="action-btn drawer-toggle-btn"
+              data-bs-toggle="collapse"
+              data-bs-target="#appointment-config-drawer"
+              aria-expanded="true"
+              aria-controls="appointment-config-drawer"
+            >
+              <i class="bi bi-chevron-down me-1"></i>Drawer
+            </button>
           </div>
-          <div class="admin-card-body">
+          <div id="appointment-config-drawer" class="collapse show inline-drawer-panel">
+            <div class="admin-card-body">
             <p class="mb-3">Configure slot rules per service. These rules are enforced when users and admins create appointments.</p>
             <div class="table-responsive">
               <table class="users-table">
@@ -548,16 +559,28 @@ async function renderAdminPanel() {
                 </tbody>
               </table>
             </div>
+            </div>
           </div>
         </div>
 
         <div class="admin-card">
-          <div class="admin-card-header">
+          <div class="admin-card-header admin-card-header-drawer">
             <h2 class="admin-card-title">
               <i class="bi bi-calendar-week me-2"></i>Appointment Calendar Management
             </h2>
+            <button
+              type="button"
+              class="action-btn drawer-toggle-btn"
+              data-bs-toggle="collapse"
+              data-bs-target="#appointment-management-drawer"
+              aria-expanded="true"
+              aria-controls="appointment-management-drawer"
+            >
+              <i class="bi bi-chevron-down me-1"></i>Drawer
+            </button>
           </div>
-          <div class="admin-card-body">
+          <div id="appointment-management-drawer" class="collapse show inline-drawer-panel">
+            <div class="admin-card-body">
             <form id="admin-appointment-form" class="row g-2 mb-3">
               <div class="col-md-2">
                 <select class="form-select" name="service" required>
@@ -596,6 +619,7 @@ async function renderAdminPanel() {
                   ${appointments.length > 0 ? appointments.map(renderAppointmentRow).join('') : '<tr><td colspan="6">No appointments found.</td></tr>'}
                 </tbody>
               </table>
+            </div>
             </div>
           </div>
         </div>
