@@ -9,6 +9,7 @@ MovePhysio is a modern physiotherapy website built with vanilla JavaScript + Vit
 - Supabase authentication (register, login, logout)
 - Role-based admin button visibility
 - Dedicated admin panel for user role management
+- Admin TODO app for service operations (daily / weekly / monthly tasks with pending, completed and overdue states)
 - RLS-ready `user_roles` model with Supabase migration
 
 ## Tech Stack
@@ -137,7 +138,7 @@ Your public GitHub repo is the most important project asset for your capstone pr
   - `src/main.js` – app bootstrap + animated background + route handling
   - `src/app.js` – page rendering + layout + auth modal markup
   - `src/auth.js` – auth/session logic + admin visibility checks
-  - `src/admin.js` – admin access guard + user role management UI
+  - `src/admin.js` – admin access guard + user role management UI + appointment and TODO task management
   - `src/config.js` – Supabase env config
 - `supabase/migrations/` – SQL migrations
   - `20260215120000_user_roles_rls.sql`

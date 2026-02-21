@@ -279,6 +279,91 @@ async function deleteAppointmentAdmin(appointmentId) {
   }
 }
 
+async function loadServiceTasksAdmin() {
+  if (!supabase) return []
+
+  try {
+    const { data, error } = await supabase
+      .from('service_tasks')
+      .select('id, service, title, description, due_date, is_done, created_at, updated_at')
+      .order('is_done', { ascending: true })
+      .order('due_date', { ascending: true })
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error loading service tasks:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error loading service tasks:', error)
+    return []
+  }
+}
+
+async function createServiceTaskAdmin(payload, userId) {
+  if (!supabase) return { success: false, error: 'Supabase not configured' }
+
+  try {
+    const { error } = await supabase
+      .from('service_tasks')
+      .insert({
+        ...payload,
+        created_by: userId
+      })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, error: null }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function updateServiceTaskAdmin(taskId, payload) {
+  if (!supabase) return { success: false, error: 'Supabase not configured' }
+
+  try {
+    const { error } = await supabase
+      .from('service_tasks')
+      .update({
+        ...payload,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', taskId)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, error: null }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function deleteServiceTaskAdmin(taskId) {
+  if (!supabase) return { success: false, error: 'Supabase not configured' }
+
+  try {
+    const { error } = await supabase
+      .from('service_tasks')
+      .delete()
+      .eq('id', taskId)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, error: null }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
 async function toggleUserRole(userId, currentRole) {
   if (!supabase) return false
 
@@ -356,6 +441,90 @@ function formatDate(dateString) {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+function formatDateOnly(dateString) {
+  if (!dateString) return '—'
+  const date = new Date(`${dateString}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return '—'
+
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+function startOfDay(dateInput = new Date()) {
+  const date = new Date(dateInput)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
+function toDateInputValue(dateInput = new Date()) {
+  const date = new Date(dateInput)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function addDays(dateInput, days) {
+  const date = new Date(dateInput)
+  date.setDate(date.getDate() + days)
+  return date
+}
+
+function getTaskCadence(task) {
+  if (!task?.due_date) return 'monthly'
+
+  const today = startOfDay()
+  const due = startOfDay(`${task.due_date}T00:00:00`)
+  const diffDays = Math.ceil((due.getTime() - today.getTime()) / 86400000)
+
+  if (diffDays <= 1) return 'daily'
+  if (diffDays <= 7) return 'weekly'
+  return 'monthly'
+}
+
+function getTaskStatus(task) {
+  if (task.is_done) return 'completed'
+  if (!task?.due_date) return 'pending'
+
+  const today = startOfDay()
+  const due = startOfDay(`${task.due_date}T00:00:00`)
+  if (due.getTime() < today.getTime()) return 'overdue'
+
+  return 'pending'
+}
+
+function getTaskMetrics(tasks) {
+  return tasks.reduce(
+    (summary, task) => {
+      const status = getTaskStatus(task)
+      const cadence = getTaskCadence(task)
+
+      summary.total += 1
+      if (status === 'completed') summary.completed += 1
+      if (status === 'pending') summary.pending += 1
+      if (status === 'overdue') summary.overdue += 1
+
+      if (cadence === 'daily') summary.daily += 1
+      if (cadence === 'weekly') summary.weekly += 1
+      if (cadence === 'monthly') summary.monthly += 1
+
+      return summary
+    },
+    {
+      total: 0,
+      pending: 0,
+      completed: 0,
+      overdue: 0,
+      daily: 0,
+      weekly: 0,
+      monthly: 0
+    }
+  )
 }
 
 function toDateTimeLocal(dateString) {
@@ -458,6 +627,35 @@ function renderAppointmentRow(appointment) {
   `
 }
 
+function renderTaskRow(task) {
+  const cadence = getTaskCadence(task)
+  const status = getTaskStatus(task)
+  const nextDone = task.is_done ? 'false' : 'true'
+
+  return `
+    <tr data-task-id="${task.id}" data-task-cadence="${cadence}" data-task-status="${status}">
+      <td>
+        <div class="task-title">${escapeHtml(task.title)}</div>
+        <div class="task-description">${task.description ? escapeHtml(task.description) : 'No description'}</div>
+      </td>
+      <td>${escapeHtml(task.service)}</td>
+      <td>${formatDateOnly(task.due_date)}</td>
+      <td><span class="task-badge cadence-${cadence}">${cadence}</span></td>
+      <td><span class="task-badge status-${status}">${status}</span></td>
+      <td>${formatDate(task.updated_at || task.created_at)}</td>
+      <td>
+        <button class="action-btn task-toggle-btn" data-task-id="${task.id}" data-next-done="${nextDone}">
+          <i class="bi ${task.is_done ? 'bi-arrow-counterclockwise' : 'bi-check2-circle'} me-1"></i>
+          ${task.is_done ? 'Reopen' : 'Done'}
+        </button>
+        <button class="action-btn appointment-delete-btn ms-2 task-delete-btn" data-task-id="${task.id}">
+          <i class="bi bi-trash me-1"></i>Delete
+        </button>
+      </td>
+    </tr>
+  `
+}
+
 async function renderAdminPanel() {
   const usersCount = await getUsersCount()
   const adminsCount = await getAdminsCount()
@@ -466,6 +664,8 @@ async function renderAdminPanel() {
   const users = await loadUsersList()
   const appointmentConfigurations = await loadAppointmentConfigurations()
   const appointments = await loadAppointmentsAdmin()
+  const tasks = await loadServiceTasksAdmin()
+  const taskMetrics = getTaskMetrics(tasks)
 
   return `
     <div class="admin-shell">
@@ -518,6 +718,12 @@ async function renderAdminPanel() {
             <i class="bi bi-calendar-check stat-icon"></i>
             <div class="stat-value">${appointmentsCount}</div>
             <div class="stat-label">Appointments</div>
+          </div>
+
+          <div class="stat-card stat-card-clickable" id="stat-pending-tasks" role="button" tabindex="0" aria-label="Open pending tasks">
+            <i class="bi bi-list-check stat-icon"></i>
+            <div class="stat-value">${taskMetrics.pending}</div>
+            <div class="stat-label">Pending Tasks</div>
           </div>
         </div>
 
@@ -649,6 +855,7 @@ async function renderAdminPanel() {
             </div>
           </div>
         </div>
+
       </div>
 
       <div class="offcanvas offcanvas-end user-management-drawer" tabindex="-1" id="userManagementDrawer" aria-labelledby="userManagementDrawerLabel">
@@ -701,6 +908,94 @@ async function renderAdminPanel() {
           `}
         </div>
       </div>
+
+      <div class="offcanvas offcanvas-end user-management-drawer" tabindex="-1" id="taskManagementDrawer" aria-labelledby="taskManagementDrawerLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="taskManagementDrawerLabel">
+            <i class="bi bi-kanban me-2"></i>Pending Tasks
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <div class="task-metric-grid mb-3">
+            <div class="task-metric-card"><span>Total</span><strong>${taskMetrics.total}</strong></div>
+            <div class="task-metric-card"><span>Daily</span><strong>${taskMetrics.daily}</strong></div>
+            <div class="task-metric-card"><span>Weekly</span><strong>${taskMetrics.weekly}</strong></div>
+            <div class="task-metric-card"><span>Monthly</span><strong>${taskMetrics.monthly}</strong></div>
+            <div class="task-metric-card"><span>Pending</span><strong>${taskMetrics.pending}</strong></div>
+            <div class="task-metric-card"><span>Completed</span><strong>${taskMetrics.completed}</strong></div>
+            <div class="task-metric-card"><span>Overdue</span><strong>${taskMetrics.overdue}</strong></div>
+          </div>
+
+          <form id="admin-task-form" class="row g-2 mb-3">
+            <div class="col-md-2">
+              <select class="form-select" name="service" required>
+                <option value="physiotherapy">physiotherapy</option>
+                <option value="pilates">pilates</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control" name="title" placeholder="Task title" required />
+            </div>
+            <div class="col-md-2">
+              <select class="form-select" name="cadence" required>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <input type="date" class="form-control" name="due_date" />
+            </div>
+            <div class="col-md-2">
+              <input type="text" class="form-control" name="description" placeholder="Description" />
+            </div>
+            <div class="col-md-1 d-grid">
+              <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+          </form>
+
+          <p id="admin-task-status" class="service-note mb-3">Track daily, weekly and monthly admin operations from one place.</p>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-3">
+              <select id="task-cadence-filter" class="form-select">
+                <option value="all">All cadences</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select id="task-status-filter" class="form-select">
+                <option value="all">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Service</th>
+                  <th>Due</th>
+                  <th>Cadence</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-task-table-body">
+                ${tasks.length > 0 ? `${tasks.map(renderTaskRow).join('')}<tr id="admin-task-empty-filter-row" hidden><td colspan="7">No tasks match the selected filters.</td></tr>` : '<tr><td colspan="7">No tasks found.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   `
 }
@@ -736,10 +1031,15 @@ async function initAdminPanel() {
     appElement.innerHTML = await renderAdminPanel()
 
     const totalUsersCard = document.querySelector('#stat-total-users')
+    const pendingTasksCard = document.querySelector('#stat-pending-tasks')
     const openUsersDrawerBtn = document.querySelector('#open-users-drawer-btn')
     const userManagementDrawerElement = document.querySelector('#userManagementDrawer')
     const userManagementDrawer = userManagementDrawerElement
       ? window.bootstrap?.Offcanvas.getOrCreateInstance(userManagementDrawerElement)
+      : null
+    const taskManagementDrawerElement = document.querySelector('#taskManagementDrawer')
+    const taskManagementDrawer = taskManagementDrawerElement
+      ? window.bootstrap?.Offcanvas.getOrCreateInstance(taskManagementDrawerElement)
       : null
 
     const openUserManagement = () => {
@@ -747,12 +1047,24 @@ async function initAdminPanel() {
       userManagementDrawer.show()
     }
 
+    const openTaskManagement = () => {
+      if (!taskManagementDrawer) return
+      taskManagementDrawer.show()
+    }
+
     totalUsersCard?.addEventListener('click', openUserManagement)
     openUsersDrawerBtn?.addEventListener('click', openUserManagement)
+    pendingTasksCard?.addEventListener('click', openTaskManagement)
     totalUsersCard?.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
         openUserManagement()
+      }
+    })
+    pendingTasksCard?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        openTaskManagement()
       }
     })
 
@@ -992,6 +1304,113 @@ async function initAdminPanel() {
           return
         }
 
+        await renderAndBind()
+      })
+    })
+
+    const taskForm = document.querySelector('#admin-task-form')
+    const taskStatus = document.querySelector('#admin-task-status')
+    const taskCadenceFilter = document.querySelector('#task-cadence-filter')
+    const taskStatusFilter = document.querySelector('#task-status-filter')
+    const taskRows = () => Array.from(document.querySelectorAll('#admin-task-table-body tr[data-task-id]'))
+    const taskEmptyFilterRow = document.querySelector('#admin-task-empty-filter-row')
+
+    const applyTaskFilters = () => {
+      const selectedCadence = taskCadenceFilter?.value || 'all'
+      const selectedStatus = taskStatusFilter?.value || 'all'
+
+      let visibleRows = 0
+      taskRows().forEach((row) => {
+        const cadenceMatches = selectedCadence === 'all' || row.dataset.taskCadence === selectedCadence
+        const statusMatches = selectedStatus === 'all' || row.dataset.taskStatus === selectedStatus
+        const shouldShow = cadenceMatches && statusMatches
+
+        row.hidden = !shouldShow
+        if (shouldShow) visibleRows += 1
+      })
+
+      if (taskEmptyFilterRow) {
+        taskEmptyFilterRow.hidden = visibleRows > 0
+      }
+    }
+
+    taskCadenceFilter?.addEventListener('change', applyTaskFilters)
+    taskStatusFilter?.addEventListener('change', applyTaskFilters)
+    applyTaskFilters()
+
+    taskForm?.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      const formData = new FormData(taskForm)
+      const cadence = String(formData.get('cadence') || 'daily')
+
+      const cadenceToDays = {
+        daily: 1,
+        weekly: 7,
+        monthly: 30
+      }
+
+      const selectedDueDate = String(formData.get('due_date') || '').trim()
+      const dueDate = selectedDueDate || toDateInputValue(addDays(new Date(), cadenceToDays[cadence] || 1))
+
+      const payload = {
+        service: String(formData.get('service') || '').trim(),
+        title: String(formData.get('title') || '').trim(),
+        description: String(formData.get('description') || '').trim() || null,
+        due_date: dueDate,
+        is_done: false
+      }
+
+      if (!payload.service || !payload.title || !currentUserId) {
+        if (taskStatus) taskStatus.textContent = 'Please provide required task values.'
+        return
+      }
+
+      const result = await createServiceTaskAdmin(payload, currentUserId)
+      if (!result.success) {
+        if (taskStatus) taskStatus.textContent = result.error
+        return
+      }
+
+      taskForm.reset()
+      if (taskStatus) taskStatus.textContent = 'Task created successfully.'
+      await renderAndBind()
+    })
+
+    const taskToggleButtons = document.querySelectorAll('.task-toggle-btn')
+    taskToggleButtons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        const taskId = button.dataset.taskId
+        const nextDone = button.dataset.nextDone === 'true'
+        if (!taskId) return
+
+        const result = await updateServiceTaskAdmin(taskId, { is_done: nextDone })
+        if (!result.success) {
+          if (taskStatus) taskStatus.textContent = result.error
+          return
+        }
+
+        if (taskStatus) taskStatus.textContent = nextDone ? 'Task marked as done.' : 'Task moved back to pending.'
+        await renderAndBind()
+      })
+    })
+
+    const taskDeleteButtons = document.querySelectorAll('.task-delete-btn')
+    taskDeleteButtons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        const taskId = button.dataset.taskId
+        if (!taskId) return
+
+        if (!confirm('Delete this task?')) {
+          return
+        }
+
+        const result = await deleteServiceTaskAdmin(taskId)
+        if (!result.success) {
+          if (taskStatus) taskStatus.textContent = result.error
+          return
+        }
+
+        if (taskStatus) taskStatus.textContent = 'Task deleted successfully.'
         await renderAndBind()
       })
     })
