@@ -674,9 +674,6 @@ async function renderAdminPanel() {
           <div class="d-flex justify-content-between align-items-center">
             <h1><i class="bi bi-shield-check me-2"></i>Admin Panel</h1>
             <div class="admin-actions">
-              <a href="/admin-tasks.html" class="btn btn-outline-info">
-                <i class="bi bi-list-check me-2"></i>Task Workspace
-              </a>
               <a href="/" class="btn btn-outline-light">
                 <i class="bi bi-house-door me-2"></i>Back to Site
               </a>
@@ -720,10 +717,10 @@ async function renderAdminPanel() {
             <div class="stat-label">Appointments</div>
           </div>
 
-          <a href="/admin-tasks.html" class="stat-card stat-card-clickable text-decoration-none" aria-label="Open pending tasks workspace">
+          <a href="/admin-tasks.html" class="stat-card stat-card-clickable text-decoration-none" aria-label="Open to do workspace">
             <i class="bi bi-list-check stat-icon"></i>
             <div class="stat-value">${taskMetrics.pending}</div>
-            <div class="stat-label">Pending Tasks</div>
+            <div class="stat-label">To Do</div>
           </a>
         </div>
 
