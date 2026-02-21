@@ -11,6 +11,7 @@ MovePhysio is a modern physiotherapy website built with vanilla JavaScript + Vit
 - Dedicated admin panel for user role management
 - Admin TODO app for service operations (daily / weekly / monthly tasks with pending, completed and overdue states)
 - Dedicated admin task workspace page (`admin-tasks.html`) separated from main admin panel
+- Appointment visibility rules: guests see `BUSY` + time only, users can fully manage only their own appointments, admins can manage all appointments
 - RLS-ready `user_roles` model with Supabase migration
 
 ## Tech Stack

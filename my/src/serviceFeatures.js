@@ -54,7 +54,21 @@ function isAlignedToSlot(value, slotMinutes) {
   return date.getMinutes() % slotMinutes === 0
 }
 
-function renderAppointments(items) {
+function canViewAppointmentDetails(item, sessionUserId, isAdmin) {
+  if (isAdmin) return true
+  if (!sessionUserId) return false
+  return item.created_by === sessionUserId
+}
+
+function canManageAppointment(item, sessionUserId, isAdmin) {
+  if (isAdmin) return true
+  if (!sessionUserId) return false
+  return item.created_by === sessionUserId
+}
+
+function renderAppointments(items, options = {}) {
+  const { isAdmin = false, sessionUserId = null } = options
+
   if (!items.length) {
     return '<p class="service-note mb-0">No appointments yet.</p>'
   }
@@ -66,10 +80,18 @@ function renderAppointments(items) {
           (item) => `
             <li class="service-list-item">
               <div class="service-list-main">
-                <strong>${escapeHtml(item.title)}</strong>
+                <strong>${canViewAppointmentDetails(item, sessionUserId, isAdmin) ? escapeHtml(item.title) : 'BUSY'}</strong>
                 <span>${formatDateTime(item.appointment_at)}</span>
               </div>
-              ${item.notes ? `<p class="service-note mb-0">${escapeHtml(item.notes)}</p>` : ''}
+              ${canViewAppointmentDetails(item, sessionUserId, isAdmin) && item.notes ? `<p class="service-note mb-2">${escapeHtml(item.notes)}</p>` : ''}
+              ${canManageAppointment(item, sessionUserId, isAdmin)
+                ? `
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light appointment-edit-btn" data-appointment-id="${item.id}">Edit</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger appointment-delete-btn" data-appointment-id="${item.id}">Delete</button>
+                  </div>
+                `
+                : ''}
             </li>
           `
         )
@@ -109,7 +131,7 @@ function renderTasks(tasks) {
 async function loadAppointments(supabase, service) {
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, title, notes, appointment_at')
+    .select('id, title, notes, appointment_at, created_by')
     .eq('service', service)
     .order('appointment_at', { ascending: true })
 
@@ -168,6 +190,7 @@ async function renderServiceContent(root, service) {
 
   const { data: sessionData } = await supabase.auth.getSession()
   const session = sessionData?.session
+  const sessionUserId = session?.user?.id || null
   const isAuthenticated = Boolean(session?.user)
   const isAdmin = isAuthenticated ? await checkUserIsAdmin() : false
   const configResult = await loadAppointmentConfiguration(supabase, service)
@@ -175,14 +198,19 @@ async function renderServiceContent(root, service) {
 
   const appointmentsResult = await loadAppointments(supabase, service)
   if (appointmentsList) {
-    appointmentsList.innerHTML = renderAppointments(appointmentsResult.data)
+    appointmentsList.innerHTML = renderAppointments(appointmentsResult.data, {
+      isAdmin,
+      sessionUserId
+    })
   }
   if (appointmentsStatus) {
     appointmentsStatus.dataset.type = appointmentsResult.error ? 'error' : 'info'
     appointmentsStatus.textContent = appointmentsResult.error
       ? appointmentsResult.error
       : isAuthenticated
-        ? `You can add appointments for ${serviceLabel(service)}.`
+        ? isAdmin
+          ? `Admin mode: full appointment visibility and management for ${serviceLabel(service)}.`
+          : `User mode: you can fully manage your appointments. Other users are shown as BUSY.`
         : 'Read-only mode for guests. Sign in to create appointments.'
   }
 
@@ -243,6 +271,96 @@ async function renderServiceContent(root, service) {
       await renderServiceContent(root, service)
     })
   }
+
+  appointmentsList?.querySelectorAll('.appointment-edit-btn').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const appointmentId = button.dataset.appointmentId
+      if (!appointmentId || !sessionUserId) return
+
+      const currentItem = appointmentsResult.data.find((item) => item.id === appointmentId)
+      if (!currentItem) return
+
+      if (!canManageAppointment(currentItem, sessionUserId, isAdmin)) {
+        if (appointmentsStatus) {
+          appointmentsStatus.dataset.type = 'error'
+          appointmentsStatus.textContent = 'You can edit only your own appointments.'
+        }
+        return
+      }
+
+      const nextTitle = window.prompt('Edit title:', currentItem.title || '')
+      if (!nextTitle) return
+
+      const defaultDate = toDateTimeLocal(currentItem.appointment_at)
+      const nextDate = window.prompt('Edit date/time (YYYY-MM-DDTHH:mm):', defaultDate)
+      if (!nextDate) return
+
+      const nextNotes = window.prompt('Edit notes (optional):', currentItem.notes || '')
+
+      if (!isAlignedToSlot(nextDate, slotMinutes)) {
+        if (appointmentsStatus) {
+          appointmentsStatus.dataset.type = 'error'
+          appointmentsStatus.textContent = `Time must align to ${slotMinutes}-minute slot boundaries.`
+        }
+        return
+      }
+
+      const { error } = await supabase
+        .from('appointments')
+        .update({
+          title: nextTitle.trim(),
+          appointment_at: nextDate,
+          notes: (nextNotes || '').trim() || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', appointmentId)
+
+      if (error) {
+        if (appointmentsStatus) {
+          appointmentsStatus.dataset.type = 'error'
+          appointmentsStatus.textContent = error.message
+        }
+        return
+      }
+
+      await renderServiceContent(root, service)
+    })
+  })
+
+  appointmentsList?.querySelectorAll('.appointment-delete-btn').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const appointmentId = button.dataset.appointmentId
+      if (!appointmentId || !sessionUserId) return
+
+      const currentItem = appointmentsResult.data.find((item) => item.id === appointmentId)
+      if (!currentItem) return
+
+      if (!canManageAppointment(currentItem, sessionUserId, isAdmin)) {
+        if (appointmentsStatus) {
+          appointmentsStatus.dataset.type = 'error'
+          appointmentsStatus.textContent = 'You can delete only your own appointments.'
+        }
+        return
+      }
+
+      if (!window.confirm('Delete this appointment?')) return
+
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId)
+
+      if (error) {
+        if (appointmentsStatus) {
+          appointmentsStatus.dataset.type = 'error'
+          appointmentsStatus.textContent = error.message
+        }
+        return
+      }
+
+      await renderServiceContent(root, service)
+    })
+  })
 
   if (!tasksPanel) return
 
