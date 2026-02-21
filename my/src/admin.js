@@ -474,6 +474,9 @@ async function renderAdminPanel() {
           <div class="d-flex justify-content-between align-items-center">
             <h1><i class="bi bi-shield-check me-2"></i>Admin Panel</h1>
             <div class="admin-actions">
+              <button id="open-users-drawer-btn" class="btn btn-outline-info">
+                <i class="bi bi-people me-2"></i>User Management
+              </button>
               <a href="/" class="btn btn-outline-light">
                 <i class="bi bi-house-door me-2"></i>Back to Site
               </a>
@@ -515,56 +518,6 @@ async function renderAdminPanel() {
             <i class="bi bi-calendar-check stat-icon"></i>
             <div class="stat-value">${appointmentsCount}</div>
             <div class="stat-label">Appointments</div>
-          </div>
-        </div>
-
-        <div class="admin-card" id="user-management-card">
-          <div class="admin-card-header">
-            <h2 class="admin-card-title">
-              <i class="bi bi-people me-2"></i>User Management
-            </h2>
-          </div>
-          <div class="admin-card-body">
-            <form id="user-upsert-form" class="row g-2 mb-3">
-              <div class="col-md-6">
-                <input type="text" class="form-control" name="user_id" placeholder="User UUID" required />
-              </div>
-              <div class="col-md-3">
-                <select class="form-select" name="user_role" required>
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                </select>
-              </div>
-              <div class="col-md-3 d-grid">
-                <button type="submit" class="btn btn-primary">Add / Update User</button>
-              </div>
-            </form>
-            <p id="user-management-status" class="service-note mb-3">
-              Add or update a user role using their existing auth user UUID.
-            </p>
-
-            ${users.length > 0 ? `
-              <div class="table-responsive">
-                <table class="users-table">
-                  <thead>
-                    <tr>
-                      <th>Email</th>
-                      <th>Role</th>
-                      <th>Registered</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="users-table-body">
-                    ${users.map(user => renderUserRow(user)).join('')}
-                  </tbody>
-                </table>
-              </div>
-            ` : `
-              <div class="empty-state">
-                <i class="bi bi-inbox empty-state-icon"></i>
-                <p>No users found in the system.</p>
-              </div>
-            `}
           </div>
         </div>
 
@@ -661,6 +614,57 @@ async function renderAdminPanel() {
           </div>
         </div>
       </div>
+
+      <div class="offcanvas offcanvas-end user-management-drawer" tabindex="-1" id="userManagementDrawer" aria-labelledby="userManagementDrawerLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="userManagementDrawerLabel">
+            <i class="bi bi-people me-2"></i>User Management
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <form id="user-upsert-form" class="row g-2 mb-3">
+            <div class="col-12">
+              <input type="text" class="form-control" name="user_id" placeholder="User UUID" required />
+            </div>
+            <div class="col-6">
+              <select class="form-select" name="user_role" required>
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
+            <div class="col-6 d-grid">
+              <button type="submit" class="btn btn-primary">Add / Update User</button>
+            </div>
+          </form>
+          <p id="user-management-status" class="service-note mb-3">
+            Add or update a user role using their existing auth user UUID.
+          </p>
+
+          ${users.length > 0 ? `
+            <div class="table-responsive">
+              <table class="users-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  ${users.map(user => renderUserRow(user)).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `
+            <div class="empty-state">
+              <i class="bi bi-inbox empty-state-icon"></i>
+              <p>No users found in the system.</p>
+            </div>
+          `}
+        </div>
+      </div>
     </div>
   `
 }
@@ -696,15 +700,19 @@ async function initAdminPanel() {
     appElement.innerHTML = await renderAdminPanel()
 
     const totalUsersCard = document.querySelector('#stat-total-users')
-    const userManagementCard = document.querySelector('#user-management-card')
+    const openUsersDrawerBtn = document.querySelector('#open-users-drawer-btn')
+    const userManagementDrawerElement = document.querySelector('#userManagementDrawer')
+    const userManagementDrawer = userManagementDrawerElement
+      ? window.bootstrap?.Offcanvas.getOrCreateInstance(userManagementDrawerElement)
+      : null
+
     const openUserManagement = () => {
-      if (!userManagementCard) return
-      userManagementCard.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      userManagementCard.classList.add('admin-card-highlight')
-      window.setTimeout(() => userManagementCard.classList.remove('admin-card-highlight'), 1000)
+      if (!userManagementDrawer) return
+      userManagementDrawer.show()
     }
 
     totalUsersCard?.addEventListener('click', openUserManagement)
+    openUsersDrawerBtn?.addEventListener('click', openUserManagement)
     totalUsersCard?.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()

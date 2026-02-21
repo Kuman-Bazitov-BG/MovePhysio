@@ -48,6 +48,22 @@
   box-shadow: 0 0 0 2px rgba(120, 219, 255, 0.65), 0 8px 32px rgba(0, 166, 255, 0.15);
 }
 
+.user-management-drawer {
+  width: min(920px, 96vw) !important;
+  background: rgba(15, 28, 45, 0.98);
+  color: #e0f7ff;
+  border-left: 1px solid rgba(120, 219, 255, 0.35);
+}
+
+.user-management-drawer .offcanvas-header {
+  border-bottom: 1px solid rgba(120, 219, 255, 0.25);
+}
+
+.user-management-drawer .offcanvas-title {
+  color: #78dbff;
+  font-family: 'Orbitron', sans-serif;
+}
+
 .admin-card-header {
   border-bottom: 2px solid rgba(120, 219, 255, 0.3);
   padding-bottom: 1rem;
