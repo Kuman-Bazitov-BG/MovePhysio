@@ -160,6 +160,7 @@ async function login(contact, password) {
     }
 
     setStatus('Login successful. Welcome back.', 'success')
+    window.location.reload()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
@@ -179,6 +180,7 @@ async function logout() {
     }
 
     setStatus('You are logged out.', 'info')
+    window.location.reload()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
