@@ -11,6 +11,31 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;')
 }
 
+function isEmailLike(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+}
+
+async function resolveCurrentUserEmail(supabase, user) {
+  const directEmail = String(user?.email || '').trim().toLowerCase()
+  if (isEmailLike(directEmail)) return directEmail
+
+  const metadataContact = String(user?.user_metadata?.contact || '').trim().toLowerCase()
+  if (isEmailLike(metadataContact)) return metadataContact
+
+  if (!user?.id) return ''
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('contact')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (error) return ''
+
+  const profileContact = String(data?.contact || '').trim().toLowerCase()
+  return isEmailLike(profileContact) ? profileContact : ''
+}
+
 function formatDateTime(value) {
   if (!value) return '—'
 
@@ -237,13 +262,13 @@ async function renderServiceContent(root, service) {
       if (!session?.user) return
 
       const formData = new FormData(appointmentForm)
-      const nowMarker = Date.now()
+      const resolvedEmail = await resolveCurrentUserEmail(supabase, session.user)
       const payload = {
         service,
         name: String(formData.get('name') || '').trim(),
         telephone: String(formData.get('telephone') || '').trim(),
         title: String(formData.get('title') || '').trim(),
-        email: `${session.user.id}.${nowMarker}@appointment.local`,
+        email: resolvedEmail || null,
         notes: String(formData.get('notes') || '').trim() || null,
         appointment_at: String(formData.get('appointment_at') || '').trim(),
         created_by: session.user.id

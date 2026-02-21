@@ -16,6 +16,14 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;')
 }
 
+function isEmailLike(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+}
+
+function isSyntheticAppointmentEmail(value) {
+  return /@appointment\.local$/i.test(String(value || '').trim())
+}
+
 async function checkAdminAccess() {
   if (!supabase) return { isAdmin: false, error: 'Supabase not configured' }
 
@@ -134,7 +142,7 @@ function getTaskMetrics(tasks) {
 async function loadTasks() {
   const { data, error } = await supabase
     .from('service_tasks')
-    .select('id, service, title, description, due_date, is_done, created_at, updated_at')
+    .select('id, service, title, description, due_date, is_done, created_at, updated_at, source_appointment_id')
     .order('is_done', { ascending: true })
     .order('due_date', { ascending: true })
     .order('created_at', { ascending: false })
@@ -144,7 +152,61 @@ async function loadTasks() {
     return []
   }
 
-  return data || []
+  const tasks = data || []
+  const appointmentIds = Array.from(
+    new Set(tasks.map((task) => task.source_appointment_id).filter(Boolean))
+  )
+
+  if (appointmentIds.length === 0) {
+    return tasks.map((task) => ({ ...task, appointment: null }))
+  }
+
+  const { data: appointmentsData, error: appointmentsError } = await supabase
+    .from('appointments')
+    .select('id, service, title, name, telephone, email, appointment_at, created_by')
+    .in('id', appointmentIds)
+
+  if (appointmentsError) {
+    console.error('Error loading appointment details for tasks:', appointmentsError)
+    return tasks.map((task) => ({ ...task, appointment: null }))
+  }
+
+  const appointments = appointmentsData || []
+  const appointmentOwnerIds = Array.from(new Set(appointments.map((item) => item.created_by).filter(Boolean)))
+
+  const ownerContactByUserId = new Map()
+  if (appointmentOwnerIds.length > 0) {
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('user_profiles')
+      .select('user_id, contact')
+      .in('user_id', appointmentOwnerIds)
+
+    if (profilesError) {
+      console.error('Error loading user profile contacts for tasks:', profilesError)
+    } else {
+      ;(profilesData || []).forEach((profile) => {
+        ownerContactByUserId.set(profile.user_id, profile.contact)
+      })
+    }
+  }
+
+  const appointmentsById = new Map(
+    appointments.map((item) => {
+      const ownerContact = ownerContactByUserId.get(item.created_by)
+      const ownerEmail = isEmailLike(ownerContact) ? String(ownerContact).trim().toLowerCase() : ''
+      const appointmentEmail = String(item.email || '').trim()
+      const displayEmail = isSyntheticAppointmentEmail(appointmentEmail)
+        ? ownerEmail || ''
+        : appointmentEmail || ownerEmail || ''
+
+      return [item.id, { ...item, display_email: displayEmail }]
+    })
+  )
+
+  return tasks.map((task) => ({
+    ...task,
+    appointment: task.source_appointment_id ? appointmentsById.get(task.source_appointment_id) || null : null
+  }))
 }
 
 async function createTask(payload, userId) {
@@ -170,27 +232,41 @@ async function deleteTask(taskId) {
 }
 
 function renderTaskCard(task, columnKey) {
-  const cadence = getTaskCadence(task)
   const status = getTaskStatus(task)
   const nextDone = task.is_done ? 'false' : 'true'
+  const appointment = task.appointment || null
+  const cardTitle = appointment?.title || task.title || 'Untitled appointment'
+  const clientName = appointment?.name || task.client_name || 'Not provided'
+  const clientEmail = appointment?.display_email || appointment?.email || task.client_email || 'Not provided'
+  const clientPhone = appointment?.telephone || task.client_phone || 'Not provided'
+  const displayDate = appointment?.appointment_at ? formatDate(appointment.appointment_at) : formatDateOnly(task.due_date)
+  const displayService = appointment?.service || task.service || '—'
 
   return `
-    <article class="task-card" draggable="true" data-task-id="${task.id}" data-task-column="${columnKey}" data-task-cadence="${cadence}" data-task-status="${status}">
-      <header class="task-card-header">
-        <div class="task-title">${escapeHtml(task.title)}</div>
-        <span class="task-badge cadence-${cadence}">${cadence}</span>
-      </header>
-      <p class="task-description">${task.description ? escapeHtml(task.description) : 'No description'}</p>
-      <div class="task-meta-grid">
-        <div class="task-meta-item"><span>Service</span><strong>${escapeHtml(task.service)}</strong></div>
-        <div class="task-meta-item"><span>Due</span><strong>${formatDateOnly(task.due_date)}</strong></div>
-        <div class="task-meta-item"><span>Status</span><strong class="task-badge status-${status}">${status}</strong></div>
-        <div class="task-meta-item"><span>Updated</span><strong>${formatDate(task.updated_at || task.created_at)}</strong></div>
+    <article class="task-card" draggable="true" data-task-id="${task.id}" data-task-column="${columnKey}" data-task-status="${status}" data-appointment-id="${task.source_appointment_id || ''}">
+      <div class="task-card-top">
+        <span class="task-chip status-chip status-${status}"><i class="bi bi-flag me-1"></i>${status}</span>
       </div>
+      <div class="task-title-row">
+        <div class="task-title">${escapeHtml(cardTitle)}</div>
+      </div>
+      <div class="task-contact-box">
+        <div class="task-contact-item"><span>Name</span><strong>${escapeHtml(clientName)}</strong></div>
+        <div class="task-contact-item"><span>Phone</span><strong>${escapeHtml(clientPhone)}</strong></div>
+        <div class="task-contact-item"><span>Email</span><strong>${escapeHtml(clientEmail)}</strong></div>
+      </div>
+      <div class="task-meta-box">
+        <div class="task-meta-item-row"><span>Date</span><strong>${escapeHtml(displayDate)}</strong></div>
+        <div class="task-meta-item-row"><span>Service</span><strong class="text-capitalize">${escapeHtml(displayService)}</strong></div>
+      </div>
+      <div class="task-updated">Updated ${formatDate(task.updated_at || task.created_at)}</div>
       <div class="task-card-actions">
         <button class="action-btn task-toggle-btn" data-task-id="${task.id}" data-next-done="${nextDone}">
           <i class="bi ${task.is_done ? 'bi-arrow-counterclockwise' : 'bi-check2-circle'} me-1"></i>
           ${task.is_done ? 'Reopen' : 'Done'}
+        </button>
+        <button class="action-btn task-edit-btn" data-task-id="${task.id}" data-appointment-id="${task.source_appointment_id || ''}">
+          <i class="bi bi-pencil-square me-1"></i>Edit
         </button>
         <button class="action-btn appointment-delete-btn task-delete-btn" data-task-id="${task.id}">
           <i class="bi bi-trash me-1"></i>Delete
@@ -204,7 +280,6 @@ function groupTasksForBoard(tasks) {
   return tasks.reduce(
     (groups, task) => {
       const status = getTaskStatus(task)
-      const cadence = getTaskCadence(task)
 
       if (status === 'completed') {
         groups.done.push(task)
@@ -218,19 +293,15 @@ function groupTasksForBoard(tasks) {
 
       groups.pending.push(task)
 
-      if (cadence === 'daily') groups.daily.push(task)
-      else if (cadence === 'weekly') groups.weekly.push(task)
-      else groups.monthly.push(task)
-
       return groups
     },
-    { pending: [], daily: [], weekly: [], monthly: [], done: [], expired: [] }
+    { pending: [], done: [], expired: [] }
   )
 }
 
 function renderTaskColumn(columnKey, columnTitle, iconClass, tasks, emptyLabel) {
   return `
-    <section class="task-column" data-column-key="${columnKey}">
+    <section class="task-column list-${columnKey}" data-column-key="${columnKey}">
       <header class="task-column-header">
         <h3><i class="bi ${iconClass} me-2"></i>${columnTitle}</h3>
         <span class="task-column-count">${tasks.length}</span>
@@ -325,18 +396,17 @@ function renderWorkspace(tasks) {
           </section>
         </div>
 
-        <section class="workspace-card task-board-wrap">
-          <div class="task-board-heading">
-            <h2 class="admin-card-title mb-0"><i class="bi bi-columns-gap me-2"></i>Task Board</h2>
-            <p class="service-note mb-0">Pending tasks are grouped by cadence, with dedicated columns for done and expired.</p>
+        <section class="workspace-card task-board-wrap trello-board-shell">
+          <div class="task-board-heading trello-board-top">
+            <div class="trello-board-left">
+              <h2 class="admin-card-title mb-0"><i class="bi bi-columns-gap me-2"></i>Task Board</h2>
+              <span class="board-pill">Drag & Drop</span>
+            </div>
           </div>
           <div class="task-board-grid">
-            ${renderTaskColumn('pending', 'Overall Pending', 'bi-list-check', groupedTasks.pending, 'No pending tasks.')}
-            ${renderTaskColumn('daily', 'Daily', 'bi-sun', groupedTasks.daily, 'No daily tasks.')}
-            ${renderTaskColumn('weekly', 'Weekly', 'bi-calendar-week', groupedTasks.weekly, 'No weekly tasks.')}
-            ${renderTaskColumn('monthly', 'Monthly', 'bi-calendar-month', groupedTasks.monthly, 'No monthly tasks.')}
+            ${renderTaskColumn('pending', 'Active Tasks', 'bi-list-check', groupedTasks.pending, 'No active tasks.')}
             ${renderTaskColumn('done', 'Done Tasks', 'bi-check2-all', groupedTasks.done, 'No completed tasks yet.')}
-            ${renderTaskColumn('expired', 'Expired Tasks', 'bi-exclamation-triangle', groupedTasks.expired, 'No expired tasks.')}
+            ${renderTaskColumn('expired', 'Overdue Tasks', 'bi-exclamation-triangle', groupedTasks.expired, 'No overdue tasks.')}
           </div>
         </section>
       </div>
@@ -376,6 +446,8 @@ async function initTasksWorkspace() {
       taskForm?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       taskTitleInput?.focus()
     })
+
+    const taskById = new Map(tasks.map((task) => [task.id, task]))
 
     taskForm?.addEventListener('submit', async (event) => {
       event.preventDefault()
@@ -422,6 +494,89 @@ async function initTasksWorkspace() {
         }
 
         if (taskStatus) taskStatus.textContent = nextDone ? 'Task marked as done.' : 'Task moved back to pending.'
+        await renderAndBind()
+      })
+    })
+
+    document.querySelectorAll('.task-edit-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const taskId = button.dataset.taskId
+        if (!taskId) return
+
+        const currentTask = taskById.get(taskId)
+        if (!currentTask) return
+
+        const appointmentId = currentTask.source_appointment_id || ''
+
+        if (appointmentId && currentTask.appointment) {
+          const nextTitle = window.prompt('Edit appointment title:', currentTask.appointment.title || '')
+          if (nextTitle === null) return
+
+          const nextName = window.prompt('Edit user name:', currentTask.appointment.name || '')
+          if (nextName === null) return
+
+          const nextPhone = window.prompt('Edit phone number:', currentTask.appointment.telephone || '')
+          if (nextPhone === null) return
+
+          const nextEmail = window.prompt(
+            'Edit email:',
+            currentTask.appointment.display_email || currentTask.appointment.email || ''
+          )
+          if (nextEmail === null) return
+
+          const defaultDateTime = currentTask.appointment.appointment_at
+            ? new Date(currentTask.appointment.appointment_at).toISOString().slice(0, 16)
+            : ''
+          const nextDateTime = window.prompt('Edit date/time (YYYY-MM-DDTHH:mm):', defaultDateTime)
+          if (nextDateTime === null) return
+
+          const { error } = await supabase
+            .from('appointments')
+            .update({
+              title: String(nextTitle).trim(),
+              name: String(nextName).trim(),
+              telephone: String(nextPhone).trim(),
+              email: String(nextEmail).trim(),
+              appointment_at: String(nextDateTime).trim(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', appointmentId)
+
+          if (error) {
+            if (taskStatus) taskStatus.textContent = error.message
+            return
+          }
+
+          if (taskStatus) taskStatus.textContent = 'Appointment task updated successfully.'
+          await renderAndBind()
+          return
+        }
+
+        const nextTitle = window.prompt('Edit task title:', currentTask.title || '')
+        if (nextTitle === null) return
+
+        const nextService = window.prompt('Edit service (physiotherapy or pilates):', currentTask.service || '')
+        if (nextService === null) return
+
+        const nextDate = window.prompt('Edit due date (YYYY-MM-DD):', currentTask.due_date || '')
+        if (nextDate === null) return
+
+        const nextDescription = window.prompt('Edit description (optional):', currentTask.description || '')
+        if (nextDescription === null) return
+
+        const result = await updateTask(taskId, {
+          title: String(nextTitle).trim(),
+          service: String(nextService).trim(),
+          due_date: String(nextDate).trim() || null,
+          description: String(nextDescription).trim() || null
+        })
+
+        if (!result.success) {
+          if (taskStatus) taskStatus.textContent = result.error
+          return
+        }
+
+        if (taskStatus) taskStatus.textContent = 'Task updated successfully.'
         await renderAndBind()
       })
     })
