@@ -137,10 +137,9 @@ export function renderApp(pathname = '/') {
 
           <nav class="site-nav nav nav-pills gap-2" aria-label="Main navigation">
             <a href="/" data-nav class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
-            <a href="/about" data-nav class="nav-link ${currentPath === '/about' ? 'active' : ''}">About</a>
-            <a href="/services" data-nav class="nav-link ${currentPath === '/services' ? 'active' : ''}">Services</a>
             <a href="/physiotherapy" data-nav class="nav-link ${currentPath === '/physiotherapy' ? 'active' : ''}">Physiotherapy</a>
             <a href="/pilates" data-nav class="nav-link ${currentPath === '/pilates' ? 'active' : ''}">Pilates</a>
+            <a href="/about" data-nav class="nav-link ${currentPath === '/about' ? 'active' : ''}">About</a>
             <a href="/contact" data-nav class="nav-link ${currentPath === '/contact' ? 'active' : ''}">Contact</a>
           </nav>
 
