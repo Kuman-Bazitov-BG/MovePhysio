@@ -427,6 +427,41 @@
   justify-content: center;
   min-height: 35px;
   font-size: 0.8rem;
+  color: #ffffff;
+  border-width: 1px;
+}
+
+.task-card-actions .task-toggle-btn {
+  background: #2db56f;
+  border-color: #2db56f;
+}
+
+.task-card-actions .task-toggle-btn:hover {
+  background: #23935a;
+  border-color: #23935a;
+  color: #ffffff;
+}
+
+.task-card-actions .task-edit-btn {
+  background: #3d8bfd;
+  border-color: #3d8bfd;
+}
+
+.task-card-actions .task-edit-btn:hover {
+  background: #2e6bc2;
+  border-color: #2e6bc2;
+  color: #ffffff;
+}
+
+.task-card-actions .task-delete-btn {
+  background: #d34b66;
+  border-color: #d34b66;
+}
+
+.task-card-actions .task-delete-btn:hover {
+  background: #af3850;
+  border-color: #af3850;
+  color: #ffffff;
 }
 
 .list-add-btn {
