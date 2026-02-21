@@ -246,7 +246,7 @@ export function renderApp(pathname = '/') {
             <a href="/admin.html" id="admin-btn" class="btn btn-warning d-none">
               <i class="bi bi-shield-check action-icon me-2" aria-hidden="true"></i>Admin
             </a>
-            <button id="auth-open-btn" class="btn btn-primary btn-glow px-4">
+            <button id="auth-open-btn" class="btn auth-pill-btn">
               <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register / Login
             </button>
             <button id="logout-btn" class="btn btn-outline-light d-none">
