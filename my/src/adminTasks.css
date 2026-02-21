@@ -1,0 +1,172 @@
+.tasks-workspace {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.workspace-card {
+  background: rgba(19, 38, 63, 0.92);
+  border: 1px solid rgba(120, 219, 255, 0.28);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.4rem;
+  box-shadow: 0 10px 34px rgba(0, 166, 255, 0.16);
+}
+
+.workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.workspace-title {
+  color: #78dbff;
+  font-family: 'Orbitron', sans-serif;
+  margin: 0;
+}
+
+.workspace-subtitle {
+  color: #9fdcf2;
+  margin-bottom: 0;
+}
+
+.workspace-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 2fr;
+  gap: 1rem;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.metric-item {
+  background: rgba(10, 24, 42, 0.7);
+  border: 1px solid rgba(120, 219, 255, 0.23);
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+
+.metric-item .label {
+  color: #9fdcf2;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-item .value {
+  color: #78dbff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.task-table-wrap {
+  max-height: 62vh;
+  overflow: auto;
+}
+
+.task-badge {
+  display: inline-block;
+  padding: 0.3rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.task-badge.cadence-daily {
+  background: rgba(120, 219, 255, 0.2);
+  color: #78dbff;
+  border: 1px solid rgba(120, 219, 255, 0.55);
+}
+
+.task-badge.cadence-weekly {
+  background: rgba(132, 183, 255, 0.2);
+  color: #9fcbff;
+  border: 1px solid rgba(159, 203, 255, 0.5);
+}
+
+.task-badge.cadence-monthly {
+  background: rgba(177, 173, 255, 0.2);
+  color: #bcb7ff;
+  border: 1px solid rgba(188, 183, 255, 0.5);
+}
+
+.task-badge.status-pending {
+  background: rgba(255, 208, 120, 0.2);
+  color: #ffd188;
+  border: 1px solid rgba(255, 209, 136, 0.55);
+}
+
+.task-badge.status-completed {
+  background: rgba(125, 233, 170, 0.2);
+  color: #7de9aa;
+  border: 1px solid rgba(125, 233, 170, 0.55);
+}
+
+.task-badge.status-overdue {
+  background: rgba(255, 127, 150, 0.2);
+  color: #ff9ab0;
+  border: 1px solid rgba(255, 154, 176, 0.6);
+}
+
+.task-title {
+  color: #d8f3ff;
+  font-weight: 600;
+}
+
+.task-description {
+  color: #9ecde0;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.quick-add-task-btn {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  border: 1px solid rgba(120, 219, 255, 0.5);
+  background: rgba(15, 28, 45, 0.92);
+  color: #78dbff;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 166, 255, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  z-index: 1030;
+}
+
+.quick-add-task-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(30, 57, 91, 0.96);
+  box-shadow: 0 10px 28px rgba(0, 166, 255, 0.35);
+}
+
+.quick-add-task-btn:focus-visible {
+  outline: 2px solid #78dbff;
+  outline-offset: 2px;
+}
+
+@media (max-width: 992px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-add-task-btn {
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.58rem 0.9rem;
+  }
+}

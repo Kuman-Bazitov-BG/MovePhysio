@@ -677,6 +677,9 @@ async function renderAdminPanel() {
               <button id="open-users-drawer-btn" class="btn btn-outline-info">
                 <i class="bi bi-people me-2"></i>User Management
               </button>
+              <a href="/admin-tasks.html" class="btn btn-outline-info">
+                <i class="bi bi-list-check me-2"></i>Task Workspace
+              </a>
               <a href="/" class="btn btn-outline-light">
                 <i class="bi bi-house-door me-2"></i>Back to Site
               </a>
@@ -720,11 +723,11 @@ async function renderAdminPanel() {
             <div class="stat-label">Appointments</div>
           </div>
 
-          <div class="stat-card stat-card-clickable" id="stat-pending-tasks" role="button" tabindex="0" aria-label="Open pending tasks">
+          <a href="/admin-tasks.html" class="stat-card stat-card-clickable text-decoration-none" aria-label="Open pending tasks workspace">
             <i class="bi bi-list-check stat-icon"></i>
             <div class="stat-value">${taskMetrics.pending}</div>
             <div class="stat-label">Pending Tasks</div>
-          </div>
+          </a>
         </div>
 
         <div class="admin-card">
@@ -909,93 +912,6 @@ async function renderAdminPanel() {
         </div>
       </div>
 
-      <div class="offcanvas offcanvas-end user-management-drawer" tabindex="-1" id="taskManagementDrawer" aria-labelledby="taskManagementDrawerLabel">
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="taskManagementDrawerLabel">
-            <i class="bi bi-kanban me-2"></i>Pending Tasks
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-          <div class="task-metric-grid mb-3">
-            <div class="task-metric-card"><span>Total</span><strong>${taskMetrics.total}</strong></div>
-            <div class="task-metric-card"><span>Daily</span><strong>${taskMetrics.daily}</strong></div>
-            <div class="task-metric-card"><span>Weekly</span><strong>${taskMetrics.weekly}</strong></div>
-            <div class="task-metric-card"><span>Monthly</span><strong>${taskMetrics.monthly}</strong></div>
-            <div class="task-metric-card"><span>Pending</span><strong>${taskMetrics.pending}</strong></div>
-            <div class="task-metric-card"><span>Completed</span><strong>${taskMetrics.completed}</strong></div>
-            <div class="task-metric-card"><span>Overdue</span><strong>${taskMetrics.overdue}</strong></div>
-          </div>
-
-          <form id="admin-task-form" class="row g-2 mb-3">
-            <div class="col-md-2">
-              <select class="form-select" name="service" required>
-                <option value="physiotherapy">physiotherapy</option>
-                <option value="pilates">pilates</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <input type="text" class="form-control" name="title" placeholder="Task title" required />
-            </div>
-            <div class="col-md-2">
-              <select class="form-select" name="cadence" required>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <input type="date" class="form-control" name="due_date" />
-            </div>
-            <div class="col-md-2">
-              <input type="text" class="form-control" name="description" placeholder="Description" />
-            </div>
-            <div class="col-md-1 d-grid">
-              <button type="submit" class="btn btn-primary">Add</button>
-            </div>
-          </form>
-
-          <p id="admin-task-status" class="service-note mb-3">Track daily, weekly and monthly admin operations from one place.</p>
-
-          <div class="row g-2 mb-3">
-            <div class="col-md-3">
-              <select id="task-cadence-filter" class="form-select">
-                <option value="all">All cadences</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <select id="task-status-filter" class="form-select">
-                <option value="all">All statuses</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="overdue">Overdue</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="users-table">
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Service</th>
-                  <th>Due</th>
-                  <th>Cadence</th>
-                  <th>Status</th>
-                  <th>Updated</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="admin-task-table-body">
-                ${tasks.length > 0 ? `${tasks.map(renderTaskRow).join('')}<tr id="admin-task-empty-filter-row" hidden><td colspan="7">No tasks match the selected filters.</td></tr>` : '<tr><td colspan="7">No tasks found.</td></tr>'}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
   `
 }
@@ -1031,15 +947,10 @@ async function initAdminPanel() {
     appElement.innerHTML = await renderAdminPanel()
 
     const totalUsersCard = document.querySelector('#stat-total-users')
-    const pendingTasksCard = document.querySelector('#stat-pending-tasks')
     const openUsersDrawerBtn = document.querySelector('#open-users-drawer-btn')
     const userManagementDrawerElement = document.querySelector('#userManagementDrawer')
     const userManagementDrawer = userManagementDrawerElement
       ? window.bootstrap?.Offcanvas.getOrCreateInstance(userManagementDrawerElement)
-      : null
-    const taskManagementDrawerElement = document.querySelector('#taskManagementDrawer')
-    const taskManagementDrawer = taskManagementDrawerElement
-      ? window.bootstrap?.Offcanvas.getOrCreateInstance(taskManagementDrawerElement)
       : null
 
     const openUserManagement = () => {
@@ -1047,24 +958,12 @@ async function initAdminPanel() {
       userManagementDrawer.show()
     }
 
-    const openTaskManagement = () => {
-      if (!taskManagementDrawer) return
-      taskManagementDrawer.show()
-    }
-
     totalUsersCard?.addEventListener('click', openUserManagement)
     openUsersDrawerBtn?.addEventListener('click', openUserManagement)
-    pendingTasksCard?.addEventListener('click', openTaskManagement)
     totalUsersCard?.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
         openUserManagement()
-      }
-    })
-    pendingTasksCard?.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault()
-        openTaskManagement()
       }
     })
 
@@ -1308,112 +1207,6 @@ async function initAdminPanel() {
       })
     })
 
-    const taskForm = document.querySelector('#admin-task-form')
-    const taskStatus = document.querySelector('#admin-task-status')
-    const taskCadenceFilter = document.querySelector('#task-cadence-filter')
-    const taskStatusFilter = document.querySelector('#task-status-filter')
-    const taskRows = () => Array.from(document.querySelectorAll('#admin-task-table-body tr[data-task-id]'))
-    const taskEmptyFilterRow = document.querySelector('#admin-task-empty-filter-row')
-
-    const applyTaskFilters = () => {
-      const selectedCadence = taskCadenceFilter?.value || 'all'
-      const selectedStatus = taskStatusFilter?.value || 'all'
-
-      let visibleRows = 0
-      taskRows().forEach((row) => {
-        const cadenceMatches = selectedCadence === 'all' || row.dataset.taskCadence === selectedCadence
-        const statusMatches = selectedStatus === 'all' || row.dataset.taskStatus === selectedStatus
-        const shouldShow = cadenceMatches && statusMatches
-
-        row.hidden = !shouldShow
-        if (shouldShow) visibleRows += 1
-      })
-
-      if (taskEmptyFilterRow) {
-        taskEmptyFilterRow.hidden = visibleRows > 0
-      }
-    }
-
-    taskCadenceFilter?.addEventListener('change', applyTaskFilters)
-    taskStatusFilter?.addEventListener('change', applyTaskFilters)
-    applyTaskFilters()
-
-    taskForm?.addEventListener('submit', async (event) => {
-      event.preventDefault()
-      const formData = new FormData(taskForm)
-      const cadence = String(formData.get('cadence') || 'daily')
-
-      const cadenceToDays = {
-        daily: 1,
-        weekly: 7,
-        monthly: 30
-      }
-
-      const selectedDueDate = String(formData.get('due_date') || '').trim()
-      const dueDate = selectedDueDate || toDateInputValue(addDays(new Date(), cadenceToDays[cadence] || 1))
-
-      const payload = {
-        service: String(formData.get('service') || '').trim(),
-        title: String(formData.get('title') || '').trim(),
-        description: String(formData.get('description') || '').trim() || null,
-        due_date: dueDate,
-        is_done: false
-      }
-
-      if (!payload.service || !payload.title || !currentUserId) {
-        if (taskStatus) taskStatus.textContent = 'Please provide required task values.'
-        return
-      }
-
-      const result = await createServiceTaskAdmin(payload, currentUserId)
-      if (!result.success) {
-        if (taskStatus) taskStatus.textContent = result.error
-        return
-      }
-
-      taskForm.reset()
-      if (taskStatus) taskStatus.textContent = 'Task created successfully.'
-      await renderAndBind()
-    })
-
-    const taskToggleButtons = document.querySelectorAll('.task-toggle-btn')
-    taskToggleButtons.forEach((button) => {
-      button.addEventListener('click', async () => {
-        const taskId = button.dataset.taskId
-        const nextDone = button.dataset.nextDone === 'true'
-        if (!taskId) return
-
-        const result = await updateServiceTaskAdmin(taskId, { is_done: nextDone })
-        if (!result.success) {
-          if (taskStatus) taskStatus.textContent = result.error
-          return
-        }
-
-        if (taskStatus) taskStatus.textContent = nextDone ? 'Task marked as done.' : 'Task moved back to pending.'
-        await renderAndBind()
-      })
-    })
-
-    const taskDeleteButtons = document.querySelectorAll('.task-delete-btn')
-    taskDeleteButtons.forEach((button) => {
-      button.addEventListener('click', async () => {
-        const taskId = button.dataset.taskId
-        if (!taskId) return
-
-        if (!confirm('Delete this task?')) {
-          return
-        }
-
-        const result = await deleteServiceTaskAdmin(taskId)
-        if (!result.success) {
-          if (taskStatus) taskStatus.textContent = result.error
-          return
-        }
-
-        if (taskStatus) taskStatus.textContent = 'Task deleted successfully.'
-        await renderAndBind()
-      })
-    })
   }
 
   await renderAndBind()
