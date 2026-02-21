@@ -64,6 +64,10 @@
   font-family: 'Orbitron', sans-serif;
 }
 
+.appointment-management-drawer {
+  width: min(1280px, 98vw) !important;
+}
+
 .admin-card-header {
   border-bottom: 2px solid rgba(120, 219, 255, 0.3);
   padding-bottom: 1rem;
@@ -87,6 +91,17 @@
 
 .admin-card-body {
   color: #e0f7ff;
+}
+
+.appointment-admin-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.appointment-admin-grid .admin-card {
+  margin-bottom: 0;
 }
 
 .stat-grid {

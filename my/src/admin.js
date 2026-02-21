@@ -714,7 +714,7 @@ async function renderAdminPanel() {
             <div class="stat-label">Today</div>
           </div>
 
-          <div class="stat-card">
+          <div class="stat-card stat-card-clickable" id="stat-appointments" role="button" tabindex="0" aria-label="Open appointment management" aria-controls="appointmentManagementDrawer">
             <i class="bi bi-calendar-check stat-icon"></i>
             <div class="stat-value">${appointmentsCount}</div>
             <div class="stat-label">Appointments</div>
@@ -725,109 +725,6 @@ async function renderAdminPanel() {
             <div class="stat-value">${taskMetrics.pending}</div>
             <div class="stat-label">Pending Tasks</div>
           </a>
-        </div>
-
-        <div class="admin-card">
-          <div class="admin-card-header admin-card-header-drawer">
-            <h2 class="admin-card-title">
-              <i class="bi bi-sliders me-2"></i>Appointment Calendar Configuration
-            </h2>
-            <button
-              type="button"
-              class="action-btn drawer-toggle-btn"
-              data-bs-toggle="collapse"
-              data-bs-target="#appointment-config-drawer"
-              aria-expanded="false"
-              aria-controls="appointment-config-drawer"
-            >
-              <i class="bi bi-chevron-down me-1"></i>Drawer
-            </button>
-          </div>
-          <div id="appointment-config-drawer" class="collapse inline-drawer-panel">
-            <div class="admin-card-body">
-            <p class="mb-3">Configure slot rules per service. These rules are enforced when users and admins create appointments.</p>
-            <div class="table-responsive">
-              <table class="users-table">
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Slot (min)</th>
-                    <th>Start Hour</th>
-                    <th>End Hour</th>
-                    <th>Weekends</th>
-                    <th>Max / Slot</th>
-                    <th>Updated</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${renderAppointmentConfigurationRows(appointmentConfigurations)}
-                </tbody>
-              </table>
-            </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="admin-card">
-          <div class="admin-card-header admin-card-header-drawer">
-            <h2 class="admin-card-title">
-              <i class="bi bi-calendar-week me-2"></i>Appointment Calendar Management
-            </h2>
-            <button
-              type="button"
-              class="action-btn drawer-toggle-btn"
-              data-bs-toggle="collapse"
-              data-bs-target="#appointment-management-drawer"
-              aria-expanded="false"
-              aria-controls="appointment-management-drawer"
-            >
-              <i class="bi bi-chevron-down me-1"></i>Drawer
-            </button>
-          </div>
-          <div id="appointment-management-drawer" class="collapse inline-drawer-panel">
-            <div class="admin-card-body">
-            <form id="admin-appointment-form" class="row g-2 mb-3">
-              <div class="col-md-2">
-                <select class="form-select" name="service" required>
-                  <option value="physiotherapy">physiotherapy</option>
-                  <option value="pilates">pilates</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <input type="text" class="form-control" name="title" placeholder="Title" required />
-              </div>
-              <div class="col-md-3">
-                <input type="datetime-local" class="form-control" name="appointment_at" required />
-              </div>
-              <div class="col-md-3">
-                <input type="text" class="form-control" name="notes" placeholder="Notes" />
-              </div>
-              <div class="col-md-1 d-grid">
-                <button type="submit" class="btn btn-primary">Add</button>
-              </div>
-            </form>
-            <p id="admin-appointment-status" class="service-note mb-3"></p>
-
-            <div class="table-responsive">
-              <table class="users-table">
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Title</th>
-                    <th>Date/Time</th>
-                    <th>Notes</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${appointments.length > 0 ? appointments.map(renderAppointmentRow).join('') : '<tr><td colspan="6">No appointments found.</td></tr>'}
-                </tbody>
-              </table>
-            </div>
-            </div>
-          </div>
         </div>
 
         <div class="admin-card">
@@ -909,6 +806,121 @@ async function renderAdminPanel() {
         </div>
       </div>
 
+      <div class="offcanvas offcanvas-end user-management-drawer appointment-management-drawer" tabindex="-1" id="appointmentManagementDrawer" aria-labelledby="appointmentManagementDrawerLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="appointmentManagementDrawerLabel">
+            <i class="bi bi-calendar-check me-2"></i>Appointment Tools
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <div class="appointment-admin-grid">
+            <div class="admin-card">
+              <div class="admin-card-header admin-card-header-drawer">
+                <h2 class="admin-card-title">
+                  <i class="bi bi-sliders me-2"></i>Appointment Calendar Configuration
+                </h2>
+                <button
+                  type="button"
+                  class="action-btn drawer-toggle-btn"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#appointment-config-drawer"
+                  aria-expanded="false"
+                  aria-controls="appointment-config-drawer"
+                >
+                  <i class="bi bi-chevron-down me-1"></i>Drawer
+                </button>
+              </div>
+              <div id="appointment-config-drawer" class="collapse inline-drawer-panel">
+                <div class="admin-card-body">
+                <p class="mb-3">Configure slot rules per service. These rules are enforced when users and admins create appointments.</p>
+                <div class="table-responsive">
+                  <table class="users-table">
+                    <thead>
+                      <tr>
+                        <th>Service</th>
+                        <th>Slot (min)</th>
+                        <th>Start Hour</th>
+                        <th>End Hour</th>
+                        <th>Weekends</th>
+                        <th>Max / Slot</th>
+                        <th>Updated</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${renderAppointmentConfigurationRows(appointmentConfigurations)}
+                    </tbody>
+                  </table>
+                </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card">
+              <div class="admin-card-header admin-card-header-drawer">
+                <h2 class="admin-card-title">
+                  <i class="bi bi-calendar-week me-2"></i>Appointment Calendar Management
+                </h2>
+                <button
+                  type="button"
+                  class="action-btn drawer-toggle-btn"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#appointment-management-drawer"
+                  aria-expanded="false"
+                  aria-controls="appointment-management-drawer"
+                >
+                  <i class="bi bi-chevron-down me-1"></i>Drawer
+                </button>
+              </div>
+              <div id="appointment-management-drawer" class="collapse inline-drawer-panel">
+                <div class="admin-card-body">
+                <form id="admin-appointment-form" class="row g-2 mb-3">
+                  <div class="col-md-2">
+                    <select class="form-select" name="service" required>
+                      <option value="physiotherapy">physiotherapy</option>
+                      <option value="pilates">pilates</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="title" placeholder="Title" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="notes" placeholder="Notes" />
+                  </div>
+                  <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                  </div>
+                </form>
+                <p id="admin-appointment-status" class="service-note mb-3"></p>
+
+                <div class="table-responsive">
+                  <table class="users-table">
+                    <thead>
+                      <tr>
+                        <th>Service</th>
+                        <th>Title</th>
+                        <th>Date/Time</th>
+                        <th>Notes</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${appointments.length > 0 ? appointments.map(renderAppointmentRow).join('') : '<tr><td colspan="6">No appointments found.</td></tr>'}
+                    </tbody>
+                  </table>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   `
 }
@@ -944,9 +956,14 @@ async function initAdminPanel() {
     appElement.innerHTML = await renderAdminPanel()
 
     const totalUsersCard = document.querySelector('#stat-total-users')
+    const appointmentsCard = document.querySelector('#stat-appointments')
     const userManagementDrawerElement = document.querySelector('#userManagementDrawer')
+    const appointmentManagementDrawerElement = document.querySelector('#appointmentManagementDrawer')
     const userManagementDrawer = userManagementDrawerElement
       ? window.bootstrap?.Offcanvas.getOrCreateInstance(userManagementDrawerElement)
+      : null
+    const appointmentManagementDrawer = appointmentManagementDrawerElement
+      ? window.bootstrap?.Offcanvas.getOrCreateInstance(appointmentManagementDrawerElement)
       : null
 
     const openUserManagement = () => {
@@ -954,11 +971,23 @@ async function initAdminPanel() {
       userManagementDrawer.show()
     }
 
+    const openAppointmentManagement = () => {
+      if (!appointmentManagementDrawer) return
+      appointmentManagementDrawer.show()
+    }
+
     totalUsersCard?.addEventListener('click', openUserManagement)
     totalUsersCard?.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault()
         openUserManagement()
+      }
+    })
+    appointmentsCard?.addEventListener('click', openAppointmentManagement)
+    appointmentsCard?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        openAppointmentManagement()
       }
     })
 
