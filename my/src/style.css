@@ -87,6 +87,21 @@ body {
   flex-direction: column;
 }
 
+.gesy-logo-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.gesy-logo {
+  height: clamp(2.1rem, 4vw, 3rem);
+  max-width: 170px;
+  width: auto;
+  display: block;
+}
+
 .logo-link {
   text-decoration: none;
   color: inherit;
@@ -406,6 +421,11 @@ body {
 
   .brand-wrap {
     text-align: center;
+  }
+
+  .gesy-logo-link {
+    justify-content: center;
+    margin-top: 0.25rem;
   }
 
   .site-nav {

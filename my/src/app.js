@@ -199,6 +199,15 @@ export function renderApp(pathname = '/') {
             </a>
           </div>
 
+          <a
+            href="/"
+            data-nav
+            class="gesy-logo-link rounded-4 bg-white shadow-sm p-1"
+            aria-label="GESY logo"
+          >
+            <img src="/gesi-gesy_logo_cover.jpg" alt="GESY logo" class="gesy-logo img-fluid rounded-3" />
+          </a>
+
           <nav class="site-nav nav nav-pills gap-2" aria-label="Main navigation">
             <a href="/" data-nav class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
             <a href="/physiotherapy" data-nav class="nav-link ${currentPath === '/physiotherapy' ? 'active' : ''}">Physiotherapy</a>
