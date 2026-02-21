@@ -301,12 +301,12 @@ function groupTasksForBoard(tasks) {
 
 function renderTaskColumn(columnKey, columnTitle, iconClass, tasks, emptyLabel) {
   return `
-    <section class="task-column list-${columnKey}" data-column-key="${columnKey}">
+    <section class="task-column task-dropzone list-${columnKey}" data-column-key="${columnKey}">
       <header class="task-column-header">
         <h3><i class="bi ${iconClass} me-2"></i>${columnTitle}</h3>
         <span class="task-column-count">${tasks.length}</span>
       </header>
-      <div class="task-column-list task-dropzone" data-column-key="${columnKey}">
+      <div class="task-column-list">
         ${tasks.length > 0 ? tasks.map((task) => renderTaskCard(task, columnKey)).join('') : `<div class="task-column-empty">${emptyLabel}</div>`}
       </div>
     </section>
