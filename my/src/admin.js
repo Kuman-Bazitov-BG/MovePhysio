@@ -531,13 +531,13 @@ async function renderAdminPanel() {
               class="action-btn drawer-toggle-btn"
               data-bs-toggle="collapse"
               data-bs-target="#appointment-config-drawer"
-              aria-expanded="true"
+              aria-expanded="false"
               aria-controls="appointment-config-drawer"
             >
               <i class="bi bi-chevron-down me-1"></i>Drawer
             </button>
           </div>
-          <div id="appointment-config-drawer" class="collapse show inline-drawer-panel">
+          <div id="appointment-config-drawer" class="collapse inline-drawer-panel">
             <div class="admin-card-body">
             <p class="mb-3">Configure slot rules per service. These rules are enforced when users and admins create appointments.</p>
             <div class="table-responsive">
@@ -573,13 +573,13 @@ async function renderAdminPanel() {
               class="action-btn drawer-toggle-btn"
               data-bs-toggle="collapse"
               data-bs-target="#appointment-management-drawer"
-              aria-expanded="true"
+              aria-expanded="false"
               aria-controls="appointment-management-drawer"
             >
               <i class="bi bi-chevron-down me-1"></i>Drawer
             </button>
           </div>
-          <div id="appointment-management-drawer" class="collapse show inline-drawer-panel">
+          <div id="appointment-management-drawer" class="collapse inline-drawer-panel">
             <div class="admin-card-body">
             <form id="admin-appointment-form" class="row g-2 mb-3">
               <div class="col-md-2">
