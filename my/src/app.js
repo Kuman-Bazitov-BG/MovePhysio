@@ -234,13 +234,13 @@ export function renderApp(pathname = '/') {
 
           <div class="auth-actions d-flex align-items-center gap-2">
             <a href="/admin.html" id="admin-btn" class="btn btn-warning d-none">
-              <i class="bi bi-shield-lock me-2"></i>Admin
+              <i class="bi bi-shield-check action-icon me-2" aria-hidden="true"></i>Admin
             </a>
             <button id="auth-open-btn" class="btn btn-primary btn-glow px-4">
-              <i class="bi bi-person-circle me-2"></i>Register / Login
+              <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register / Login
             </button>
             <button id="logout-btn" class="btn btn-outline-light d-none">
-              <i class="bi bi-box-arrow-right me-2"></i>Logout
+              Logout
             </button>
           </div>
         </nav>
@@ -267,12 +267,12 @@ export function renderApp(pathname = '/') {
             <ul class="nav nav-tabs auth-tabs" id="authTabs" role="tablist">
               <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-pane" type="button" role="tab" aria-controls="register-pane" aria-selected="true">
-                  Register
+                  <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register
                 </button>
               </li>
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-pane" type="button" role="tab" aria-controls="login-pane" aria-selected="false">
-                  Login
+                  <i class="bi bi-box-arrow-in-right action-icon me-2" aria-hidden="true"></i>Login
                 </button>
               </li>
             </ul>

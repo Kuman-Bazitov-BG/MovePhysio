@@ -173,6 +173,16 @@ body {
   background: linear-gradient(120deg, #2795f2, #2bc8f5);
 }
 
+.action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2em;
+  height: 1.2em;
+  font-size: 1rem;
+  filter: drop-shadow(0 0 8px rgba(123, 233, 255, 0.28));
+}
+
 .home-screen {
   flex: 1;
   display: flex;
@@ -296,6 +306,11 @@ body {
   background-color: transparent;
   color: var(--text-main);
   border-bottom-color: var(--accent-strong);
+}
+
+.auth-tabs .action-icon {
+  font-size: 0.95rem;
+  opacity: 0.95;
 }
 
 .form-label {
