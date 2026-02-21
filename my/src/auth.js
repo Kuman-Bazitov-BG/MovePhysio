@@ -25,6 +25,18 @@ function setStatus(message, type = 'info') {
   statusElement.dataset.type = type
 }
 
+function isEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+}
+
+function normalizePhone(value) {
+  return String(value || '').replace(/\s+/g, '')
+}
+
+function isLikelyPhone(value) {
+  return /^\+?[0-9]{7,20}$/.test(normalizePhone(value))
+}
+
 async function updateAuthUI(session) {
   const openButton = document.querySelector('#auth-open-btn')
   const logoutButton = document.querySelector('#logout-btn')
@@ -54,34 +66,93 @@ async function updateAuthUI(session) {
   }
 }
 
-async function register(email, password) {
+async function register(username, contact, password) {
   if (!supabase) {
     setStatus(missingConfigMessage, 'error')
     return
   }
 
+  const normalizedUsername = String(username || '').trim()
+  const normalizedContact = String(contact || '').trim()
+  const normalizedPhone = normalizePhone(normalizedContact)
+
+  if (!normalizedUsername) {
+    setStatus('Username is required.', 'error')
+    return
+  }
+
+  if (!normalizedContact) {
+    setStatus('Phone number or email is required.', 'error')
+    return
+  }
+
+  const isContactEmail = isEmail(normalizedContact)
+  const isContactPhone = !isContactEmail && isLikelyPhone(normalizedContact)
+
+  if (!isContactEmail && !isContactPhone) {
+    setStatus('Enter a valid phone number or email.', 'error')
+    return
+  }
+
   try {
-    const { error } = await supabase.auth.signUp({ email, password })
+    const payload = isContactEmail
+      ? {
+          email: normalizedContact.toLowerCase(),
+          password,
+          options: {
+            data: {
+              username: normalizedUsername,
+              full_name: normalizedUsername,
+              contact: normalizedContact.toLowerCase()
+            }
+          }
+        }
+      : {
+          phone: normalizedPhone,
+          password,
+          options: {
+            data: {
+              username: normalizedUsername,
+              full_name: normalizedUsername,
+              contact: normalizedPhone
+            }
+          }
+        }
+
+    const { error } = await supabase.auth.signUp(payload)
 
     if (error) {
       setStatus(error.message, 'error')
       return
     }
 
-    setStatus('Registration successful. Check your email for confirmation.', 'success')
+    setStatus('Registration successful. Verify your contact method if required.', 'success')
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
 }
 
-async function login(email, password) {
+async function login(contact, password) {
   if (!supabase) {
     setStatus(missingConfigMessage, 'error')
     return
   }
 
+  const normalizedContact = String(contact || '').trim()
+  const isContactEmail = isEmail(normalizedContact)
+  const isContactPhone = !isContactEmail && isLikelyPhone(normalizedContact)
+
+  if (!isContactEmail && !isContactPhone) {
+    setStatus('Enter a valid phone number or email.', 'error')
+    return
+  }
+
   try {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const credentials = isContactEmail
+      ? { email: normalizedContact.toLowerCase(), password }
+      : { phone: normalizePhone(normalizedContact), password }
+
+    const { error } = await supabase.auth.signInWithPassword(credentials)
 
     if (error) {
       setStatus(error.message, 'error')
@@ -175,16 +246,17 @@ export function initAuth() {
 
   registerForm.addEventListener('submit', async (event) => {
     event.preventDefault()
-    const email = registerForm.querySelector('#register-email').value.trim()
+    const username = registerForm.querySelector('#register-username').value.trim()
+    const contact = registerForm.querySelector('#register-contact').value.trim()
     const password = registerForm.querySelector('#register-password').value
-    await register(email, password)
+    await register(username, contact, password)
   })
 
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault()
-    const email = loginForm.querySelector('#login-email').value.trim()
+    const contact = loginForm.querySelector('#login-contact').value.trim()
     const password = loginForm.querySelector('#login-password').value
-    await login(email, password)
+    await login(contact, password)
   })
 
   logoutButton.addEventListener('click', logout)

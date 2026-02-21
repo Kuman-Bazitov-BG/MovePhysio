@@ -70,13 +70,21 @@ function renderPageContent(pathname) {
               </p>
               <form class="service-form d-none mt-3" data-appointment-form>
                 <div class="row g-2">
-                  <div class="col-md-4">
-                    <input type="text" class="form-control" name="title" placeholder="Appointment title" required />
-                  </div>
-                  <div class="col-md-4">
-                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="name" placeholder="Name" required />
                   </div>
                   <div class="col-md-3">
+                    <input type="text" class="form-control" name="telephone" placeholder="Phone Number" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="title" placeholder="Appointment title" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  </div>
+                </div>
+                <div class="row g-2 mt-1">
+                  <div class="col-md-11">
                     <input type="text" class="form-control" name="notes" placeholder="Notes" />
                   </div>
                   <div class="col-md-1 d-grid">
@@ -123,13 +131,21 @@ function renderPageContent(pathname) {
               </p>
               <form class="service-form d-none mt-3" data-appointment-form>
                 <div class="row g-2">
-                  <div class="col-md-4">
-                    <input type="text" class="form-control" name="title" placeholder="Appointment title" required />
-                  </div>
-                  <div class="col-md-4">
-                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="name" placeholder="Name" required />
                   </div>
                   <div class="col-md-3">
+                    <input type="text" class="form-control" name="telephone" placeholder="Phone Number" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="title" placeholder="Appointment title" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  </div>
+                </div>
+                <div class="row g-2 mt-1">
+                  <div class="col-md-11">
                     <input type="text" class="form-control" name="notes" placeholder="Notes" />
                   </div>
                   <div class="col-md-1 d-grid">
@@ -265,8 +281,12 @@ export function renderApp(pathname = '/') {
               <div class="tab-pane fade show active" id="register-pane" role="tabpanel" aria-labelledby="register-tab" tabindex="0">
                 <form id="register-form" class="d-grid gap-3">
                   <div>
-                    <label for="register-email" class="form-label">Email</label>
-                    <input id="register-email" type="email" class="form-control" placeholder="you@example.com" required />
+                    <label for="register-username" class="form-label">Username</label>
+                    <input id="register-username" type="text" class="form-control" placeholder="Choose a username" required />
+                  </div>
+                  <div>
+                    <label for="register-contact" class="form-label">Phone Number or Email</label>
+                    <input id="register-contact" type="text" class="form-control" placeholder="+357... or you@example.com" required />
                   </div>
                   <div>
                     <label for="register-password" class="form-label">Password</label>
@@ -279,8 +299,8 @@ export function renderApp(pathname = '/') {
               <div class="tab-pane fade" id="login-pane" role="tabpanel" aria-labelledby="login-tab" tabindex="0">
                 <form id="login-form" class="d-grid gap-3">
                   <div>
-                    <label for="login-email" class="form-label">Email</label>
-                    <input id="login-email" type="email" class="form-control" placeholder="you@example.com" required />
+                    <label for="login-contact" class="form-label">Phone Number or Email</label>
+                    <input id="login-contact" type="text" class="form-control" placeholder="+357... or you@example.com" required />
                   </div>
                   <div>
                     <label for="login-password" class="form-label">Password</label>

@@ -83,6 +83,9 @@ function renderAppointments(items, options = {}) {
                 <strong>${canViewAppointmentDetails(item, sessionUserId, isAdmin) ? escapeHtml(item.title) : 'BUSY'}</strong>
                 <span>${formatDateTime(item.appointment_at)}</span>
               </div>
+              ${canViewAppointmentDetails(item, sessionUserId, isAdmin)
+                ? `<p class="service-note mb-2">${escapeHtml(item.name || '—')} · ${escapeHtml(item.telephone || '—')}</p>`
+                : ''}
               ${canViewAppointmentDetails(item, sessionUserId, isAdmin) && item.notes ? `<p class="service-note mb-2">${escapeHtml(item.notes)}</p>` : ''}
               ${canManageAppointment(item, sessionUserId, isAdmin)
                 ? `
@@ -131,7 +134,7 @@ function renderTasks(tasks) {
 async function loadAppointments(supabase, service) {
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, title, notes, appointment_at, created_by')
+    .select('id, title, name, telephone, email, notes, appointment_at, created_by')
     .eq('service', service)
     .order('appointment_at', { ascending: true })
 
@@ -234,15 +237,19 @@ async function renderServiceContent(root, service) {
       if (!session?.user) return
 
       const formData = new FormData(appointmentForm)
+      const nowMarker = Date.now()
       const payload = {
         service,
+        name: String(formData.get('name') || '').trim(),
+        telephone: String(formData.get('telephone') || '').trim(),
         title: String(formData.get('title') || '').trim(),
+        email: `${session.user.id}.${nowMarker}@appointment.local`,
         notes: String(formData.get('notes') || '').trim() || null,
         appointment_at: String(formData.get('appointment_at') || '').trim(),
         created_by: session.user.id
       }
 
-      if (!payload.title || !payload.appointment_at) {
+      if (!payload.name || !payload.telephone || !payload.title || !payload.appointment_at) {
         return
       }
 
@@ -288,6 +295,12 @@ async function renderServiceContent(root, service) {
         return
       }
 
+      const nextName = window.prompt('Edit name:', currentItem.name || '')
+      if (!nextName) return
+
+      const nextTelephone = window.prompt('Edit phone number:', currentItem.telephone || '')
+      if (!nextTelephone) return
+
       const nextTitle = window.prompt('Edit title:', currentItem.title || '')
       if (!nextTitle) return
 
@@ -308,6 +321,8 @@ async function renderServiceContent(root, service) {
       const { error } = await supabase
         .from('appointments')
         .update({
+          name: nextName.trim(),
+          telephone: nextTelephone.trim(),
           title: nextTitle.trim(),
           appointment_at: nextDate,
           notes: (nextNotes || '').trim() || null,
