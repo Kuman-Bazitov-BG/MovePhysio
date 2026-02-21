@@ -55,11 +55,16 @@ body {
 }
 
 .header-nav {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
 .site-nav {
   margin: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
 }
 
 .site-nav .nav-link {
@@ -67,6 +72,12 @@ body {
   border: 1px solid rgba(173, 231, 255, 0.2);
   border-radius: 999px;
   padding: 0.45rem 1rem;
+  width: 8.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
   font-size: 0.9rem;
 }
