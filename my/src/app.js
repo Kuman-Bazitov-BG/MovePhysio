@@ -7,7 +7,17 @@ function renderPageContent(pathname) {
   if (pathname === '/') {
     return `
       <section class="home-screen container">
-        <div class="home-surface"></div>
+        <div class="home-stage">
+          <a href="/physiotherapy" data-nav class="physio-shortcut text-decoration-none" aria-label="Open Physiotherapy page">
+            <img src="/physiotherapy-joints.webp" alt="Physiotherapy" class="physio-shortcut-image" />
+            <span class="physio-shortcut-title">Physiotherapy</span>
+          </a>
+          <div class="home-surface"></div>
+          <a href="/pilates" data-nav class="pilates-shortcut text-decoration-none" aria-label="Open Pilates page">
+            <img src="/pilates-training.webp" alt="Pilates" class="physio-shortcut-image" />
+            <span class="physio-shortcut-title">Pilates</span>
+          </a>
+        </div>
       </section>
     `
   }

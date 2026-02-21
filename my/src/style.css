@@ -202,6 +202,12 @@ body {
   min-height: calc(100vh - 280px);
 }
 
+.home-stage {
+  position: relative;
+  width: min(1240px, 100%);
+  margin: 0 auto;
+}
+
 .page-screen {
   flex: 1;
   padding-bottom: 3rem;
@@ -250,6 +256,84 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 22px 54px rgba(4, 14, 27, 0.65);
   display: grid;
   place-items: center;
+}
+
+.physio-shortcut,
+.pilates-shortcut {
+  position: absolute;
+  top: 50%;
+  width: clamp(280px, 27vw, 390px);
+  border-radius: 1rem;
+  border: 1px solid rgba(173, 231, 255, 0.32);
+  background: rgba(9, 32, 53, 0.72);
+  backdrop-filter: blur(8px);
+  color: #f4fbff;
+  box-shadow: 0 16px 35px rgba(2, 12, 22, 0.5);
+  transition: box-shadow 0.24s ease, border-color 0.24s ease;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.physio-shortcut {
+  left: calc(50% - min(624px, 74%) / 2 - clamp(1rem, 2.2vw, 2rem));
+  transform: translate(-100%, -50%);
+  animation: physio-float-x 2.6s ease-in-out infinite;
+}
+
+.pilates-shortcut {
+  left: calc(50% + min(624px, 74%) / 2 + clamp(1rem, 2.2vw, 2rem));
+  transform: translate(0, -50%);
+  animation: pilates-float-x 2.6s ease-in-out infinite;
+}
+
+.physio-shortcut:hover,
+.physio-shortcut:focus-visible,
+.pilates-shortcut:hover,
+.pilates-shortcut:focus-visible {
+  border-color: rgba(123, 233, 255, 0.62);
+  box-shadow: 0 22px 38px rgba(7, 26, 46, 0.58);
+}
+
+.physio-shortcut-image {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 5 / 4;
+  object-fit: cover;
+  display: block;
+}
+
+.physio-shortcut-title {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #f6fdff;
+  background: rgba(6, 20, 34, 0.6);
+  border: 1px solid rgba(173, 231, 255, 0.3);
+  border-radius: 999px;
+  padding: 0.28rem 0.75rem;
+}
+
+@keyframes physio-float-x {
+  0%,
+  100% {
+    transform: translate(-100%, -50%) translateX(0);
+  }
+  50% {
+    transform: translate(-100%, -50%) translateX(6px);
+  }
+}
+
+@keyframes pilates-float-x {
+  0%,
+  100% {
+    transform: translate(0, -50%) translateX(0);
+  }
+  50% {
+    transform: translate(0, -50%) translateX(6px);
+  }
 }
 
 .hero-content {
@@ -466,6 +550,34 @@ body {
 
   .home-screen {
     min-height: calc(100vh - 360px);
+  }
+
+  .home-stage {
+    display: grid;
+    gap: 0.95rem;
+  }
+
+  .physio-shortcut {
+    position: static;
+    transform: none;
+    width: min(280px, 100%);
+    margin: 0 auto;
+    animation: none;
+  }
+
+  .pilates-shortcut {
+    position: static;
+    transform: none;
+    width: min(280px, 100%);
+    margin: 0 auto;
+    animation: none;
+  }
+
+  .physio-shortcut:hover,
+  .physio-shortcut:focus-visible,
+  .pilates-shortcut:hover,
+  .pilates-shortcut:focus-visible {
+    transform: translateX(6px);
   }
 
   .home-surface {
