@@ -180,6 +180,11 @@ async function logout() {
     }
 
     setStatus('You are logged out.', 'info')
+    if (window.location.pathname !== '/') {
+      window.location.assign('/')
+      return
+    }
+
     window.location.reload()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')

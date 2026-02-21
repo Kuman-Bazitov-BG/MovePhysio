@@ -927,7 +927,12 @@ async function handleLogout() {
 
   try {
     await supabase.auth.signOut()
-    window.location.href = '/'
+    if (window.location.pathname !== '/') {
+      window.location.assign('/')
+      return
+    }
+
+    window.location.reload()
   } catch (error) {
     console.error('Error logging out:', error)
     alert('Failed to logout: ' + error.message)

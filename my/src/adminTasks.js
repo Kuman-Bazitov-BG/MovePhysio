@@ -417,8 +417,18 @@ function renderWorkspace(tasks) {
 
 async function handleLogout() {
   if (!supabase) return
-  await supabase.auth.signOut()
-  window.location.href = '/'
+
+  try {
+    await supabase.auth.signOut()
+    if (window.location.pathname !== '/') {
+      window.location.assign('/')
+      return
+    }
+
+    window.location.reload()
+  } catch (error) {
+    console.error('Error logging out:', error)
+  }
 }
 
 async function initTasksWorkspace() {
