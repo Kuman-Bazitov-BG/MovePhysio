@@ -169,37 +169,95 @@ async function deleteTask(taskId) {
   return { success: true, error: null }
 }
 
-function renderTaskRow(task) {
+function renderTaskCard(task, columnKey) {
   const cadence = getTaskCadence(task)
   const status = getTaskStatus(task)
   const nextDone = task.is_done ? 'false' : 'true'
 
   return `
-    <tr data-task-id="${task.id}" data-task-cadence="${cadence}" data-task-status="${status}">
-      <td>
+    <article class="task-card" draggable="true" data-task-id="${task.id}" data-task-column="${columnKey}" data-task-cadence="${cadence}" data-task-status="${status}">
+      <header class="task-card-header">
         <div class="task-title">${escapeHtml(task.title)}</div>
-        <div class="task-description">${task.description ? escapeHtml(task.description) : 'No description'}</div>
-      </td>
-      <td>${escapeHtml(task.service)}</td>
-      <td>${formatDateOnly(task.due_date)}</td>
-      <td><span class="task-badge cadence-${cadence}">${cadence}</span></td>
-      <td><span class="task-badge status-${status}">${status}</span></td>
-      <td>${formatDate(task.updated_at || task.created_at)}</td>
-      <td>
+        <span class="task-badge cadence-${cadence}">${cadence}</span>
+      </header>
+      <p class="task-description">${task.description ? escapeHtml(task.description) : 'No description'}</p>
+      <div class="task-meta-grid">
+        <div class="task-meta-item"><span>Service</span><strong>${escapeHtml(task.service)}</strong></div>
+        <div class="task-meta-item"><span>Due</span><strong>${formatDateOnly(task.due_date)}</strong></div>
+        <div class="task-meta-item"><span>Status</span><strong class="task-badge status-${status}">${status}</strong></div>
+        <div class="task-meta-item"><span>Updated</span><strong>${formatDate(task.updated_at || task.created_at)}</strong></div>
+      </div>
+      <div class="task-card-actions">
         <button class="action-btn task-toggle-btn" data-task-id="${task.id}" data-next-done="${nextDone}">
           <i class="bi ${task.is_done ? 'bi-arrow-counterclockwise' : 'bi-check2-circle'} me-1"></i>
           ${task.is_done ? 'Reopen' : 'Done'}
         </button>
-        <button class="action-btn appointment-delete-btn ms-2 task-delete-btn" data-task-id="${task.id}">
+        <button class="action-btn appointment-delete-btn task-delete-btn" data-task-id="${task.id}">
           <i class="bi bi-trash me-1"></i>Delete
         </button>
-      </td>
-    </tr>
+      </div>
+    </article>
   `
+}
+
+function groupTasksForBoard(tasks) {
+  return tasks.reduce(
+    (groups, task) => {
+      const status = getTaskStatus(task)
+      const cadence = getTaskCadence(task)
+
+      if (status === 'completed') {
+        groups.done.push(task)
+        return groups
+      }
+
+      if (status === 'overdue') {
+        groups.expired.push(task)
+        return groups
+      }
+
+      groups.pending.push(task)
+
+      if (cadence === 'daily') groups.daily.push(task)
+      else if (cadence === 'weekly') groups.weekly.push(task)
+      else groups.monthly.push(task)
+
+      return groups
+    },
+    { pending: [], daily: [], weekly: [], monthly: [], done: [], expired: [] }
+  )
+}
+
+function renderTaskColumn(columnKey, columnTitle, iconClass, tasks, emptyLabel) {
+  return `
+    <section class="task-column" data-column-key="${columnKey}">
+      <header class="task-column-header">
+        <h3><i class="bi ${iconClass} me-2"></i>${columnTitle}</h3>
+        <span class="task-column-count">${tasks.length}</span>
+      </header>
+      <div class="task-column-list task-dropzone" data-column-key="${columnKey}">
+        ${tasks.length > 0 ? tasks.map((task) => renderTaskCard(task, columnKey)).join('') : `<div class="task-column-empty">${emptyLabel}</div>`}
+      </div>
+    </section>
+  `
+}
+
+function getTaskPayloadForColumn(columnKey) {
+  const today = new Date()
+
+  if (columnKey === 'pending') return { is_done: false, due_date: toDateInputValue(addDays(today, 1)) }
+  if (columnKey === 'daily') return { is_done: false, due_date: toDateInputValue(addDays(today, 1)) }
+  if (columnKey === 'weekly') return { is_done: false, due_date: toDateInputValue(addDays(today, 7)) }
+  if (columnKey === 'monthly') return { is_done: false, due_date: toDateInputValue(addDays(today, 30)) }
+  if (columnKey === 'done') return { is_done: true }
+  if (columnKey === 'expired') return { is_done: false, due_date: toDateInputValue(addDays(today, -1)) }
+
+  return null
 }
 
 function renderWorkspace(tasks) {
   const metrics = getTaskMetrics(tasks)
+  const groupedTasks = groupTasksForBoard(tasks)
 
   return `
     <div class="admin-shell">
@@ -267,43 +325,18 @@ function renderWorkspace(tasks) {
           </section>
         </div>
 
-        <section class="workspace-card">
-          <div class="row g-2 mb-3">
-            <div class="col-md-3">
-              <select id="task-cadence-filter" class="form-select">
-                <option value="all">All cadences</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <select id="task-status-filter" class="form-select">
-                <option value="all">All statuses</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="overdue">Overdue</option>
-              </select>
-            </div>
+        <section class="workspace-card task-board-wrap">
+          <div class="task-board-heading">
+            <h2 class="admin-card-title mb-0"><i class="bi bi-columns-gap me-2"></i>Task Board</h2>
+            <p class="service-note mb-0">Pending tasks are grouped by cadence, with dedicated columns for done and expired.</p>
           </div>
-
-          <div class="table-responsive task-table-wrap">
-            <table class="users-table">
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Service</th>
-                  <th>Due</th>
-                  <th>Cadence</th>
-                  <th>Status</th>
-                  <th>Updated</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="tasks-table-body">
-                ${tasks.length > 0 ? `${tasks.map(renderTaskRow).join('')}<tr id="tasks-empty-filter" hidden><td colspan="7">No tasks match selected filters.</td></tr>` : '<tr><td colspan="7">No tasks found.</td></tr>'}
-              </tbody>
-            </table>
+          <div class="task-board-grid">
+            ${renderTaskColumn('pending', 'Overall Pending', 'bi-list-check', groupedTasks.pending, 'No pending tasks.')}
+            ${renderTaskColumn('daily', 'Daily', 'bi-sun', groupedTasks.daily, 'No daily tasks.')}
+            ${renderTaskColumn('weekly', 'Weekly', 'bi-calendar-week', groupedTasks.weekly, 'No weekly tasks.')}
+            ${renderTaskColumn('monthly', 'Monthly', 'bi-calendar-month', groupedTasks.monthly, 'No monthly tasks.')}
+            ${renderTaskColumn('done', 'Done Tasks', 'bi-check2-all', groupedTasks.done, 'No completed tasks yet.')}
+            ${renderTaskColumn('expired', 'Expired Tasks', 'bi-exclamation-triangle', groupedTasks.expired, 'No expired tasks.')}
           </div>
         </section>
       </div>
@@ -338,30 +371,6 @@ async function initTasksWorkspace() {
     const taskForm = document.querySelector('#task-form')
     const taskTitleInput = taskForm?.querySelector('input[name="title"]')
     const taskStatus = document.querySelector('#task-status')
-    const taskCadenceFilter = document.querySelector('#task-cadence-filter')
-    const taskStatusFilter = document.querySelector('#task-status-filter')
-    const taskRows = () => Array.from(document.querySelectorAll('#tasks-table-body tr[data-task-id]'))
-    const taskEmptyFilterRow = document.querySelector('#tasks-empty-filter')
-
-    const applyTaskFilters = () => {
-      const selectedCadence = taskCadenceFilter?.value || 'all'
-      const selectedStatus = taskStatusFilter?.value || 'all'
-
-      let visibleRows = 0
-      taskRows().forEach((row) => {
-        const cadenceMatches = selectedCadence === 'all' || row.dataset.taskCadence === selectedCadence
-        const statusMatches = selectedStatus === 'all' || row.dataset.taskStatus === selectedStatus
-        const shouldShow = cadenceMatches && statusMatches
-        row.hidden = !shouldShow
-        if (shouldShow) visibleRows += 1
-      })
-
-      if (taskEmptyFilterRow) taskEmptyFilterRow.hidden = visibleRows > 0
-    }
-
-    taskCadenceFilter?.addEventListener('change', applyTaskFilters)
-    taskStatusFilter?.addEventListener('change', applyTaskFilters)
-    applyTaskFilters()
 
     document.querySelector('#quick-add-task-btn')?.addEventListener('click', () => {
       taskForm?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -413,6 +422,64 @@ async function initTasksWorkspace() {
         }
 
         if (taskStatus) taskStatus.textContent = nextDone ? 'Task marked as done.' : 'Task moved back to pending.'
+        await renderAndBind()
+      })
+    })
+
+    const taskCards = () => Array.from(document.querySelectorAll('.task-card[data-task-id]'))
+    const dropzones = () => Array.from(document.querySelectorAll('.task-dropzone[data-column-key]'))
+    let isDroppingTask = false
+
+    taskCards().forEach((card) => {
+      card.addEventListener('dragstart', (event) => {
+        if (!event.dataTransfer) return
+
+        event.dataTransfer.effectAllowed = 'move'
+        event.dataTransfer.setData('text/task-id', String(card.dataset.taskId || ''))
+        event.dataTransfer.setData('text/from-column', String(card.dataset.taskColumn || ''))
+        card.classList.add('is-dragging')
+      })
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('is-dragging')
+        dropzones().forEach((zone) => zone.classList.remove('dropzone-active'))
+      })
+    })
+
+    dropzones().forEach((zone) => {
+      zone.addEventListener('dragover', (event) => {
+        event.preventDefault()
+        zone.classList.add('dropzone-active')
+      })
+
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('dropzone-active')
+      })
+
+      zone.addEventListener('drop', async (event) => {
+        event.preventDefault()
+        zone.classList.remove('dropzone-active')
+        if (isDroppingTask) return
+
+        const toColumn = String(zone.dataset.columnKey || '')
+        const taskId = String(event.dataTransfer?.getData('text/task-id') || '')
+        const fromColumn = String(event.dataTransfer?.getData('text/from-column') || '')
+
+        if (!taskId || !toColumn || toColumn === fromColumn) return
+
+        const payload = getTaskPayloadForColumn(toColumn)
+        if (!payload) return
+
+        isDroppingTask = true
+        const result = await updateTask(taskId, payload)
+        isDroppingTask = false
+
+        if (!result.success) {
+          if (taskStatus) taskStatus.textContent = result.error
+          return
+        }
+
+        if (taskStatus) taskStatus.textContent = `Task moved to ${toColumn}.`
         await renderAndBind()
       })
     })
