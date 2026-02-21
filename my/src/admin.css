@@ -44,6 +44,10 @@
   box-shadow: 0 8px 32px rgba(0, 166, 255, 0.15);
 }
 
+.admin-card-highlight {
+  box-shadow: 0 0 0 2px rgba(120, 219, 255, 0.65), 0 8px 32px rgba(0, 166, 255, 0.15);
+}
+
 .admin-card-header {
   border-bottom: 2px solid rgba(120, 219, 255, 0.3);
   padding-bottom: 1rem;
@@ -81,6 +85,15 @@
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 166, 255, 0.25);
+}
+
+.stat-card-clickable {
+  cursor: pointer;
+}
+
+.stat-card-clickable:focus-visible {
+  outline: 2px solid #78dbff;
+  outline-offset: 2px;
 }
 
 .stat-icon {
@@ -171,6 +184,24 @@
   background: rgba(120, 219, 255, 0.25);
   border-color: #78dbff;
   box-shadow: 0 0 12px rgba(120, 219, 255, 0.4);
+}
+
+.appointment-delete-btn {
+  border-color: rgba(255, 127, 150, 0.45);
+  color: #ff8fa4;
+  background: rgba(255, 127, 150, 0.12);
+}
+
+.appointment-delete-btn:hover {
+  border-color: #ff7f96;
+  color: #ffd4dc;
+  background: rgba(255, 127, 150, 0.25);
+  box-shadow: 0 0 12px rgba(255, 127, 150, 0.35);
+}
+
+.users-table .form-control,
+.users-table .form-select {
+  min-width: 96px;
 }
 
 .loading-screen {

@@ -59,6 +59,38 @@ function renderPageContent(pathname) {
             <li>Post-operative rehabilitation</li>
             <li>Pain management strategies</li>
           </ul>
+
+          <div class="service-manager mt-4" data-service-manager="physiotherapy">
+            <div class="service-card mb-3">
+              <h2 class="service-card-title">Appointment Calendar</h2>
+              <p class="service-note" data-appointments-status></p>
+              <div data-appointments-list></div>
+              <p class="service-note mb-0" data-appointments-guest-hint>
+                Sign in as user/admin to create appointments.
+              </p>
+              <form class="service-form d-none mt-3" data-appointment-form>
+                <div class="row g-2">
+                  <div class="col-md-4">
+                    <input type="text" class="form-control" name="title" placeholder="Appointment title" required />
+                  </div>
+                  <div class="col-md-4">
+                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="notes" placeholder="Notes" />
+                  </div>
+                  <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="service-card" data-tasks-panel>
+              <h2 class="service-card-title">Service Tasks</h2>
+              <p class="service-note mb-0">Only admins can read and manage tasks.</p>
+            </div>
+          </div>
         </div>
       </section>
     `
@@ -80,6 +112,38 @@ function renderPageContent(pathname) {
             <li>Specialized programs for athletes</li>
             <li>Pre and postnatal Pilates</li>
           </ul>
+
+          <div class="service-manager mt-4" data-service-manager="pilates">
+            <div class="service-card mb-3">
+              <h2 class="service-card-title">Appointment Calendar</h2>
+              <p class="service-note" data-appointments-status></p>
+              <div data-appointments-list></div>
+              <p class="service-note mb-0" data-appointments-guest-hint>
+                Sign in as user/admin to create appointments.
+              </p>
+              <form class="service-form d-none mt-3" data-appointment-form>
+                <div class="row g-2">
+                  <div class="col-md-4">
+                    <input type="text" class="form-control" name="title" placeholder="Appointment title" required />
+                  </div>
+                  <div class="col-md-4">
+                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  </div>
+                  <div class="col-md-3">
+                    <input type="text" class="form-control" name="notes" placeholder="Notes" />
+                  </div>
+                  <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="service-card" data-tasks-panel>
+              <h2 class="service-card-title">Service Tasks</h2>
+              <p class="service-note mb-0">Only admins can read and manage tasks.</p>
+            </div>
+          </div>
         </div>
       </section>
     `

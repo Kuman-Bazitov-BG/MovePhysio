@@ -1,6 +1,7 @@
 import './style.css'
 import { initAuth } from './auth.js'
 import { renderApp } from './app.js'
+import { initServiceFeatures } from './serviceFeatures.js'
 
 function initLiveBackground(canvas) {
   if (!canvas) return () => {}
@@ -97,6 +98,7 @@ function bootstrap() {
     const backgroundCanvas = document.querySelector('#live-bg-canvas')
     cleanupBackground = initLiveBackground(backgroundCanvas)
     initAuth()
+    initServiceFeatures(window.location.pathname)
   }
 
   root.addEventListener('click', (event) => {

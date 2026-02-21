@@ -342,6 +342,57 @@ body {
   color: var(--accent-strong);
 }
 
+.service-manager {
+  display: grid;
+  gap: 1rem;
+}
+
+.service-card {
+  border: 1px solid rgba(173, 231, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  background: rgba(8, 24, 40, 0.5);
+}
+
+.service-card-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.service-note {
+  color: var(--text-subtle);
+  font-size: 0.92rem;
+}
+
+.service-note[data-type='error'] {
+  color: var(--danger);
+}
+
+.service-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.service-list-item {
+  border: 1px solid rgba(173, 231, 255, 0.14);
+  border-radius: 0.75rem;
+  padding: 0.7rem;
+  background: rgba(6, 20, 34, 0.45);
+}
+
+.service-list-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+
 @media (max-width: 767px) {
   .physio-text {
     margin-left: 2.2rem;
