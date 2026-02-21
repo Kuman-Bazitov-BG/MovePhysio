@@ -317,9 +317,6 @@ function getTaskPayloadForColumn(columnKey) {
   const today = new Date()
 
   if (columnKey === 'pending') return { is_done: false, due_date: toDateInputValue(addDays(today, 1)) }
-  if (columnKey === 'daily') return { is_done: false, due_date: toDateInputValue(addDays(today, 1)) }
-  if (columnKey === 'weekly') return { is_done: false, due_date: toDateInputValue(addDays(today, 7)) }
-  if (columnKey === 'monthly') return { is_done: false, due_date: toDateInputValue(addDays(today, 30)) }
   if (columnKey === 'done') return { is_done: true }
   if (columnKey === 'expired') return { is_done: false, due_date: toDateInputValue(addDays(today, -1)) }
 
@@ -584,18 +581,25 @@ async function initTasksWorkspace() {
     const taskCards = () => Array.from(document.querySelectorAll('.task-card[data-task-id]'))
     const dropzones = () => Array.from(document.querySelectorAll('.task-dropzone[data-column-key]'))
     let isDroppingTask = false
+    let draggingTaskId = ''
+    let draggingFromColumn = ''
 
     taskCards().forEach((card) => {
       card.addEventListener('dragstart', (event) => {
         if (!event.dataTransfer) return
 
+        draggingTaskId = String(card.dataset.taskId || '')
+        draggingFromColumn = String(card.dataset.taskColumn || '')
         event.dataTransfer.effectAllowed = 'move'
-        event.dataTransfer.setData('text/task-id', String(card.dataset.taskId || ''))
-        event.dataTransfer.setData('text/from-column', String(card.dataset.taskColumn || ''))
+        event.dataTransfer.setData('text/plain', draggingTaskId)
+        event.dataTransfer.setData('text/task-id', draggingTaskId)
+        event.dataTransfer.setData('text/from-column', draggingFromColumn)
         card.classList.add('is-dragging')
       })
 
       card.addEventListener('dragend', () => {
+        draggingTaskId = ''
+        draggingFromColumn = ''
         card.classList.remove('is-dragging')
         dropzones().forEach((zone) => zone.classList.remove('dropzone-active'))
       })
@@ -617,8 +621,10 @@ async function initTasksWorkspace() {
         if (isDroppingTask) return
 
         const toColumn = String(zone.dataset.columnKey || '')
-        const taskId = String(event.dataTransfer?.getData('text/task-id') || '')
-        const fromColumn = String(event.dataTransfer?.getData('text/from-column') || '')
+        const taskId =
+          draggingTaskId ||
+          String(event.dataTransfer?.getData('text/task-id') || event.dataTransfer?.getData('text/plain') || '')
+        const fromColumn = draggingFromColumn || String(event.dataTransfer?.getData('text/from-column') || '')
 
         if (!taskId || !toColumn || toColumn === fromColumn) return
 
@@ -634,7 +640,14 @@ async function initTasksWorkspace() {
           return
         }
 
-        if (taskStatus) taskStatus.textContent = `Task moved to ${toColumn}.`
+        if (taskStatus) {
+          taskStatus.textContent =
+            toColumn === 'done'
+              ? 'Task marked as completed.'
+              : toColumn === 'pending'
+                ? 'Task moved to active tasks.'
+                : 'Task moved to overdue tasks.'
+        }
         await renderAndBind()
       })
     })
