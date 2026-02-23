@@ -464,6 +464,34 @@ function getNextSlotDateTimeLocal(slotMinutes) {
   return toDateTimeLocal(nextDate.toISOString())
 }
 
+function getNextPilatesSlotDateTimeLocal(referenceInput = new Date()) {
+  const referenceDate = referenceInput instanceof Date ? new Date(referenceInput) : new Date(referenceInput)
+  if (Number.isNaN(referenceDate.getTime())) {
+    return ''
+  }
+
+  const normalizedReference = new Date(referenceDate)
+  normalizedReference.setSeconds(0, 0)
+
+  for (let dayOffset = 0; dayOffset < 14; dayOffset += 1) {
+    const candidateDay = new Date(normalizedReference)
+    candidateDay.setDate(normalizedReference.getDate() + dayOffset)
+
+    const daySlots = getPilatesSlotsForDate(candidateDay)
+    for (const slot of daySlots) {
+      const [hours, minutes] = slot.start.split(':').map(Number)
+      const slotDate = new Date(candidateDay)
+      slotDate.setHours(hours, minutes, 0, 0)
+
+      if (slotDate >= normalizedReference) {
+        return toDateTimeLocal(slotDate.toISOString())
+      }
+    }
+  }
+
+  return ''
+}
+
 function isAlignedToSlot(value, slotMinutes) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime()) || !slotMinutes) return true
@@ -800,9 +828,11 @@ async function renderServiceContent(root, service) {
     const dateInput = appointmentForm.querySelector('input[name="appointment_at"]')
     if (dateInput) {
       dateInput.step = service === 'pilates' ? '60' : String(slotMinutes * 60)
-      dateInput.min = getNextSlotDateTimeLocal(slotMinutes)
+      dateInput.min = service === 'pilates'
+        ? getNextPilatesSlotDateTimeLocal()
+        : getNextSlotDateTimeLocal(slotMinutes)
       if (!dateInput.value) {
-        dateInput.value = getNextSlotDateTimeLocal(slotMinutes)
+        dateInput.value = dateInput.min
       }
     }
 
@@ -987,9 +1017,11 @@ async function renderServiceContent(root, service) {
 
     modalForm.reset()
     dateInput.step = service === 'pilates' ? '60' : String(slotMinutes * 60)
-    const minSlotValue = getNextSlotDateTimeLocal(slotMinutes)
+    const minSlotValue = service === 'pilates'
+      ? getNextPilatesSlotDateTimeLocal()
+      : getNextSlotDateTimeLocal(slotMinutes)
     dateInput.min = minSlotValue
-    dateInput.value = alignedValue >= minSlotValue ? alignedValue : minSlotValue
+    dateInput.value = minSlotValue && alignedValue < minSlotValue ? minSlotValue : alignedValue
     if (modalStatus) {
       modalStatus.textContent = ''
       modalStatus.dataset.type = 'info'
