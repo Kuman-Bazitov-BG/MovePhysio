@@ -193,6 +193,34 @@ function isPilatesDateTimeAllowed(value) {
   return getPilatesSlotsForDate(date).some((slot) => slot.start === startTime)
 }
 
+function getPilatesSlotForDateTime(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+
+  const startTime = toLocalTimeKey(date)
+  return getPilatesSlotsForDate(date).find((slot) => slot.start === startTime) || null
+}
+
+function formatAppointmentPeriod(item) {
+  const appointmentDate = new Date(item?.appointment_at)
+  if (Number.isNaN(appointmentDate.getTime())) return '—'
+
+  if (item?.service === 'pilates') {
+    const slot = getPilatesSlotForDateTime(appointmentDate)
+    const dateLabel = appointmentDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+
+    if (slot) {
+      return `${dateLabel} · ${slot.start} - ${slot.end}`
+    }
+  }
+
+  return formatDateTime(item?.appointment_at)
+}
+
 function resolveSelectedCalendarDate(options) {
   const {
     service,
@@ -373,7 +401,7 @@ function renderAppointmentsList(items, options = {}) {
             <li class="service-list-item">
               <div class="service-list-main">
                 <strong>${canViewAppointmentDetails(item, sessionUserId, isAdmin) ? escapeHtml(item.title) : 'BUSY'}</strong>
-                <span>${formatDateTime(item.appointment_at)}</span>
+                <span>${escapeHtml(formatAppointmentPeriod(item))}</span>
               </div>
               ${canViewAppointmentDetails(item, sessionUserId, isAdmin)
                 ? `<p class="service-note mb-2">${escapeHtml(item.name || '—')} · ${escapeHtml(item.telephone || '—')}</p>`
@@ -771,7 +799,7 @@ async function renderServiceContent(root, service) {
     appointmentForm.classList.toggle('d-none', !isAuthenticated)
     const dateInput = appointmentForm.querySelector('input[name="appointment_at"]')
     if (dateInput) {
-      dateInput.step = String(slotMinutes * 60)
+      dateInput.step = service === 'pilates' ? '60' : String(slotMinutes * 60)
       dateInput.min = getNextSlotDateTimeLocal(slotMinutes)
       if (!dateInput.value) {
         dateInput.value = getNextSlotDateTimeLocal(slotMinutes)
@@ -880,8 +908,11 @@ async function renderServiceContent(root, service) {
     const localDate = new Date(`${dateKey}T${timeValue}:00`)
     if (Number.isNaN(localDate.getTime())) return
 
-    const alignedValue = alignDateTimeLocal(localDate.toISOString(), slotMinutes)
-    dateInput.value = alignedValue
+    const nextValue = service === 'pilates'
+      ? toDateTimeLocal(localDate.toISOString())
+      : alignDateTimeLocal(localDate.toISOString(), slotMinutes)
+
+    dateInput.value = nextValue
   }
 
   const openAddAppointmentModal = (dateKey, timeValue) => {
@@ -950,10 +981,12 @@ async function renderServiceContent(root, service) {
     if (!modalForm || !dateInput) return
 
     const localDate = new Date(`${dateKey}T${timeValue}:00`)
-    const alignedValue = alignDateTimeLocal(localDate.toISOString(), slotMinutes)
+    const alignedValue = service === 'pilates'
+      ? toDateTimeLocal(localDate.toISOString())
+      : alignDateTimeLocal(localDate.toISOString(), slotMinutes)
 
     modalForm.reset()
-    dateInput.step = String(slotMinutes * 60)
+    dateInput.step = service === 'pilates' ? '60' : String(slotMinutes * 60)
     const minSlotValue = getNextSlotDateTimeLocal(slotMinutes)
     dateInput.min = minSlotValue
     dateInput.value = alignedValue >= minSlotValue ? alignedValue : minSlotValue
