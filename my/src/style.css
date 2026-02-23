@@ -305,7 +305,7 @@ body {
   box-shadow: 0 16px 35px rgba(2, 12, 22, 0.5);
   transition: box-shadow 0.24s ease, border-color 0.24s ease;
   z-index: 2;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .physio-shortcut {
@@ -334,12 +334,14 @@ body {
   aspect-ratio: 5 / 4;
   object-fit: cover;
   display: block;
+  border-radius: inherit;
 }
 
 .physio-shortcut-title {
   position: absolute;
   left: 0.75rem;
-  bottom: 0.75rem;
+  top: 0;
+  transform: translateY(calc(-100% - 0.55rem));
   font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: 0.02em;
