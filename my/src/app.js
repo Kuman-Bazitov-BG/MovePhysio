@@ -179,8 +179,8 @@ export function renderApp(pathname = '/') {
           </nav>
 
           <div class="auth-actions d-flex align-items-center gap-2">
-            <a href="/admin.html" id="admin-btn" class="btn btn-warning d-none">
-              <i class="bi bi-shield-check action-icon me-2" aria-hidden="true"></i>Admin
+            <a href="/admin.html" id="admin-btn" class="btn auth-pill-btn d-none">
+              <i class="bi bi-shield-check action-icon me-2" aria-hidden="true"></i>Adnim Pannel
             </a>
             <button id="auth-open-btn" class="btn auth-pill-btn">
               <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register / Login
