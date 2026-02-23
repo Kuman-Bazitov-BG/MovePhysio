@@ -519,6 +519,55 @@ body {
   padding: 0.85rem;
 }
 
+.appointment-planner {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(230px, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.appointment-hour-card {
+  border: 1px solid rgba(173, 231, 255, 0.2);
+  border-radius: 0.9rem;
+  background: rgba(6, 20, 34, 0.58);
+  padding: 0.85rem;
+}
+
+.hour-schedule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.42rem;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.hour-schedule-item {
+  border: 1px solid rgba(173, 231, 255, 0.18);
+  border-radius: 0.55rem;
+  padding: 0.4rem 0.55rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+}
+
+.hour-schedule-item strong {
+  font-size: 0.8rem;
+}
+
+.hour-schedule-item.is-open {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+.hour-schedule-item.is-busy {
+  background: rgba(227, 79, 102, 0.24);
+  border-color: rgba(227, 79, 102, 0.45);
+  color: var(--text-main);
+}
+
 .appointment-calendar-head {
   display: flex;
   align-items: center;
@@ -660,6 +709,10 @@ body {
 }
 
 @media (max-width: 540px) {
+  .appointment-planner {
+    grid-template-columns: 1fr;
+  }
+
   .appointment-calendar-pickers {
     grid-template-columns: 1fr;
   }

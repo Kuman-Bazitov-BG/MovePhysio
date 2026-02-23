@@ -62,6 +62,14 @@ function toIsoDateKey(dateInput) {
   return localDate.toISOString().slice(0, 10)
 }
 
+function toLocalTimeKey(dateInput) {
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
+  if (Number.isNaN(date.getTime())) return ''
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  return `${hour}:${minute}`
+}
+
 function getMonthStart(referenceDate = new Date()) {
   return new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1)
 }
@@ -79,6 +87,19 @@ function isWeekendDate(date) {
 
 function createMonthLabel(date) {
   return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+}
+
+function createDateLabel(dateKey) {
+  if (!dateKey) return ''
+  const date = new Date(`${dateKey}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })
 }
 
 function getTimeSlotOptions(slotMinutes, workStartHour, workEndHour) {
@@ -132,7 +153,7 @@ function buildCalendarDays(options) {
     const isPast = currentDate < todayStart
     const nonWorking = isPast || (!allowWeekends && isWeekendDate(currentDate)) || !inCurrentMonth
     const isOpen = inCurrentMonth && !nonWorking && !hasBusySlots
-    const disabled = !isAuthenticated || !canCreateAppointments || !isOpen
+    const disabled = !inCurrentMonth || nonWorking
 
     days.push({
       dayKey,
@@ -147,6 +168,59 @@ function buildCalendarDays(options) {
   }
 
   return days
+}
+
+function renderDayHoursSchedule(items, options = {}) {
+  const {
+    selectedDate,
+    slotMinutes = 60,
+    workStartHour = 8,
+    workEndHour = 20
+  } = options
+
+  if (!selectedDate) {
+    return `
+      <h3 class="service-card-title mb-2">Day Hour Schedule</h3>
+      <p class="service-note mb-0">Select a day from the calendar to see busy and not busy hours.</p>
+    `
+  }
+
+  const dateLabel = createDateLabel(selectedDate)
+  const timeSlots = getTimeSlotOptions(slotMinutes, workStartHour, workEndHour)
+  const busyTimes = new Set(
+    items
+      .filter((item) => toIsoDateKey(item.appointment_at) === selectedDate)
+      .map((item) => toLocalTimeKey(item.appointment_at))
+      .filter(Boolean)
+  )
+
+  const busyCount = timeSlots.filter((timeValue) => busyTimes.has(timeValue)).length
+
+  return `
+    <h3 class="service-card-title mb-2">Day Hour Schedule</h3>
+    <p class="service-note mb-2">${escapeHtml(dateLabel || selectedDate)} · Busy ${busyCount}/${timeSlots.length}</p>
+    <ul class="hour-schedule-list mb-0">
+      ${timeSlots
+        .map((timeValue) => {
+          const isBusy = busyTimes.has(timeValue)
+          return `
+            <li class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open'}">
+              <span>${escapeHtml(timeValue)}</span>
+              <strong>${isBusy ? 'Busy' : 'Not busy'}</strong>
+            </li>
+          `
+        })
+        .join('')}
+    </ul>
+  `
+}
+
+function renderDayHoursScheduleCard(items, options = {}) {
+  return `
+    <aside class="appointment-hour-card" data-hour-schedule-card>
+      ${renderDayHoursSchedule(items, options)}
+    </aside>
+  `
 }
 
 function renderAppointmentsList(items, options = {}) {
@@ -253,7 +327,8 @@ function renderAppointmentCalendar(items, options = {}) {
   })
 
   return `
-    <div class="appointment-calendar" data-calendar-root>
+    <div class="appointment-planner">
+      <div class="appointment-calendar" data-calendar-root>
       <div class="appointment-calendar-head">
         <button
           type="button"
@@ -345,6 +420,14 @@ function renderAppointmentCalendar(items, options = {}) {
         <span class="legend-item"><i class="legend-dot legend-busy"></i>Busy day</span>
         <span class="legend-item"><i class="legend-dot legend-off"></i>Not working day</span>
       </div>
+      </div>
+
+      ${renderDayHoursScheduleCard(items, {
+        selectedDate,
+        slotMinutes,
+        workStartHour,
+        workEndHour
+      })}
     </div>
   `
 }
@@ -610,7 +693,17 @@ async function renderServiceContent(root, service) {
 
       const timeSelect = appointmentsList.querySelector('[data-calendar-time]')
       if (timeSelect) {
-        timeSelect.disabled = false
+        timeSelect.disabled = !isAuthenticated || !canCreateAppointments
+      }
+
+      const hourScheduleCard = appointmentsList.querySelector('[data-hour-schedule-card]')
+      if (hourScheduleCard) {
+        hourScheduleCard.innerHTML = renderDayHoursSchedule(appointmentsResult.data, {
+          selectedDate: dateKey,
+          slotMinutes,
+          workStartHour,
+          workEndHour
+        })
       }
     })
   })
