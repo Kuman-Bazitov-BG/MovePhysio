@@ -784,6 +784,7 @@ function renderAppointmentAttachmentItems(attachmentFiles) {
               <div class="appointment-file-actions">
                 <button type="button" class="action-btn appointment-file-preview-btn" data-preview-file-url="${escapeHtml(url)}">Preview</button>
                 <a class="action-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Open</a>
+                <a class="action-btn" href="${escapeHtml(url)}" download="${name}">Download</a>
               </div>
             `
             : '<span class="appointment-file-unavailable">No URL available</span>'
