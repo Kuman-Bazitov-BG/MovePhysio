@@ -674,10 +674,10 @@ async function renderAdminPanel() {
           <div class="d-flex justify-content-between align-items-center">
             <h1><i class="bi bi-shield-check me-2"></i>Admin Panel</h1>
             <div class="admin-actions">
-              <a href="/" class="btn btn-outline-light">
+              <a href="/" class="btn admin-pill-btn">
                 <i class="bi bi-house-door me-2"></i>Back to Site
               </a>
-              <button id="admin-logout-btn" class="btn btn-outline-danger">
+              <button id="admin-logout-btn" class="btn admin-pill-btn">
                 <i class="bi bi-box-arrow-right me-2"></i>Logout
               </button>
             </div>

@@ -28,6 +28,36 @@
   align-items: center;
 }
 
+.admin-actions .admin-pill-btn,
+.workspace-actions .admin-pill-btn {
+  color: #f6fdff;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  width: 8.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: linear-gradient(120deg, #2f9ff7, #34d3ff);
+  box-shadow: none;
+  font-size: 0.9rem;
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
+  text-decoration: none;
+}
+
+.admin-actions .admin-pill-btn:hover,
+.admin-actions .admin-pill-btn:focus-visible,
+.workspace-actions .admin-pill-btn:hover,
+.workspace-actions .admin-pill-btn:focus-visible {
+  color: #f6fdff;
+  border-color: transparent;
+  background: linear-gradient(120deg, #2f9ff7, #34d3ff);
+  text-decoration: none;
+}
+
 .admin-content {
   max-width: 1200px;
   margin: 0 auto;

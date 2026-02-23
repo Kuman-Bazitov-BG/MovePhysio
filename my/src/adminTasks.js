@@ -338,8 +338,8 @@ function renderWorkspace(tasks) {
             </div>
             <div class="workspace-actions">
               <a href="/admin.html" class="btn btn-outline-info"><i class="bi bi-arrow-left me-2"></i>Back to Admin</a>
-              <a href="/" class="btn btn-outline-light"><i class="bi bi-house-door me-2"></i>Back to Site</a>
-              <button id="tasks-logout-btn" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+              <a href="/" class="btn admin-pill-btn"><i class="bi bi-house-door me-2"></i>Back to Site</a>
+              <button id="tasks-logout-btn" class="btn admin-pill-btn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
             </div>
           </div>
         </div>
