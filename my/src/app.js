@@ -76,7 +76,7 @@ function renderPageContent(pathname) {
               <p class="service-note" data-appointments-status></p>
               <div data-appointments-list></div>
               <p class="service-note mb-0" data-appointments-guest-hint>
-                Sign in as user/admin to create appointments.
+                Guests can view busy/not busy days and hours. Sign in as user/admin to create appointments.
               </p>
               <form class="service-form d-none mt-3" data-appointment-form>
                 <div class="row g-2">
@@ -137,7 +137,7 @@ function renderPageContent(pathname) {
               <p class="service-note" data-appointments-status></p>
               <div data-appointments-list></div>
               <p class="service-note mb-0" data-appointments-guest-hint>
-                Sign in as user/admin to create appointments.
+                Guests can view busy/not busy days and hours. Sign in as user/admin to create appointments.
               </p>
               <form class="service-form d-none mt-3" data-appointment-form>
                 <div class="row g-2">

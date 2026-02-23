@@ -118,6 +118,36 @@ function getTimeSlotOptions(slotMinutes, workStartHour, workEndHour) {
   return slots.length ? slots : ['08:00']
 }
 
+function resolveSelectedCalendarDate(options) {
+  const {
+    items,
+    monthReference,
+    selectedDate,
+    allowWeekends,
+    isAuthenticated,
+    canCreateAppointments
+  } = options
+
+  const monthDate = getCalendarMonth(monthReference)
+  const calendarDays = buildCalendarDays({
+    items,
+    monthDate,
+    allowWeekends,
+    selectedDate,
+    isAuthenticated,
+    canCreateAppointments
+  })
+
+  const selectableDays = calendarDays.filter((day) => !day.disabled)
+  if (!selectableDays.length) return ''
+
+  const hasValidSelection = selectableDays.some((day) => day.dayKey === selectedDate)
+  if (hasValidSelection) return selectedDate
+
+  const firstOpenDay = selectableDays.find((day) => day.isOpen)
+  return firstOpenDay?.dayKey || selectableDays[0].dayKey
+}
+
 function buildCalendarDays(options) {
   const {
     items,
@@ -279,6 +309,29 @@ function alignDateTimeLocal(value, slotMinutes) {
   date.setMinutes(alignedMinutes, 0, 0)
 
   return toDateTimeLocal(date.toISOString())
+}
+
+function getNextSlotDateTimeLocal(slotMinutes) {
+  const safeSlotMinutes = Number(slotMinutes) > 0 ? Number(slotMinutes) : 60
+  const now = new Date()
+  if (Number.isNaN(now.getTime())) {
+    return toDateTimeLocal(new Date().toISOString())
+  }
+
+  now.setSeconds(0, 0)
+  const totalMinutes = now.getHours() * 60 + now.getMinutes()
+  const roundedMinutes = Math.ceil(totalMinutes / safeSlotMinutes) * safeSlotMinutes
+  const dayMinutes = 24 * 60
+  const nextDayOffset = Math.floor(roundedMinutes / dayMinutes)
+  const nextMinutes = roundedMinutes % dayMinutes
+
+  const nextDate = new Date(now)
+  if (nextDayOffset > 0) {
+    nextDate.setDate(nextDate.getDate() + nextDayOffset)
+  }
+  nextDate.setHours(Math.floor(nextMinutes / 60), nextMinutes % 60, 0, 0)
+
+  return toDateTimeLocal(nextDate.toISOString())
 }
 
 function isAlignedToSlot(value, slotMinutes) {
@@ -539,11 +592,21 @@ async function renderServiceContent(root, service) {
   const selectedTime = root.dataset.selectedTime || `${String(workStartHour).padStart(2, '0')}:00`
 
   const appointmentsResult = await loadAppointments(supabase, service)
+  const effectiveSelectedDate = resolveSelectedCalendarDate({
+    items: appointmentsResult.data,
+    monthReference,
+    selectedDate,
+    allowWeekends,
+    isAuthenticated,
+    canCreateAppointments
+  })
+  root.dataset.selectedDate = effectiveSelectedDate
+
   if (appointmentsList) {
     appointmentsList.innerHTML = `
       ${renderAppointmentCalendar(appointmentsResult.data, {
         monthReference,
-        selectedDate,
+        selectedDate: effectiveSelectedDate,
         selectedTime,
         allowWeekends,
         slotMinutes,
@@ -566,7 +629,7 @@ async function renderServiceContent(root, service) {
         ? isAdmin
           ? `Admin mode: full appointment visibility and management for ${serviceLabel(service)}.`
           : `User mode: you can fully manage your appointments. Other users are shown as BUSY.`
-        : 'Read-only mode for guests. Sign in to create appointments.'
+        : 'Guest mode: busy and not busy days/hours are visible. Sign in to create appointments.'
   }
 
   if (appointmentForm) {
@@ -574,9 +637,9 @@ async function renderServiceContent(root, service) {
     const dateInput = appointmentForm.querySelector('input[name="appointment_at"]')
     if (dateInput) {
       dateInput.step = String(slotMinutes * 60)
-      dateInput.min = toDateTimeLocal(new Date().toISOString())
+      dateInput.min = getNextSlotDateTimeLocal(slotMinutes)
       if (!dateInput.value) {
-        dateInput.value = alignDateTimeLocal(new Date().toISOString(), slotMinutes)
+        dateInput.value = getNextSlotDateTimeLocal(slotMinutes)
       }
     }
 
@@ -739,8 +802,9 @@ async function renderServiceContent(root, service) {
 
     modalForm.reset()
     dateInput.step = String(slotMinutes * 60)
-    dateInput.min = toDateTimeLocal(new Date().toISOString())
-    dateInput.value = alignedValue
+    const minSlotValue = getNextSlotDateTimeLocal(slotMinutes)
+    dateInput.min = minSlotValue
+    dateInput.value = alignedValue >= minSlotValue ? alignedValue : minSlotValue
     if (modalStatus) {
       modalStatus.textContent = ''
       modalStatus.dataset.type = 'info'
