@@ -2,6 +2,39 @@ import { checkUserIsAdmin, getSupabaseClient } from './auth.js'
 
 let authSubscription = null
 
+const PILATES_WEEKLY_SCHEDULE = Object.freeze({
+  1: Object.freeze([
+    Object.freeze({ start: '09:30', end: '10:20' }),
+    Object.freeze({ start: '10:30', end: '11:20' }),
+    Object.freeze({ start: '15:40', end: '16:30' }),
+    Object.freeze({ start: '16:40', end: '17:30' }),
+    Object.freeze({ start: '17:40', end: '18:30' })
+  ]),
+  2: Object.freeze([
+    Object.freeze({ start: '07:15', end: '08:05' }),
+    Object.freeze({ start: '08:15', end: '09:05' }),
+    Object.freeze({ start: '09:15', end: '10:05' }),
+    Object.freeze({ start: '12:00', end: '12:50' }),
+    Object.freeze({ start: '13:00', end: '13:50' })
+  ]),
+  4: Object.freeze([
+    Object.freeze({ start: '09:30', end: '10:20' }),
+    Object.freeze({ start: '10:30', end: '11:20' }),
+    Object.freeze({ start: '15:40', end: '16:30' }),
+    Object.freeze({ start: '16:40', end: '17:30' }),
+    Object.freeze({ start: '17:40', end: '18:30' }),
+    Object.freeze({ start: '18:40', end: '19:30' })
+  ]),
+  5: Object.freeze([
+    Object.freeze({ start: '07:15', end: '08:05' }),
+    Object.freeze({ start: '08:15', end: '09:05' }),
+    Object.freeze({ start: '09:15', end: '10:05' }),
+    Object.freeze({ start: '10:15', end: '11:05' }),
+    Object.freeze({ start: '12:00', end: '12:50' }),
+    Object.freeze({ start: '13:00', end: '13:50' })
+  ])
+})
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -118,8 +151,51 @@ function getTimeSlotOptions(slotMinutes, workStartHour, workEndHour) {
   return slots.length ? slots : ['08:00']
 }
 
+function getPilatesSlotsForDate(dateInput) {
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
+  if (Number.isNaN(date.getTime())) return []
+
+  const dayOfWeek = date.getDay()
+  const daySlots = PILATES_WEEKLY_SCHEDULE[dayOfWeek] || []
+
+  return daySlots.map((slot) => ({
+    start: slot.start,
+    end: slot.end,
+    label: `${slot.start} - ${slot.end}`
+  }))
+}
+
+function getServiceSlotDefinitions(options) {
+  const {
+    service,
+    selectedDate,
+    slotMinutes,
+    workStartHour,
+    workEndHour
+  } = options
+
+  if (service === 'pilates' && selectedDate) {
+    return getPilatesSlotsForDate(`${selectedDate}T00:00:00`)
+  }
+
+  return getTimeSlotOptions(slotMinutes, workStartHour, workEndHour).map((timeValue) => ({
+    start: timeValue,
+    end: timeValue,
+    label: timeValue
+  }))
+}
+
+function isPilatesDateTimeAllowed(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return false
+
+  const startTime = toLocalTimeKey(date)
+  return getPilatesSlotsForDate(date).some((slot) => slot.start === startTime)
+}
+
 function resolveSelectedCalendarDate(options) {
   const {
+    service,
     items,
     monthReference,
     selectedDate,
@@ -130,6 +206,7 @@ function resolveSelectedCalendarDate(options) {
 
   const monthDate = getCalendarMonth(monthReference)
   const calendarDays = buildCalendarDays({
+    service,
     items,
     monthDate,
     allowWeekends,
@@ -150,6 +227,7 @@ function resolveSelectedCalendarDate(options) {
 
 function buildCalendarDays(options) {
   const {
+    service,
     items,
     monthDate,
     allowWeekends,
@@ -181,7 +259,8 @@ function buildCalendarDays(options) {
     const dayKey = toIsoDateKey(currentDate)
     const hasBusySlots = appointmentDays.has(dayKey)
     const isPast = currentDate < todayStart
-    const nonWorking = isPast || (!allowWeekends && isWeekendDate(currentDate)) || !inCurrentMonth
+    const hasPilatesSchedule = service === 'pilates' ? getPilatesSlotsForDate(currentDate).length > 0 : true
+    const nonWorking = isPast || (!allowWeekends && isWeekendDate(currentDate)) || !inCurrentMonth || !hasPilatesSchedule
     const isOpen = inCurrentMonth && !nonWorking && !hasBusySlots
     const disabled = !inCurrentMonth || nonWorking
 
@@ -202,6 +281,7 @@ function buildCalendarDays(options) {
 
 function renderDayHoursSchedule(items, options = {}) {
   const {
+    service,
     selectedDate,
     slotMinutes = 60,
     workStartHour = 8,
@@ -217,7 +297,22 @@ function renderDayHoursSchedule(items, options = {}) {
   }
 
   const dateLabel = createDateLabel(selectedDate)
-  const timeSlots = getTimeSlotOptions(slotMinutes, workStartHour, workEndHour)
+  const slotDefinitions = getServiceSlotDefinitions({
+    service,
+    selectedDate,
+    slotMinutes,
+    workStartHour,
+    workEndHour
+  })
+
+  if (!slotDefinitions.length) {
+    return `
+      <h3 class="service-card-title mb-2">Day Hour Schedule</h3>
+      <p class="service-note mb-0">Holiday / no Pilates classes for this day.</p>
+    `
+  }
+
+  const timeSlots = slotDefinitions.map((slot) => slot.start)
   const safeMaxAppointmentsPerSlot = Number(maxAppointmentsPerSlot) > 0 ? Number(maxAppointmentsPerSlot) : 1
   const slotUsage = new Map()
 
@@ -237,6 +332,7 @@ function renderDayHoursSchedule(items, options = {}) {
     <ul class="hour-schedule-list mb-0">
       ${timeSlots
         .map((timeValue) => {
+          const slotDefinition = slotDefinitions.find((slot) => slot.start === timeValue)
           const usedSlots = slotUsage.get(timeValue) || 0
           const isBusy = usedSlots >= safeMaxAppointmentsPerSlot
           return `
@@ -244,7 +340,7 @@ function renderDayHoursSchedule(items, options = {}) {
               class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open is-clickable'}"
               ${isBusy ? '' : `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"`}
             >
-              <span>${escapeHtml(timeValue)}</span>
+              <span>${escapeHtml(slotDefinition?.label || timeValue)}</span>
               <strong>${isBusy ? 'Busy' : 'Not busy'} · ${usedSlots}/${safeMaxAppointmentsPerSlot}</strong>
             </li>
           `
@@ -366,6 +462,7 @@ function canManageAppointment(item, sessionUserId, isAdmin) {
 
 function renderAppointmentCalendar(items, options = {}) {
   const {
+    service,
     monthReference,
     selectedDate,
     selectedTime,
@@ -384,9 +481,17 @@ function renderAppointmentCalendar(items, options = {}) {
   const monthLabel = createMonthLabel(activeMonth)
   const currentYear = new Date().getFullYear()
   const yearOptions = Array.from({ length: 6 }, (_, index) => currentYear - 1 + index)
-  const timeOptions = getTimeSlotOptions(slotMinutes, workStartHour, workEndHour)
-  const activeTime = timeOptions.includes(selectedTime) ? selectedTime : timeOptions[0]
+  const timeOptions = getServiceSlotDefinitions({
+    service,
+    selectedDate,
+    slotMinutes,
+    workStartHour,
+    workEndHour
+  })
+  const timeValues = timeOptions.map((slot) => slot.start)
+  const activeTime = timeValues.includes(selectedTime) ? selectedTime : (timeValues[0] || '')
   const calendarDays = buildCalendarDays({
+    service,
     items,
     monthDate: activeMonth,
     allowWeekends,
@@ -444,9 +549,9 @@ function renderAppointmentCalendar(items, options = {}) {
 
         <label class="appointment-picker">
           <span>Hour</span>
-          <select data-calendar-time ${!isAuthenticated || !canCreateAppointments || !selectedDate ? 'disabled' : ''}>
+          <select data-calendar-time ${!isAuthenticated || !canCreateAppointments || !selectedDate || !timeOptions.length ? 'disabled' : ''}>
             ${timeOptions
-              .map((timeValue) => `<option value="${timeValue}" ${timeValue === activeTime ? 'selected' : ''}>${timeValue}</option>`)
+              .map((timeSlot) => `<option value="${timeSlot.start}" ${timeSlot.start === activeTime ? 'selected' : ''}>${escapeHtml(timeSlot.label)}</option>`)
               .join('')}
           </select>
         </label>
@@ -492,6 +597,7 @@ function renderAppointmentCalendar(items, options = {}) {
       </div>
 
       ${renderDayHoursScheduleCard(items, {
+        service,
         selectedDate,
         slotMinutes,
         workStartHour,
@@ -604,10 +710,11 @@ async function renderServiceContent(root, service) {
   const maxAppointmentsPerSlot = configResult.data?.max_appointments_per_slot ?? 1
   const monthReference = root.dataset.calendarMonth || toIsoDateKey(getMonthStart(new Date()))
   const selectedDate = root.dataset.selectedDate || ''
-  const selectedTime = root.dataset.selectedTime || `${String(workStartHour).padStart(2, '0')}:00`
+  const selectedTime = root.dataset.selectedTime || ''
 
   const appointmentsResult = await loadAppointments(supabase, service)
   const effectiveSelectedDate = resolveSelectedCalendarDate({
+    service,
     items: appointmentsResult.data,
     monthReference,
     selectedDate,
@@ -617,12 +724,24 @@ async function renderServiceContent(root, service) {
   })
   root.dataset.selectedDate = effectiveSelectedDate
 
+  const currentTimeOptions = getServiceSlotDefinitions({
+    service,
+    selectedDate: effectiveSelectedDate,
+    slotMinutes,
+    workStartHour,
+    workEndHour
+  })
+  const currentTimeValues = currentTimeOptions.map((slot) => slot.start)
+  const effectiveSelectedTime = currentTimeValues.includes(selectedTime) ? selectedTime : (currentTimeValues[0] || '')
+  root.dataset.selectedTime = effectiveSelectedTime
+
   if (appointmentsList) {
     appointmentsList.innerHTML = `
       ${renderAppointmentCalendar(appointmentsResult.data, {
+        service,
         monthReference,
         selectedDate: effectiveSelectedDate,
-        selectedTime,
+        selectedTime: effectiveSelectedTime,
         allowWeekends,
         slotMinutes,
         workStartHour,
@@ -685,7 +804,7 @@ async function renderServiceContent(root, service) {
         return
       }
 
-      if (!isAlignedToSlot(payload.appointment_at, slotMinutes)) {
+      if (service !== 'pilates' && !isAlignedToSlot(payload.appointment_at, slotMinutes)) {
         const alignedValue = alignDateTimeLocal(payload.appointment_at, slotMinutes)
         if (dateInput) {
           dateInput.value = alignedValue
@@ -693,6 +812,14 @@ async function renderServiceContent(root, service) {
         if (appointmentsStatus) {
           appointmentsStatus.dataset.type = 'error'
           appointmentsStatus.textContent = `Time adjusted to match ${slotMinutes}-minute slot boundaries.`
+        }
+        return
+      }
+
+      if (service === 'pilates' && !isPilatesDateTimeAllowed(payload.appointment_at)) {
+        if (appointmentsStatus) {
+          appointmentsStatus.dataset.type = 'error'
+          appointmentsStatus.textContent = 'Selected time is outside the Pilates schedule.'
         }
         return
       }
@@ -740,7 +867,14 @@ async function renderServiceContent(root, service) {
     if (!dateInput) return
 
     const dateKey = root.dataset.selectedDate || ''
-    const timeValue = root.dataset.selectedTime || `${String(workStartHour).padStart(2, '0')}:00`
+    const daySlots = getServiceSlotDefinitions({
+      service,
+      selectedDate: dateKey,
+      slotMinutes,
+      workStartHour,
+      workEndHour
+    })
+    const timeValue = root.dataset.selectedTime || daySlots[0]?.start || `${String(workStartHour).padStart(2, '0')}:00`
     if (!dateKey) return
 
     const localDate = new Date(`${dateKey}T${timeValue}:00`)
@@ -862,12 +996,20 @@ async function renderServiceContent(root, service) {
         return
       }
 
-      if (!isAlignedToSlot(payload.appointment_at, slotMinutes)) {
+      if (service !== 'pilates' && !isAlignedToSlot(payload.appointment_at, slotMinutes)) {
         const nextAligned = alignDateTimeLocal(payload.appointment_at, slotMinutes)
         dateInput.value = nextAligned
         if (modalStatus) {
           modalStatus.dataset.type = 'error'
           modalStatus.textContent = `Time adjusted to match ${slotMinutes}-minute slot boundaries.`
+        }
+        return
+      }
+
+      if (service === 'pilates' && !isPilatesDateTimeAllowed(payload.appointment_at)) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = 'Selected time is outside the Pilates schedule.'
         }
         return
       }
@@ -931,39 +1073,21 @@ async function renderServiceContent(root, service) {
   })
 
   appointmentsList?.querySelectorAll('[data-calendar-date]').forEach((button) => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       if (button.disabled) return
       const dateKey = button.dataset.calendarDate
       if (!dateKey) return
 
       root.dataset.selectedDate = dateKey
-      if (!root.dataset.selectedTime) {
-        root.dataset.selectedTime = `${String(workStartHour).padStart(2, '0')}:00`
-      }
-
-      applyDateTimeToInput()
-
-      appointmentsList
-        .querySelectorAll('.appointment-calendar-day.is-selected')
-        .forEach((cell) => cell.classList.remove('is-selected'))
-      button.classList.add('is-selected')
-
-      const timeSelect = appointmentsList.querySelector('[data-calendar-time]')
-      if (timeSelect) {
-        timeSelect.disabled = !isAuthenticated || !canCreateAppointments
-      }
-
-      const hourScheduleCard = appointmentsList.querySelector('[data-hour-schedule-card]')
-      if (hourScheduleCard) {
-        hourScheduleCard.innerHTML = renderDayHoursSchedule(appointmentsResult.data, {
-          selectedDate: dateKey,
-          slotMinutes,
-          workStartHour,
-          workEndHour,
-          maxAppointmentsPerSlot
-        })
-        bindHourScheduleHandlers()
-      }
+      const dayTimeOptions = getServiceSlotDefinitions({
+        service,
+        selectedDate: dateKey,
+        slotMinutes,
+        workStartHour,
+        workEndHour
+      })
+      root.dataset.selectedTime = dayTimeOptions[0]?.start || ''
+      await renderServiceContent(root, service)
     })
   })
 
@@ -1000,10 +1124,18 @@ async function renderServiceContent(root, service) {
 
       const nextNotes = window.prompt('Edit notes (optional):', currentItem.notes || '')
 
-      if (!isAlignedToSlot(nextDate, slotMinutes)) {
+      if (service !== 'pilates' && !isAlignedToSlot(nextDate, slotMinutes)) {
         if (appointmentsStatus) {
           appointmentsStatus.dataset.type = 'error'
           appointmentsStatus.textContent = `Time must align to ${slotMinutes}-minute slot boundaries.`
+        }
+        return
+      }
+
+      if (service === 'pilates' && !isPilatesDateTimeAllowed(nextDate)) {
+        if (appointmentsStatus) {
+          appointmentsStatus.dataset.type = 'error'
+          appointmentsStatus.textContent = 'Selected time is outside the Pilates schedule.'
         }
         return
       }
