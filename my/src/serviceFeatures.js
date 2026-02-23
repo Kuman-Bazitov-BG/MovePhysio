@@ -35,6 +35,10 @@ const PILATES_WEEKLY_SCHEDULE = Object.freeze({
   ])
 })
 
+const PHYSIOTHERAPY_FILES_BUCKET = 'physiotherapy-appointment-files'
+const MAX_PHYSIOTHERAPY_FILES = 5
+const MAX_PHYSIOTHERAPY_FILE_SIZE_BYTES = 10 * 1024 * 1024
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -42,6 +46,39 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;')
+}
+
+function sanitizeStorageFileName(fileName) {
+  return String(fileName || 'file')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9._-]/g, '')
+    .slice(0, 120) || 'file'
+}
+
+function normalizeAttachmentFiles(value) {
+  if (!Array.isArray(value)) return []
+
+  return value
+    .filter((entry) => entry && typeof entry === 'object')
+    .map((entry) => ({
+      name: String(entry.name || 'File').trim() || 'File',
+      url: String(entry.url || '').trim()
+    }))
+    .filter((entry) => entry.url)
+}
+
+function renderAttachmentFiles(item) {
+  const files = normalizeAttachmentFiles(item?.attachment_files)
+  if (!files.length) return ''
+
+  return `
+    <div class="service-note mb-2">
+      ${files
+        .map((file) => `<a href="${escapeHtml(file.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(file.name)}</a>`)
+        .join(' · ')}
+    </div>
+  `
 }
 
 function isEmailLike(value) {
@@ -407,6 +444,7 @@ function renderAppointmentsList(items, options = {}) {
                 ? `<p class="service-note mb-2">${escapeHtml(item.name || '—')} · ${escapeHtml(item.telephone || '—')}</p>`
                 : ''}
               ${canViewAppointmentDetails(item, sessionUserId, isAdmin) && item.notes ? `<p class="service-note mb-2">${escapeHtml(item.notes)}</p>` : ''}
+              ${canViewAppointmentDetails(item, sessionUserId, isAdmin) ? renderAttachmentFiles(item) : ''}
               ${canManageAppointment(item, sessionUserId, isAdmin)
                 ? `
                   <div class="d-flex gap-2">
@@ -690,7 +728,7 @@ function renderTasks(tasks) {
 async function loadAppointments(supabase, service) {
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, title, name, telephone, email, notes, appointment_at, created_by')
+    .select('id, title, name, telephone, email, notes, attachment_files, appointment_at, created_by')
     .eq('service', service)
     .order('appointment_at', { ascending: true })
 
@@ -982,6 +1020,22 @@ async function renderServiceContent(root, service) {
                     <label class="form-label">Notes</label>
                     <input type="text" class="form-control" name="notes" placeholder="Optional" />
                   </div>
+                  ${service === 'physiotherapy'
+                    ? `
+                      <div>
+                        <label class="form-label">Upload Files</label>
+                        <input
+                          type="file"
+                          class="form-control"
+                          name="attachment_files"
+                          data-modal-physio-files
+                          accept="image/*,.pdf,.doc,.docx"
+                          multiple
+                        />
+                        <p class="service-note mb-0 mt-2">Optional. Upload up to ${MAX_PHYSIOTHERAPY_FILES} files (${Math.floor(MAX_PHYSIOTHERAPY_FILE_SIZE_BYTES / (1024 * 1024))}MB each).</p>
+                      </div>
+                    `
+                    : ''}
                   <p class="service-note mb-0" data-modal-appointment-status></p>
                   <button type="submit" class="btn btn-primary btn-glow w-100">Add</button>
                 </form>
@@ -999,6 +1053,7 @@ async function renderServiceContent(root, service) {
     const modalForm = modalElement.querySelector('[data-modal-appointment-form]')
     const modalStatus = modalElement.querySelector('[data-modal-appointment-status]')
     const dateInput = modalElement.querySelector('input[name="appointment_at"]')
+    const attachmentInput = modalElement.querySelector('[data-modal-physio-files]')
     if (!modalForm || !dateInput) return
 
     const localDate = new Date(`${dateKey}T${timeValue}:00`)
@@ -1007,6 +1062,9 @@ async function renderServiceContent(root, service) {
       : alignDateTimeLocal(localDate.toISOString(), slotMinutes)
 
     modalForm.reset()
+    if (attachmentInput) {
+      attachmentInput.value = ''
+    }
     dateInput.step = service === 'pilates' ? '60' : String(slotMinutes * 60)
     if (service === 'pilates') {
       dateInput.min = ''
@@ -1036,6 +1094,9 @@ async function renderServiceContent(root, service) {
       event.preventDefault()
 
       const formData = new FormData(modalForm)
+      const selectedFiles = service === 'physiotherapy' && attachmentInput
+        ? Array.from(attachmentInput.files || []).filter((file) => file instanceof File)
+        : []
       const payload = {
         service,
         name: String(formData.get('name') || '').trim(),
@@ -1051,6 +1112,22 @@ async function renderServiceContent(root, service) {
         if (modalStatus) {
           modalStatus.dataset.type = 'error'
           modalStatus.textContent = 'Please fill all required fields.'
+        }
+        return
+      }
+
+      if (service === 'physiotherapy' && selectedFiles.length > MAX_PHYSIOTHERAPY_FILES) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = `You can upload up to ${MAX_PHYSIOTHERAPY_FILES} files.`
+        }
+        return
+      }
+
+      if (service === 'physiotherapy' && selectedFiles.some((file) => file.size > MAX_PHYSIOTHERAPY_FILE_SIZE_BYTES)) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = `Each file must be up to ${Math.floor(MAX_PHYSIOTHERAPY_FILE_SIZE_BYTES / (1024 * 1024))}MB.`
         }
         return
       }
@@ -1075,13 +1152,78 @@ async function renderServiceContent(root, service) {
 
       payload.appointment_at = toUtcIsoString(payload.appointment_at)
 
-      const { error } = await supabase.from('appointments').insert(payload)
+      const { data: createdAppointment, error } = await supabase
+        .from('appointments')
+        .insert(payload)
+        .select('id')
+        .single()
+
       if (error) {
         if (modalStatus) {
           modalStatus.dataset.type = 'error'
           modalStatus.textContent = error.message
         }
         return
+      }
+
+      if (service === 'physiotherapy' && selectedFiles.length && createdAppointment?.id) {
+        const uploadedPaths = []
+
+        try {
+          const attachmentFiles = []
+
+          for (let index = 0; index < selectedFiles.length; index += 1) {
+            const file = selectedFiles[index]
+            const safeName = sanitizeStorageFileName(file.name)
+            const filePath = `${session.user.id}/${createdAppointment.id}/${Date.now()}-${index}-${safeName}`
+
+            const { error: uploadError } = await supabase.storage
+              .from(PHYSIOTHERAPY_FILES_BUCKET)
+              .upload(filePath, file, {
+                upsert: false,
+                contentType: file.type || undefined
+              })
+
+            if (uploadError) {
+              throw new Error(uploadError.message)
+            }
+
+            uploadedPaths.push(filePath)
+
+            const { data: publicUrlData } = supabase.storage
+              .from(PHYSIOTHERAPY_FILES_BUCKET)
+              .getPublicUrl(filePath)
+
+            attachmentFiles.push({
+              name: file.name,
+              url: publicUrlData?.publicUrl || '',
+              path: filePath,
+              size: file.size,
+              type: file.type || null
+            })
+          }
+
+          const { error: updateError } = await supabase
+            .from('appointments')
+            .update({ attachment_files: attachmentFiles })
+            .eq('id', createdAppointment.id)
+
+          if (updateError) {
+            throw new Error(updateError.message)
+          }
+        } catch (uploadFailure) {
+          if (uploadedPaths.length) {
+            await supabase.storage.from(PHYSIOTHERAPY_FILES_BUCKET).remove(uploadedPaths)
+          }
+
+          await supabase.from('appointments').delete().eq('id', createdAppointment.id)
+
+          if (modalStatus) {
+            modalStatus.dataset.type = 'error'
+            modalStatus.textContent = uploadFailure?.message || 'Failed to upload appointment files.'
+          }
+          return
+        }
       }
 
       modalInstance.hide()
