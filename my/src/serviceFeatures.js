@@ -849,7 +849,7 @@ async function renderServiceContent(root, service) {
         ? isAdmin
           ? `Admin mode: full appointment visibility and management for ${serviceLabel(service)}.`
           : `User mode: you can fully manage your appointments. Other users are shown as BUSY.`
-        : 'Guest mode: busy and not busy days/hours are visible. Sign in to create appointments.'
+        : 'Sign in to create appointments.'
   }
 
   if (appointmentForm) {
