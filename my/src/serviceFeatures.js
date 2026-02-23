@@ -560,6 +560,7 @@ function renderAppointmentCalendar(items, options = {}) {
     monthReference,
     selectedDate,
     selectedTime,
+    drawerOpen = false,
     allowWeekends = false,
     slotMinutes = 60,
     workStartHour = 8,
@@ -582,6 +583,7 @@ function renderAppointmentCalendar(items, options = {}) {
     workStartHour,
     workEndHour
   })
+  const drawerId = `appointment-calendar-drawer-${service}`
   const timeValues = timeOptions.map((slot) => slot.start)
   const activeTime = timeValues.includes(selectedTime) ? selectedTime : (timeValues[0] || '')
   const calendarDays = buildCalendarDays({
@@ -595,104 +597,118 @@ function renderAppointmentCalendar(items, options = {}) {
   })
 
   return `
-    <div class="appointment-planner">
-      <div class="appointment-calendar" data-calendar-root>
-      <div class="appointment-calendar-head">
-        <button
-          type="button"
-          class="appointment-calendar-nav"
-          data-calendar-nav="prev"
-          data-calendar-month="${toIsoDateKey(previousMonth)}"
-          aria-label="Previous month"
-        >
-          ‹
-        </button>
-        <h3 class="appointment-calendar-title mb-0">${escapeHtml(monthLabel)}</h3>
-        <button
-          type="button"
-          class="appointment-calendar-nav"
-          data-calendar-nav="next"
-          data-calendar-month="${toIsoDateKey(nextMonth)}"
-          aria-label="Next month"
-        >
-          ›
-        </button>
-      </div>
+    <div class="appointment-calendar-drawer">
+      <button
+        type="button"
+        class="appointment-calendar-drawer-toggle ${drawerOpen ? 'is-open' : ''}"
+        data-calendar-drawer-toggle
+        aria-expanded="${drawerOpen ? 'true' : 'false'}"
+        aria-controls="${drawerId}"
+      >
+        <span>Appointment Calendar</span>
+        <span class="appointment-calendar-drawer-indicator" aria-hidden="true">⌄</span>
+      </button>
 
-      <div class="appointment-calendar-pickers">
-        <label class="appointment-picker">
-          <span>Month</span>
-          <select data-calendar-month-select>
-            ${Array.from({ length: 12 }, (_, monthIndex) => {
-              const monthDate = new Date(activeMonth.getFullYear(), monthIndex, 1)
-              const monthName = monthDate.toLocaleString('en-US', { month: 'short' })
-              const selected = monthIndex === activeMonth.getMonth() ? 'selected' : ''
-              return `<option value="${monthIndex}" ${selected}>${escapeHtml(monthName)}</option>`
-            }).join('')}
-          </select>
-        </label>
-
-        <label class="appointment-picker">
-          <span>Year</span>
-          <select data-calendar-year-select>
-            ${yearOptions
-              .map((year) => `<option value="${year}" ${year === activeMonth.getFullYear() ? 'selected' : ''}>${year}</option>`)
-              .join('')}
-          </select>
-        </label>
-
-        <label class="appointment-picker">
-          <span>Hour</span>
-          <select data-calendar-time ${!isAuthenticated || !canCreateAppointments || !selectedDate || !timeOptions.length ? 'disabled' : ''}>
-            ${timeOptions
-              .map((timeSlot) => `<option value="${timeSlot.start}" ${timeSlot.start === activeTime ? 'selected' : ''}>${escapeHtml(timeSlot.label)}</option>`)
-              .join('')}
-          </select>
-        </label>
-      </div>
-
-      <div class="appointment-calendar-weekdays" aria-hidden="true">
-        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-      </div>
-
-      <div class="appointment-calendar-grid" role="grid" aria-label="Appointment date calendar">
-        ${calendarDays
-          .map((day) => {
-            const classes = [
-              'appointment-calendar-day',
-              day.inCurrentMonth ? '' : 'is-outside-month',
-              day.nonWorking ? 'is-non-working' : '',
-              day.hasBusySlots ? 'is-busy' : '',
-              day.isOpen ? 'is-open' : '',
-              day.isSelected ? 'is-selected' : ''
-            ]
-              .filter(Boolean)
-              .join(' ')
-
-            return `
+      <div id="${drawerId}" class="appointment-calendar-drawer-panel ${drawerOpen ? 'is-open' : ''}" data-calendar-drawer>
+        <div class="appointment-planner">
+          <div class="appointment-calendar" data-calendar-root>
+            <div class="appointment-calendar-head">
               <button
                 type="button"
-                class="${classes}"
-                data-calendar-date="${day.dayKey}"
-                ${day.disabled ? 'disabled' : ''}
+                class="appointment-calendar-nav"
+                data-calendar-nav="prev"
+                data-calendar-month="${toIsoDateKey(previousMonth)}"
+                aria-label="Previous month"
               >
-                <span>${day.dayNumber}</span>
+                ‹
               </button>
-            `
-          })
-          .join('')}
-      </div>
+              <h3 class="appointment-calendar-title mb-0">${escapeHtml(monthLabel)}</h3>
+              <button
+                type="button"
+                class="appointment-calendar-nav"
+                data-calendar-nav="next"
+                data-calendar-month="${toIsoDateKey(nextMonth)}"
+                aria-label="Next month"
+              >
+                ›
+              </button>
+            </div>
 
-      </div>
+            <div class="appointment-calendar-pickers">
+              <label class="appointment-picker">
+                <span>Month</span>
+                <select data-calendar-month-select>
+                  ${Array.from({ length: 12 }, (_, monthIndex) => {
+                    const monthDate = new Date(activeMonth.getFullYear(), monthIndex, 1)
+                    const monthName = monthDate.toLocaleString('en-US', { month: 'short' })
+                    const selected = monthIndex === activeMonth.getMonth() ? 'selected' : ''
+                    return `<option value="${monthIndex}" ${selected}>${escapeHtml(monthName)}</option>`
+                  }).join('')}
+                </select>
+              </label>
 
-      ${renderDayHoursScheduleCard(items, {
-        service,
-        selectedDate,
-        slotMinutes,
-        workStartHour,
-        workEndHour,
-        maxAppointmentsPerSlot
-      })}
+              <label class="appointment-picker">
+                <span>Year</span>
+                <select data-calendar-year-select>
+                  ${yearOptions
+                    .map((year) => `<option value="${year}" ${year === activeMonth.getFullYear() ? 'selected' : ''}>${year}</option>`)
+                    .join('')}
+                </select>
+              </label>
+
+              <label class="appointment-picker">
+                <span>Hour</span>
+                <select data-calendar-time ${!isAuthenticated || !canCreateAppointments || !selectedDate || !timeOptions.length ? 'disabled' : ''}>
+                  ${timeOptions
+                    .map((timeSlot) => `<option value="${timeSlot.start}" ${timeSlot.start === activeTime ? 'selected' : ''}>${escapeHtml(timeSlot.label)}</option>`)
+                    .join('')}
+                </select>
+              </label>
+            </div>
+
+            <div class="appointment-calendar-weekdays" aria-hidden="true">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+
+            <div class="appointment-calendar-grid" role="grid" aria-label="Appointment date calendar">
+              ${calendarDays
+                .map((day) => {
+                  const classes = [
+                    'appointment-calendar-day',
+                    day.inCurrentMonth ? '' : 'is-outside-month',
+                    day.nonWorking ? 'is-non-working' : '',
+                    day.hasBusySlots ? 'is-busy' : '',
+                    day.isOpen ? 'is-open' : '',
+                    day.isSelected ? 'is-selected' : ''
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
+
+                  return `
+                    <button
+                      type="button"
+                      class="${classes}"
+                      data-calendar-date="${day.dayKey}"
+                      ${day.disabled ? 'disabled' : ''}
+                    >
+                      <span>${day.dayNumber}</span>
+                    </button>
+                  `
+                })
+                .join('')}
+            </div>
+          </div>
+
+          ${renderDayHoursScheduleCard(items, {
+            service,
+            selectedDate,
+            slotMinutes,
+            workStartHour,
+            workEndHour,
+            maxAppointmentsPerSlot
+          })}
+        </div>
+      </div>
     </div>
   `
 }
@@ -800,6 +816,7 @@ async function renderServiceContent(root, service) {
   const monthReference = root.dataset.calendarMonth || toIsoDateKey(getMonthStart(new Date()))
   const selectedDate = root.dataset.selectedDate || ''
   const selectedTime = root.dataset.selectedTime || ''
+  const drawerOpen = root.dataset.calendarDrawerOpen === 'true'
 
   const appointmentsResult = await loadAppointments(supabase, service)
   const effectiveSelectedDate = resolveSelectedCalendarDate({
@@ -831,6 +848,7 @@ async function renderServiceContent(root, service) {
         monthReference,
         selectedDate: effectiveSelectedDate,
         selectedTime: effectiveSelectedTime,
+        drawerOpen,
         allowWeekends,
         slotMinutes,
         workStartHour,
@@ -851,6 +869,24 @@ async function renderServiceContent(root, service) {
           : `User mode: you can fully manage your appointments. Other users are shown as BUSY.`
         : 'Sign in to create appointments.'
   }
+
+  const calendarDrawerToggle = appointmentsList?.querySelector('[data-calendar-drawer-toggle]')
+  const calendarDrawer = appointmentsList?.querySelector('[data-calendar-drawer]')
+  const updateCalendarDrawerState = (isOpen) => {
+    root.dataset.calendarDrawerOpen = isOpen ? 'true' : 'false'
+    calendarDrawer?.classList.toggle('is-open', isOpen)
+    calendarDrawerToggle?.classList.toggle('is-open', isOpen)
+    if (calendarDrawerToggle) {
+      calendarDrawerToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false')
+    }
+  }
+
+  updateCalendarDrawerState(drawerOpen)
+
+  calendarDrawerToggle?.addEventListener('click', () => {
+    const isOpen = root.dataset.calendarDrawerOpen === 'true'
+    updateCalendarDrawerState(!isOpen)
+  })
 
   if (appointmentForm) {
     appointmentForm.classList.toggle('d-none', !isAuthenticated)

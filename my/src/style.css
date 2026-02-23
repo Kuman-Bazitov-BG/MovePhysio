@@ -515,6 +515,55 @@ body {
   background: rgba(8, 24, 40, 0.5);
 }
 
+.appointment-calendar-drawer {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.appointment-calendar-drawer-toggle {
+  width: 100%;
+  border: 1px solid rgba(173, 231, 255, 0.26);
+  border-radius: 0.9rem;
+  background: rgba(6, 20, 34, 0.62);
+  color: var(--text-main);
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.appointment-calendar-drawer-toggle:hover,
+.appointment-calendar-drawer-toggle:focus-visible,
+.appointment-calendar-drawer-toggle.is-open {
+  border-color: rgba(173, 231, 255, 0.46);
+}
+
+.appointment-calendar-drawer-indicator {
+  line-height: 1;
+  font-size: 1.05rem;
+  transition: transform 0.2s ease;
+}
+
+.appointment-calendar-drawer-toggle.is-open .appointment-calendar-drawer-indicator {
+  transform: rotate(180deg);
+}
+
+.appointment-calendar-drawer-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: max-height 0.28s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.appointment-calendar-drawer-panel.is-open {
+  max-height: 1800px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .appointment-calendar {
   border: 1px solid rgba(173, 231, 255, 0.2);
   border-radius: 0.9rem;
