@@ -826,9 +826,12 @@ function renderAppointmentCalendar(items, options = {}) {
             <div class="appointment-calendar-grid" role="grid" aria-label="Appointment date calendar">
               ${calendarDays
                 .map((day) => {
+                  if (!day.inCurrentMonth) {
+                    return '<span class="appointment-calendar-day is-placeholder" aria-hidden="true"></span>'
+                  }
+
                   const classes = [
                     'appointment-calendar-day',
-                    day.inCurrentMonth ? '' : 'is-outside-month',
                     day.nonWorking ? 'is-non-working' : '',
                     day.hasBusySlots ? 'is-busy' : '',
                     day.isOpen ? 'is-open' : '',
