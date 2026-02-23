@@ -52,7 +52,7 @@ function renderAccessDenied() {
       <i class="bi bi-shield-exclamation access-denied-icon"></i>
       <h1>Access Denied</h1>
       <p>You do not have permission to access this workspace.</p>
-      <a href="/admin.html" class="btn-home"><i class="bi bi-arrow-left me-2"></i>Back to Admin</a>
+      <a href="/admin.html" class="btn admin-pill-btn"><i class="bi bi-arrow-left me-2"></i>Admin Panel</a>
     </div>
   `
 }
@@ -337,7 +337,7 @@ function renderWorkspace(tasks) {
               <p class="workspace-subtitle">Dedicated single page for daily, weekly and monthly admin operations.</p>
             </div>
             <div class="workspace-actions">
-              <a href="/admin.html" class="btn btn-outline-info"><i class="bi bi-arrow-left me-2"></i>Back to Admin</a>
+              <a href="/admin.html" class="btn admin-pill-btn"><i class="bi bi-arrow-left me-2"></i>Admin Panel</a>
               <a href="/" class="btn admin-pill-btn"><i class="bi bi-house-door me-2"></i>Back to Site</a>
               <button id="tasks-logout-btn" class="btn admin-pill-btn"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
             </div>

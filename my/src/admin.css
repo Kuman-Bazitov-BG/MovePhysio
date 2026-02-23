@@ -28,8 +28,7 @@
   align-items: center;
 }
 
-.admin-actions .admin-pill-btn,
-.workspace-actions .admin-pill-btn {
+.admin-pill-btn {
   color: #f6fdff;
   border: 1px solid transparent;
   border-radius: 999px;
@@ -48,10 +47,8 @@
   text-decoration: none;
 }
 
-.admin-actions .admin-pill-btn:hover,
-.admin-actions .admin-pill-btn:focus-visible,
-.workspace-actions .admin-pill-btn:hover,
-.workspace-actions .admin-pill-btn:focus-visible {
+.admin-pill-btn:hover,
+.admin-pill-btn:focus-visible {
   color: #f6fdff;
   border-color: transparent;
   background: linear-gradient(120deg, #2f9ff7, #34d3ff);
