@@ -325,6 +325,68 @@
   opacity: 0.8;
 }
 
+.appointment-files-panel {
+  border: 1px solid rgba(120, 219, 255, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: rgba(15, 28, 45, 0.55);
+}
+
+.appointment-files-empty {
+  color: #9ecde0;
+}
+
+.appointment-files-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.appointment-file-item {
+  border: 1px solid rgba(120, 219, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.appointment-file-name {
+  color: #d5f2ff;
+  font-weight: 600;
+}
+
+.appointment-file-details {
+  color: #9ecde0;
+  font-size: 0.82rem;
+}
+
+.appointment-file-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.appointment-file-actions .action-btn {
+  text-decoration: none;
+}
+
+.appointment-file-unavailable {
+  color: #9ecde0;
+  font-size: 0.82rem;
+}
+
+.appointment-file-preview-frame {
+  width: 100%;
+  min-height: 380px;
+  border: 1px solid rgba(120, 219, 255, 0.25);
+  border-radius: 10px;
+  background: rgba(15, 28, 45, 0.72);
+}
+
 .users-table .form-control,
 .users-table .form-select {
   min-width: 96px;

@@ -6,6 +6,7 @@ const hasConfig =
   Boolean(supabaseUrl && supabaseAnonKey) &&
   !/your-project-ref|your-anon-key|your-publishable-key/i.test(`${supabaseUrl} ${supabaseAnonKey}`)
 const supabase = hasConfig ? createClient(supabaseUrl, supabaseAnonKey) : null
+const PHYSIOTHERAPY_FILES_BUCKET = 'physiotherapy-appointment-files'
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -202,7 +203,7 @@ async function loadAppointmentsAdmin() {
   try {
     const { data, error } = await supabase
       .from('appointments')
-      .select('id, service, title, notes, appointment_at, created_at')
+      .select('id, service, title, notes, appointment_at, created_at, created_by, attachment_files')
       .order('appointment_at', { ascending: true })
 
     if (error) {
@@ -223,7 +224,7 @@ async function loadAppointmentAdminById(appointmentId) {
   try {
     const { data, error } = await supabase
       .from('appointments')
-      .select('id, service, title, notes, appointment_at, created_at')
+      .select('id, service, title, notes, appointment_at, created_at, created_by, attachment_files')
       .eq('id', appointmentId)
       .single()
 
@@ -569,6 +570,237 @@ function isAlignedToSlot(value, slotMinutes) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime()) || !slotMinutes) return true
   return date.getMinutes() % slotMinutes === 0
+}
+
+function parseAttachmentFiles(value) {
+  if (Array.isArray(value)) return value
+  if (typeof value !== 'string') return []
+
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function resolveAttachmentPublicUrl(filePath, existingUrl) {
+  const normalizedExistingUrl = String(existingUrl || '').trim()
+  if (normalizedExistingUrl) return normalizedExistingUrl
+
+  const normalizedPath = String(filePath || '').trim()
+  if (!normalizedPath || !supabase) return ''
+
+  const { data } = supabase.storage
+    .from(PHYSIOTHERAPY_FILES_BUCKET)
+    .getPublicUrl(normalizedPath)
+
+  return String(data?.publicUrl || '').trim()
+}
+
+function normalizeAdminAttachmentFiles(value) {
+  return parseAttachmentFiles(value)
+    .map((entry, index) => {
+      if (typeof entry === 'string') {
+        const pathValue = entry.trim()
+        const finalUrl = resolveAttachmentPublicUrl(pathValue, '')
+        return {
+          name: pathValue.split('/').pop() || `File ${index + 1}`,
+          url: finalUrl,
+          path: pathValue,
+          size: null,
+          type: null
+        }
+      }
+
+      if (!entry || typeof entry !== 'object') return null
+
+      const pathValue = String(entry.path || '').trim()
+      const finalUrl = resolveAttachmentPublicUrl(pathValue, entry.url)
+
+      return {
+        name: String(entry.name || pathValue.split('/').pop() || `File ${index + 1}`).trim() || `File ${index + 1}`,
+        url: finalUrl,
+        path: pathValue,
+        size: entry.size ?? null,
+        type: entry.type ?? null
+      }
+    })
+    .filter((entry) => entry && (entry.url || entry.path))
+}
+
+async function loadAppointmentFilesFromBucket(createdBy, appointmentId) {
+  const ownerId = String(createdBy || '').trim()
+  const id = String(appointmentId || '').trim()
+  if (!ownerId || !id || !supabase) return []
+
+  try {
+    const folder = `${ownerId}/${id}`
+    const { data, error } = await supabase.storage
+      .from(PHYSIOTHERAPY_FILES_BUCKET)
+      .list(folder, {
+        limit: 100,
+        sortBy: { column: 'name', order: 'asc' }
+      })
+
+    if (error || !Array.isArray(data)) return []
+
+    return data
+      .filter((item) => item && typeof item.name === 'string' && item.name.length > 0)
+      .map((item, index) => {
+        const path = `${folder}/${item.name}`
+        const url = resolveAttachmentPublicUrl(path, '')
+
+        return {
+          name: item.name || `File ${index + 1}`,
+          path,
+          url,
+          size: item.metadata?.size ?? null,
+          type: item.metadata?.mimetype ?? null
+        }
+      })
+  } catch {
+    return []
+  }
+}
+
+async function loadAppointmentFilesFromStorageObjects(appointmentId) {
+  const id = String(appointmentId || '').trim()
+  if (!id || !supabase) return { files: [], error: null }
+
+  try {
+    const { data, error } = await supabase
+      .schema('storage')
+      .from('objects')
+      .select('name, metadata, created_at')
+      .eq('bucket_id', PHYSIOTHERAPY_FILES_BUCKET)
+      .ilike('name', `%/${id}/%`)
+      .order('created_at', { ascending: false })
+      .limit(100)
+
+    if (error) {
+      return { files: [], error: error.message }
+    }
+
+    const files = (data || [])
+      .filter((item) => item && typeof item.name === 'string' && item.name.trim())
+      .map((item, index) => {
+        const path = String(item.name || '').trim()
+        const url = resolveAttachmentPublicUrl(path, '')
+
+        return {
+          name: path.split('/').pop() || `File ${index + 1}`,
+          path,
+          url,
+          size: item.metadata?.size ?? null,
+          type: item.metadata?.mimetype ?? null
+        }
+      })
+
+    return { files, error: null }
+  } catch (error) {
+    return { files: [], error: error.message }
+  }
+}
+
+async function loadAllFilesFromStorageBucket() {
+  if (!supabase) return { files: [], error: null }
+
+  try {
+    const { data, error } = await supabase
+      .schema('storage')
+      .from('objects')
+      .select('name, metadata, created_at')
+      .eq('bucket_id', PHYSIOTHERAPY_FILES_BUCKET)
+      .order('created_at', { ascending: false })
+      .limit(200)
+
+    if (error) {
+      return { files: [], error: error.message }
+    }
+
+    const files = (data || [])
+      .filter((item) => item && typeof item.name === 'string' && item.name.trim())
+      .map((item, index) => {
+        const path = String(item.name || '').trim()
+        const url = resolveAttachmentPublicUrl(path, '')
+
+        return {
+          name: path.split('/').pop() || `File ${index + 1}`,
+          path,
+          url,
+          size: item.metadata?.size ?? null,
+          type: item.metadata?.mimetype ?? null
+        }
+      })
+
+    return { files, error: null }
+  } catch (error) {
+    return { files: [], error: error.message }
+  }
+}
+
+function mergeAppointmentFiles(primaryFiles, fallbackFiles) {
+  const merged = []
+  const seen = new Set()
+
+  const addFile = (file) => {
+    if (!file) return
+    const key = String(file.path || file.url || file.name || '').trim().toLowerCase()
+    if (!key || seen.has(key)) return
+    seen.add(key)
+    merged.push(file)
+  }
+
+  primaryFiles.forEach(addFile)
+  fallbackFiles.forEach(addFile)
+
+  return merged
+}
+
+function formatFileSize(sizeBytes) {
+  const numericSize = Number(sizeBytes)
+  if (!Number.isFinite(numericSize) || numericSize < 0) return 'Unknown size'
+  if (numericSize < 1024) return `${numericSize} B`
+  if (numericSize < 1024 * 1024) return `${(numericSize / 1024).toFixed(1)} KB`
+  return `${(numericSize / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function renderAppointmentAttachmentItems(attachmentFiles) {
+  if (!Array.isArray(attachmentFiles) || !attachmentFiles.length) {
+    return '<p class="appointment-files-empty mb-0">No uploaded files for this appointment.</p>'
+  }
+
+  return `
+    <ul class="appointment-files-list">
+      ${attachmentFiles
+        .map((file, index) => {
+          const name = escapeHtml(file?.name || `File ${index + 1}`)
+          const url = String(file?.url || '').trim()
+          const type = escapeHtml(file?.type || 'unknown')
+          const size = formatFileSize(file?.size)
+          const controls = url
+            ? `
+              <div class="appointment-file-actions">
+                <button type="button" class="action-btn appointment-file-preview-btn" data-preview-file-url="${escapeHtml(url)}">Preview</button>
+                <a class="action-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Open</a>
+              </div>
+            `
+            : '<span class="appointment-file-unavailable">No URL available</span>'
+
+          return `
+            <li class="appointment-file-item">
+              <div class="appointment-file-meta">
+                <div class="appointment-file-name">${name}</div>
+                <div class="appointment-file-details">${size} • ${type}</div>
+              </div>
+              ${controls}
+            </li>
+          `
+        })
+        .join('')}
+    </ul>
+  `
 }
 
 function renderUserRow(user) {
@@ -973,6 +1205,20 @@ async function renderAdminPanel() {
                   <label class="form-label">Notes</label>
                   <textarea class="form-control" name="notes" rows="3" placeholder="Notes"></textarea>
                 </div>
+                <div class="col-12">
+                  <label class="form-label">Physiotherapy Files</label>
+                  <div id="appointment-files-panel" class="appointment-files-panel">
+                    <p class="appointment-files-empty mb-0">No uploaded files for this appointment.</p>
+                  </div>
+                </div>
+                <div class="col-12 d-none" id="appointment-file-preview-wrapper">
+                  <label class="form-label">File Preview</label>
+                  <iframe
+                    id="appointment-file-preview-frame"
+                    class="appointment-file-preview-frame"
+                    title="Appointment file preview"
+                  ></iframe>
+                </div>
               </form>
               <p id="appointment-details-status" class="service-note mt-3 mb-0"></p>
             </div>
@@ -1187,6 +1433,9 @@ async function initAdminPanel() {
     const appointmentDetailsStatus = document.querySelector('#appointment-details-status')
     const appointmentDetailsSaveBtn = document.querySelector('#appointment-details-save-btn')
     const appointmentDetailsDeleteBtn = document.querySelector('#appointment-details-delete-btn')
+    const appointmentFilesPanel = document.querySelector('#appointment-files-panel')
+    const appointmentFilePreviewWrapper = document.querySelector('#appointment-file-preview-wrapper')
+    const appointmentFilePreviewFrame = document.querySelector('#appointment-file-preview-frame')
 
     const appointmentConfigs = await loadAppointmentConfigurations()
     const slotByService = new Map(
@@ -1251,6 +1500,32 @@ async function initAdminPanel() {
       detailsDateInput.value = toDateTimeLocal(appointmentResult.data.appointment_at)
       detailsNotesInput.value = appointmentResult.data.notes || ''
       detailsCreatedInput.value = formatDate(appointmentResult.data.created_at)
+
+      if (appointmentFilesPanel) {
+        const normalizedFiles = normalizeAdminAttachmentFiles(appointmentResult.data.attachment_files)
+        const filesFromBucket = await loadAppointmentFilesFromBucket(
+          appointmentResult.data.created_by,
+          appointmentResult.data.id
+        )
+        const appointmentObjectResult = await loadAppointmentFilesFromStorageObjects(appointmentResult.data.id)
+        let mergedFiles = mergeAppointmentFiles(normalizedFiles, filesFromBucket)
+        mergedFiles = mergeAppointmentFiles(mergedFiles, appointmentObjectResult.files)
+
+        if (!mergedFiles.length) {
+          const allFilesResult = await loadAllFilesFromStorageBucket()
+          mergedFiles = mergeAppointmentFiles(mergedFiles, allFilesResult.files)
+        }
+
+        appointmentFilesPanel.innerHTML = renderAppointmentAttachmentItems(mergedFiles)
+
+        if (!mergedFiles.length && appointmentDetailsStatus && appointmentObjectResult.error) {
+          appointmentDetailsStatus.textContent = 'Unable to read bucket files. Please apply storage read policy for admin users.'
+        }
+      }
+      if (appointmentFilePreviewFrame) {
+        appointmentFilePreviewFrame.src = 'about:blank'
+      }
+      appointmentFilePreviewWrapper?.classList.add('d-none')
 
       applyDetailsSlotConstraint()
       appointmentDetailsModal.show()
@@ -1404,6 +1679,17 @@ async function initAdminPanel() {
       }
       appointmentDetailsModal.hide()
       await renderAndBind()
+    })
+
+    appointmentFilesPanel?.addEventListener('click', (event) => {
+      const previewButton = event.target.closest('.appointment-file-preview-btn')
+      if (!previewButton) return
+
+      const previewUrl = String(previewButton.dataset.previewFileUrl || '').trim()
+      if (!previewUrl || !appointmentFilePreviewWrapper || !appointmentFilePreviewFrame) return
+
+      appointmentFilePreviewFrame.src = previewUrl
+      appointmentFilePreviewWrapper.classList.remove('d-none')
     })
 
   }
