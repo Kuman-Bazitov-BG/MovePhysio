@@ -205,7 +205,8 @@ function renderDayHoursSchedule(items, options = {}) {
     selectedDate,
     slotMinutes = 60,
     workStartHour = 8,
-    workEndHour = 20
+    workEndHour = 20,
+    maxAppointmentsPerSlot = 1
   } = options
 
   if (!selectedDate) {
@@ -217,14 +218,18 @@ function renderDayHoursSchedule(items, options = {}) {
 
   const dateLabel = createDateLabel(selectedDate)
   const timeSlots = getTimeSlotOptions(slotMinutes, workStartHour, workEndHour)
-  const busyTimes = new Set(
-    items
-      .filter((item) => toIsoDateKey(item.appointment_at) === selectedDate)
-      .map((item) => toLocalTimeKey(item.appointment_at))
-      .filter(Boolean)
-  )
+  const safeMaxAppointmentsPerSlot = Number(maxAppointmentsPerSlot) > 0 ? Number(maxAppointmentsPerSlot) : 1
+  const slotUsage = new Map()
 
-  const busyCount = timeSlots.filter((timeValue) => busyTimes.has(timeValue)).length
+  items
+    .filter((item) => toIsoDateKey(item.appointment_at) === selectedDate)
+    .map((item) => toLocalTimeKey(item.appointment_at))
+    .filter(Boolean)
+    .forEach((timeValue) => {
+      slotUsage.set(timeValue, (slotUsage.get(timeValue) || 0) + 1)
+    })
+
+  const busyCount = timeSlots.filter((timeValue) => (slotUsage.get(timeValue) || 0) >= safeMaxAppointmentsPerSlot).length
 
   return `
     <h3 class="service-card-title mb-2">Day Hour Schedule</h3>
@@ -232,14 +237,15 @@ function renderDayHoursSchedule(items, options = {}) {
     <ul class="hour-schedule-list mb-0">
       ${timeSlots
         .map((timeValue) => {
-          const isBusy = busyTimes.has(timeValue)
+          const usedSlots = slotUsage.get(timeValue) || 0
+          const isBusy = usedSlots >= safeMaxAppointmentsPerSlot
           return `
             <li
               class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open is-clickable'}"
               ${isBusy ? '' : `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"`}
             >
               <span>${escapeHtml(timeValue)}</span>
-              <strong>${isBusy ? 'Busy' : 'Not busy'}</strong>
+              <strong>${isBusy ? 'Busy' : 'Not busy'} · ${usedSlots}/${safeMaxAppointmentsPerSlot}</strong>
             </li>
           `
         })
@@ -361,6 +367,7 @@ function renderAppointmentCalendar(items, options = {}) {
     slotMinutes = 60,
     workStartHour = 8,
     workEndHour = 20,
+    maxAppointmentsPerSlot = 1,
     isAuthenticated = false,
     canCreateAppointments = false
   } = options
@@ -482,7 +489,8 @@ function renderAppointmentCalendar(items, options = {}) {
         selectedDate,
         slotMinutes,
         workStartHour,
-        workEndHour
+        workEndHour,
+        maxAppointmentsPerSlot
       })}
     </div>
   `
@@ -547,7 +555,7 @@ async function loadTasks(supabase, service) {
 async function loadAppointmentConfiguration(supabase, service) {
   const { data, error } = await supabase
     .from('appointment_configurations')
-    .select('slot_minutes, work_start_hour, work_end_hour, allow_weekends')
+    .select('slot_minutes, work_start_hour, work_end_hour, allow_weekends, max_appointments_per_slot')
     .eq('service', service)
     .single()
 
@@ -587,6 +595,7 @@ async function renderServiceContent(root, service) {
   const workStartHour = configResult.data?.work_start_hour ?? 8
   const workEndHour = configResult.data?.work_end_hour ?? 20
   const allowWeekends = Boolean(configResult.data?.allow_weekends)
+  const maxAppointmentsPerSlot = configResult.data?.max_appointments_per_slot ?? 1
   const monthReference = root.dataset.calendarMonth || toIsoDateKey(getMonthStart(new Date()))
   const selectedDate = root.dataset.selectedDate || ''
   const selectedTime = root.dataset.selectedTime || `${String(workStartHour).padStart(2, '0')}:00`
@@ -612,6 +621,7 @@ async function renderServiceContent(root, service) {
         slotMinutes,
         workStartHour,
         workEndHour,
+        maxAppointmentsPerSlot,
         isAuthenticated,
         canCreateAppointments
       })}
@@ -939,7 +949,8 @@ async function renderServiceContent(root, service) {
           selectedDate: dateKey,
           slotMinutes,
           workStartHour,
-          workEndHour
+          workEndHour,
+          maxAppointmentsPerSlot
         })
         bindHourScheduleHandlers()
       }
