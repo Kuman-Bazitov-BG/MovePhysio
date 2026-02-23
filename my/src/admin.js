@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getSupabaseConfig } from './config.js'
+import { applyTranslations, initI18n } from './i18n.js'
 
 const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
 const hasConfig =
@@ -1275,6 +1276,8 @@ async function initAdminPanel() {
   const appElement = document.querySelector('#admin-app')
   if (!appElement) return
 
+  initI18n()
+
   if (adminRealtimeChannel) {
     adminRealtimeChannel.unsubscribe()
     adminRealtimeChannel = null
@@ -1290,6 +1293,7 @@ async function initAdminPanel() {
 
   if (!isAdmin) {
     appElement.innerHTML = renderAccessDenied()
+    applyTranslations(appElement)
     if (error) {
       console.warn('Admin access denied:', error)
     }
@@ -1305,6 +1309,7 @@ async function initAdminPanel() {
     isRenderingAdminPanel = true
     try {
       appElement.innerHTML = await renderAdminPanel()
+      applyTranslations(appElement)
 
     const totalUsersCard = document.querySelector('#stat-total-users')
     const appointmentsCard = document.querySelector('#stat-appointments')

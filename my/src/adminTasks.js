@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getSupabaseConfig } from './config.js'
+import { applyTranslations, initI18n } from './i18n.js'
 
 const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
 const hasConfig =
@@ -462,15 +463,19 @@ async function initTasksWorkspace() {
   const appElement = document.querySelector('#admin-tasks-app')
   if (!appElement) return
 
+  initI18n()
+
   const access = await checkAdminAccess()
   if (!access.isAdmin) {
     appElement.innerHTML = renderAccessDenied()
+    applyTranslations(appElement)
     return
   }
 
   const renderAndBind = async () => {
     const tasks = await loadTasks()
     appElement.innerHTML = renderWorkspace(tasks)
+    applyTranslations(appElement)
 
     const taskForm = document.querySelector('#task-form')
     const taskTitleInput = taskForm?.querySelector('input[name="title"]')

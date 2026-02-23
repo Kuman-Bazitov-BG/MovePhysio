@@ -2,6 +2,7 @@ import './style.css'
 import { initAuth } from './auth.js'
 import { renderApp } from './app.js'
 import { initServiceFeatures } from './serviceFeatures.js'
+import { applyTranslations, initI18n } from './i18n.js'
 
 function initLiveBackground(canvas) {
   if (!canvas) return () => {}
@@ -89,6 +90,8 @@ function bootstrap() {
   const root = document.querySelector('#app')
   if (!root) return
 
+  initI18n()
+
   let cleanupBackground = () => {}
 
   const renderRoute = () => {
@@ -99,6 +102,7 @@ function bootstrap() {
     cleanupBackground = initLiveBackground(backgroundCanvas)
     initAuth()
     initServiceFeatures(window.location.pathname)
+    applyTranslations(root)
   }
 
   root.addEventListener('click', (event) => {
