@@ -213,6 +213,15 @@
   background: rgba(120, 219, 255, 0.1);
 }
 
+.users-table tbody tr.appointment-row {
+  cursor: pointer;
+}
+
+.users-table tbody tr.appointment-row:focus-visible {
+  outline: 2px solid #78dbff;
+  outline-offset: -2px;
+}
+
 .role-badge {
   display: inline-block;
   padding: 0.35rem 0.75rem;
@@ -275,6 +284,45 @@
   color: #ffd4dc;
   background: rgba(255, 127, 150, 0.25);
   box-shadow: 0 0 12px rgba(255, 127, 150, 0.35);
+}
+
+.admin-modal-content {
+  background: rgba(15, 28, 45, 0.98);
+  border: 1px solid rgba(120, 219, 255, 0.35);
+  color: #e0f7ff;
+}
+
+.admin-modal-content .modal-header,
+.admin-modal-content .modal-footer {
+  border-color: rgba(120, 219, 255, 0.25);
+}
+
+.admin-modal-content .modal-title {
+  color: #78dbff;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.admin-modal-content .form-label {
+  color: #99e5ff;
+}
+
+.admin-modal-content .form-control,
+.admin-modal-content .form-select,
+.admin-modal-content textarea {
+  background: rgba(15, 28, 45, 0.75);
+  border: 1px solid rgba(120, 219, 255, 0.35);
+  color: #e0f7ff;
+}
+
+.admin-modal-content .form-control:focus,
+.admin-modal-content .form-select:focus,
+.admin-modal-content textarea:focus {
+  border-color: #78dbff;
+  box-shadow: 0 0 0 0.2rem rgba(120, 219, 255, 0.2);
+}
+
+.admin-modal-content .form-control[readonly] {
+  opacity: 0.8;
 }
 
 .users-table .form-control,

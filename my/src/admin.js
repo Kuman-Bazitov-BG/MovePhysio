@@ -217,6 +217,26 @@ async function loadAppointmentsAdmin() {
   }
 }
 
+async function loadAppointmentAdminById(appointmentId) {
+  if (!supabase) return { data: null, error: 'Supabase not configured' }
+
+  try {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('id, service, title, notes, appointment_at, created_at')
+      .eq('id', appointmentId)
+      .single()
+
+    if (error) {
+      return { data: null, error: error.message }
+    }
+
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error: error.message }
+  }
+}
+
 async function createAppointmentAdmin(payload, userId) {
   if (!supabase) return { success: false, error: 'Supabase not configured' }
 
@@ -609,7 +629,7 @@ function renderAppointmentConfigurationRows(configs) {
 
 function renderAppointmentRow(appointment) {
   return `
-    <tr data-appointment-id="${appointment.id}">
+    <tr data-appointment-id="${appointment.id}" class="appointment-row" role="button" tabindex="0" aria-label="Open appointment details">
       <td>${escapeHtml(appointment.service)}</td>
       <td>${escapeHtml(appointment.title)}</td>
       <td>${formatDate(appointment.appointment_at)}</td>
@@ -617,10 +637,10 @@ function renderAppointmentRow(appointment) {
       <td>${formatDate(appointment.created_at)}</td>
       <td>
         <button class="action-btn appointment-edit-btn" data-appointment-id="${appointment.id}">
-          <i class="bi bi-pencil me-1"></i>Edit
+          <i class="bi bi-pencil me-1"></i>Open
         </button>
         <button class="action-btn appointment-delete-btn ms-2" data-appointment-id="${appointment.id}">
-          <i class="bi bi-trash me-1"></i>Delete
+          <i class="bi bi-trash me-1"></i>Remove
         </button>
       </td>
     </tr>
@@ -918,6 +938,59 @@ async function renderAdminPanel() {
         </div>
       </div>
 
+      <div class="modal fade" id="appointmentDetailsModal" tabindex="-1" aria-labelledby="appointmentDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content admin-modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="appointmentDetailsModalLabel">
+                <i class="bi bi-calendar-event me-2"></i>Appointment Details
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="appointment-details-form" class="row g-3">
+                <input type="hidden" name="appointment_id" />
+                <div class="col-md-4">
+                  <label class="form-label">Service</label>
+                  <select class="form-select" name="service" required>
+                    <option value="physiotherapy">physiotherapy</option>
+                    <option value="pilates">pilates</option>
+                  </select>
+                </div>
+                <div class="col-md-8">
+                  <label class="form-label">Title</label>
+                  <input type="text" class="form-control" name="title" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Date/Time</label>
+                  <input type="datetime-local" class="form-control" name="appointment_at" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Created</label>
+                  <input type="text" class="form-control" name="created_at_readonly" readonly />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-control" name="notes" rows="3" placeholder="Notes"></textarea>
+                </div>
+              </form>
+              <p id="appointment-details-status" class="service-note mt-3 mb-0"></p>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+              <button type="button" class="btn btn-outline-danger" id="appointment-details-delete-btn">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="appointment-details-save-btn">
+                  <i class="bi bi-check2-circle me-1"></i>Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   `
 }
@@ -1106,6 +1179,14 @@ async function initAdminPanel() {
 
     const appointmentForm = document.querySelector('#admin-appointment-form')
     const appointmentStatus = document.querySelector('#admin-appointment-status')
+    const appointmentDetailsModalElement = document.querySelector('#appointmentDetailsModal')
+    const appointmentDetailsModal = appointmentDetailsModalElement
+      ? window.bootstrap?.Modal.getOrCreateInstance(appointmentDetailsModalElement)
+      : null
+    const appointmentDetailsForm = document.querySelector('#appointment-details-form')
+    const appointmentDetailsStatus = document.querySelector('#appointment-details-status')
+    const appointmentDetailsSaveBtn = document.querySelector('#appointment-details-save-btn')
+    const appointmentDetailsDeleteBtn = document.querySelector('#appointment-details-delete-btn')
 
     const appointmentConfigs = await loadAppointmentConfigurations()
     const slotByService = new Map(
@@ -1126,6 +1207,56 @@ async function initAdminPanel() {
 
     serviceInput?.addEventListener('change', applySlotConstraint)
     applySlotConstraint()
+
+    const getDetailsFormField = (selector) => appointmentDetailsForm?.querySelector(selector)
+
+    const applyDetailsSlotConstraint = () => {
+      const detailsServiceInput = getDetailsFormField('select[name="service"]')
+      const detailsDateInput = getDetailsFormField('input[name="appointment_at"]')
+      if (!detailsServiceInput || !detailsDateInput) return
+
+      const slotMinutes = slotByService.get(detailsServiceInput.value) || 60
+      detailsDateInput.step = String(slotMinutes * 60)
+    }
+
+    const openAppointmentDetailsModal = async (appointmentId) => {
+      if (!appointmentId || !appointmentDetailsForm || !appointmentDetailsModal) return
+
+      if (appointmentDetailsStatus) {
+        appointmentDetailsStatus.textContent = ''
+      }
+
+      const appointmentResult = await loadAppointmentAdminById(appointmentId)
+      if (!appointmentResult.data) {
+        if (appointmentStatus) {
+          appointmentStatus.textContent = appointmentResult.error || 'Unable to load appointment details.'
+        }
+        return
+      }
+
+      const detailsServiceInput = getDetailsFormField('select[name="service"]')
+      const detailsTitleInput = getDetailsFormField('input[name="title"]')
+      const detailsDateInput = getDetailsFormField('input[name="appointment_at"]')
+      const detailsNotesInput = getDetailsFormField('textarea[name="notes"]')
+      const detailsCreatedInput = getDetailsFormField('input[name="created_at_readonly"]')
+      const detailsIdInput = getDetailsFormField('input[name="appointment_id"]')
+
+      if (!detailsServiceInput || !detailsTitleInput || !detailsDateInput || !detailsNotesInput || !detailsCreatedInput || !detailsIdInput) {
+        return
+      }
+
+      detailsIdInput.value = String(appointmentResult.data.id)
+      detailsServiceInput.value = appointmentResult.data.service || 'physiotherapy'
+      detailsTitleInput.value = appointmentResult.data.title || ''
+      detailsDateInput.value = toDateTimeLocal(appointmentResult.data.appointment_at)
+      detailsNotesInput.value = appointmentResult.data.notes || ''
+      detailsCreatedInput.value = formatDate(appointmentResult.data.created_at)
+
+      applyDetailsSlotConstraint()
+      appointmentDetailsModal.show()
+    }
+
+    getDetailsFormField('select[name="service"]')?.addEventListener('change', applyDetailsSlotConstraint)
 
     appointmentForm?.addEventListener('submit', async (event) => {
       event.preventDefault()
@@ -1168,48 +1299,29 @@ async function initAdminPanel() {
       await renderAndBind()
     })
 
+    const appointmentRows = document.querySelectorAll('tr.appointment-row')
+    appointmentRows.forEach((row) => {
+      const appointmentId = row.dataset.appointmentId
+      if (!appointmentId) return
+
+      row.addEventListener('click', async (event) => {
+        const clickedButton = event.target.closest('button')
+        if (clickedButton?.dataset.appointmentId) return
+        await openAppointmentDetailsModal(appointmentId)
+      })
+
+      row.addEventListener('keydown', async (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return
+        event.preventDefault()
+        await openAppointmentDetailsModal(appointmentId)
+      })
+    })
+
     const appointmentEditButtons = document.querySelectorAll('.appointment-edit-btn')
     appointmentEditButtons.forEach((button) => {
       button.addEventListener('click', async () => {
         const appointmentId = button.dataset.appointmentId
-        if (!appointmentId) return
-
-        const row = button.closest('tr')
-        if (!row) return
-
-        const currentTitle = row.children[1]?.textContent?.trim() || ''
-        const currentDate = row.children[2]?.textContent?.trim() || ''
-        const title = window.prompt('Edit title:', currentTitle)
-        if (!title) return
-
-        const currentItem = await supabase
-          .from('appointments')
-          .select('appointment_at')
-          .eq('id', appointmentId)
-          .single()
-
-        const defaultDate = toDateTimeLocal(currentItem.data?.appointment_at || currentDate)
-        const appointmentAt = window.prompt('Edit date/time (YYYY-MM-DDTHH:mm):', defaultDate)
-        if (!appointmentAt) return
-
-        const service = row.children[0]?.textContent?.trim() || 'physiotherapy'
-        const slotMinutes = slotByService.get(service) || 60
-        if (!isAlignedToSlot(appointmentAt, slotMinutes)) {
-          alert(`Time must align to ${slotMinutes}-minute slots.`)
-          return
-        }
-
-        const result = await updateAppointmentAdmin(appointmentId, {
-          title: title.trim(),
-          appointment_at: appointmentAt
-        })
-
-        if (!result.success) {
-          alert(result.error)
-          return
-        }
-
-        await renderAndBind()
+        await openAppointmentDetailsModal(appointmentId)
       })
     })
 
@@ -1219,18 +1331,79 @@ async function initAdminPanel() {
         const appointmentId = button.dataset.appointmentId
         if (!appointmentId) return
 
-        if (!confirm('Delete this appointment?')) {
-          return
-        }
-
-        const result = await deleteAppointmentAdmin(appointmentId)
-        if (!result.success) {
-          alert(result.error)
-          return
-        }
-
-        await renderAndBind()
+        await openAppointmentDetailsModal(appointmentId)
       })
+    })
+
+    appointmentDetailsSaveBtn?.addEventListener('click', async () => {
+      if (!appointmentDetailsForm) return
+
+      const detailsFormData = new FormData(appointmentDetailsForm)
+      const appointmentId = String(detailsFormData.get('appointment_id') || '').trim()
+      const service = String(detailsFormData.get('service') || '').trim()
+      const title = String(detailsFormData.get('title') || '').trim()
+      const appointmentAt = String(detailsFormData.get('appointment_at') || '').trim()
+      const notes = String(detailsFormData.get('notes') || '').trim()
+
+      if (!appointmentId || !service || !title || !appointmentAt) {
+        if (appointmentDetailsStatus) {
+          appointmentDetailsStatus.textContent = 'Please complete all required fields.'
+        }
+        return
+      }
+
+      const slotMinutes = slotByService.get(service) || 60
+      if (!isAlignedToSlot(appointmentAt, slotMinutes)) {
+        const detailsDateInput = getDetailsFormField('input[name="appointment_at"]')
+        if (detailsDateInput) {
+          detailsDateInput.value = alignDateTimeLocal(appointmentAt, slotMinutes)
+        }
+        if (appointmentDetailsStatus) {
+          appointmentDetailsStatus.textContent = `Time adjusted to match ${slotMinutes}-minute slot boundaries.`
+        }
+        return
+      }
+
+      const result = await updateAppointmentAdmin(appointmentId, {
+        service,
+        title,
+        appointment_at: appointmentAt,
+        notes: notes || null
+      })
+
+      if (!result.success) {
+        if (appointmentDetailsStatus) {
+          appointmentDetailsStatus.textContent = result.error
+        }
+        return
+      }
+
+      if (appointmentStatus) {
+        appointmentStatus.textContent = 'Appointment updated successfully.'
+      }
+      appointmentDetailsModal.hide()
+      await renderAndBind()
+    })
+
+    appointmentDetailsDeleteBtn?.addEventListener('click', async () => {
+      if (!appointmentDetailsForm) return
+
+      const appointmentId = String(new FormData(appointmentDetailsForm).get('appointment_id') || '').trim()
+      if (!appointmentId) return
+
+      const result = await deleteAppointmentAdmin(appointmentId)
+      if (!result.success) {
+        if (appointmentDetailsStatus) {
+          appointmentDetailsStatus.textContent = result.error
+        }
+        return
+      }
+
+      if (appointmentStatus) {
+        appointmentStatus.textContent = 'Appointment deleted successfully.'
+      }
+      appointmentDetailsModal.hide()
+      await renderAndBind()
     })
 
   }
