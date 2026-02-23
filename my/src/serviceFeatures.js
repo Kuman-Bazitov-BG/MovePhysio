@@ -645,11 +645,6 @@ function renderAppointmentCalendar(items, options = {}) {
           .join('')}
       </div>
 
-      <div class="appointment-calendar-legend">
-        <span class="legend-item"><i class="legend-dot legend-open"></i>Open day</span>
-        <span class="legend-item"><i class="legend-dot legend-busy"></i>Busy day</span>
-        <span class="legend-item"><i class="legend-dot legend-off"></i>Not working day</span>
-      </div>
       </div>
 
       ${renderDayHoursScheduleCard(items, {
