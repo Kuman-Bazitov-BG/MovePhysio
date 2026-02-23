@@ -523,7 +523,7 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(230px, 1fr);
   gap: 0.8rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .appointment-hour-card {
@@ -531,6 +531,7 @@ body {
   border-radius: 0.9rem;
   background: rgba(6, 20, 34, 0.58);
   padding: 0.85rem;
+  height: 100%;
 }
 
 .hour-schedule-list {
@@ -539,8 +540,6 @@ body {
   padding: 0;
   display: grid;
   gap: 0.42rem;
-  max-height: 360px;
-  overflow-y: auto;
 }
 
 .hour-schedule-item {
