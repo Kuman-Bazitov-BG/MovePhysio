@@ -292,7 +292,7 @@ function renderDayHoursSchedule(items, options = {}) {
   if (!selectedDate) {
     return `
       <h3 class="service-card-title mb-2">Day Hour Schedule</h3>
-      <p class="service-note mb-0">Select a day from the calendar to see busy and not busy hours.</p>
+      <p class="service-note mb-0">Select a day from the calendar to see busy and available hours.</p>
     `
   }
 
@@ -341,7 +341,7 @@ function renderDayHoursSchedule(items, options = {}) {
               ${isBusy ? '' : `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"`}
             >
               <span>${escapeHtml(slotDefinition?.label || timeValue)}</span>
-              <strong>${isBusy ? 'Busy' : 'Not busy'} · ${usedSlots}/${safeMaxAppointmentsPerSlot}</strong>
+              <strong>${isBusy ? 'Busy' : 'Available'} · ${usedSlots}/${safeMaxAppointmentsPerSlot}</strong>
             </li>
           `
         })

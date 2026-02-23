@@ -557,7 +557,8 @@ body {
 }
 
 .hour-schedule-item.is-open {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(34, 197, 94, 0.26);
+  border-color: rgba(34, 197, 94, 0.45);
   color: var(--text-main);
 }
 
@@ -567,7 +568,7 @@ body {
 
 .hour-schedule-item.is-clickable:hover,
 .hour-schedule-item.is-clickable:focus-visible {
-  border-color: #34d3ff;
+  border-color: rgba(34, 197, 94, 0.8);
   transform: translateY(-1px);
 }
 
