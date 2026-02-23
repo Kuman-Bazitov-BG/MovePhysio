@@ -185,7 +185,7 @@ export function renderApp(pathname = '/') {
             <button id="auth-open-btn" class="btn auth-pill-btn">
               <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register / Login
             </button>
-            <button id="logout-btn" class="btn btn-outline-light d-none">
+            <button id="logout-btn" class="btn auth-pill-btn d-none">
               Logout
             </button>
           </div>

@@ -37,6 +37,15 @@ function isLikelyPhone(value) {
   return /^\+?[0-9]{7,20}$/.test(normalizePhone(value))
 }
 
+function refreshToHomePage() {
+  if (window.location.pathname !== '/') {
+    window.location.assign('/')
+    return
+  }
+
+  window.location.reload()
+}
+
 async function updateAuthUI(session) {
   const openButton = document.querySelector('#auth-open-btn')
   const logoutButton = document.querySelector('#logout-btn')
@@ -160,7 +169,7 @@ async function login(contact, password) {
     }
 
     setStatus('Login successful. Welcome back.', 'success')
-    window.location.reload()
+    refreshToHomePage()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
@@ -180,12 +189,7 @@ async function logout() {
     }
 
     setStatus('You are logged out.', 'info')
-    if (window.location.pathname !== '/') {
-      window.location.assign('/')
-      return
-    }
-
-    window.location.reload()
+    refreshToHomePage()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
