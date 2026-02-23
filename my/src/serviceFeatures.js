@@ -346,6 +346,12 @@ function isAlignedToSlot(value, slotMinutes) {
   return date.getMinutes() % slotMinutes === 0
 }
 
+function toUtcIsoString(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toISOString()
+}
+
 function canViewAppointmentDetails(item, sessionUserId, isAdmin) {
   if (isAdmin) return true
   if (!sessionUserId) return false
@@ -691,6 +697,8 @@ async function renderServiceContent(root, service) {
         return
       }
 
+      payload.appointment_at = toUtcIsoString(payload.appointment_at)
+
       const { error } = await supabase.from('appointments').insert(payload)
       if (error) {
         if (appointmentsStatus) {
@@ -864,6 +872,8 @@ async function renderServiceContent(root, service) {
         return
       }
 
+      payload.appointment_at = toUtcIsoString(payload.appointment_at)
+
       const { error } = await supabase.from('appointments').insert(payload)
       if (error) {
         if (modalStatus) {
@@ -1004,7 +1014,7 @@ async function renderServiceContent(root, service) {
           name: nextName.trim(),
           telephone: nextTelephone.trim(),
           title: nextTitle.trim(),
-          appointment_at: nextDate,
+          appointment_at: toUtcIsoString(nextDate),
           notes: (nextNotes || '').trim() || null,
           updated_at: new Date().toISOString()
         })
