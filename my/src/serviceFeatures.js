@@ -801,10 +801,6 @@ async function renderServiceContent(root, service) {
         isAuthenticated,
         canCreateAppointments
       })}
-      ${renderAppointmentsList(appointmentsResult.data, {
-        isAdmin,
-        sessionUserId
-      })}
     `
   }
   if (appointmentsStatus) {
@@ -1012,11 +1008,14 @@ async function renderServiceContent(root, service) {
 
     modalForm.reset()
     dateInput.step = service === 'pilates' ? '60' : String(slotMinutes * 60)
-    const minSlotValue = service === 'pilates'
-      ? getNextPilatesSlotDateTimeLocal()
-      : getNextSlotDateTimeLocal(slotMinutes)
-    dateInput.min = minSlotValue
-    dateInput.value = minSlotValue && alignedValue < minSlotValue ? minSlotValue : alignedValue
+    if (service === 'pilates') {
+      dateInput.min = ''
+      dateInput.value = alignedValue
+    } else {
+      const minSlotValue = getNextSlotDateTimeLocal(slotMinutes)
+      dateInput.min = minSlotValue
+      dateInput.value = minSlotValue && alignedValue < minSlotValue ? minSlotValue : alignedValue
+    }
     if (modalStatus) {
       modalStatus.textContent = ''
       modalStatus.dataset.type = 'info'
