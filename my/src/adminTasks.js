@@ -24,6 +24,32 @@ function isSyntheticAppointmentEmail(value) {
   return /@appointment\.local$/i.test(String(value || '').trim())
 }
 
+function normalizeAttachmentFiles(value) {
+  if (!Array.isArray(value)) return []
+
+  return value
+    .filter((entry) => entry && typeof entry === 'object')
+    .map((entry) => ({
+      name: String(entry.name || 'File').trim() || 'File',
+      url: String(entry.url || '').trim()
+    }))
+    .filter((entry) => entry.url)
+}
+
+function renderTaskAttachmentRow(attachmentFiles) {
+  const files = normalizeAttachmentFiles(attachmentFiles)
+  if (!files.length) return ''
+
+  const links = files
+    .map(
+      (file) =>
+        `<a href="${escapeHtml(file.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(file.name)}</a>`
+    )
+    .join(' · ')
+
+  return `<div class="task-contact-item"><span>Upload File</span><strong>${links}</strong></div>`
+}
+
 async function checkAdminAccess() {
   if (!supabase) return { isAdmin: false, error: 'Supabase not configured' }
 
@@ -163,7 +189,7 @@ async function loadTasks() {
 
   const { data: appointmentsData, error: appointmentsError } = await supabase
     .from('appointments')
-    .select('id, service, title, name, telephone, email, appointment_at, created_by')
+    .select('id, service, title, name, telephone, email, attachment_files, appointment_at, created_by')
     .in('id', appointmentIds)
 
   if (appointmentsError) {
@@ -254,6 +280,7 @@ function renderTaskCard(task, columnKey) {
         <div class="task-contact-item"><span>Name</span><strong>${escapeHtml(clientName)}</strong></div>
         <div class="task-contact-item"><span>Phone</span><strong>${escapeHtml(clientPhone)}</strong></div>
         <div class="task-contact-item"><span>Email</span><strong>${escapeHtml(clientEmail)}</strong></div>
+        ${renderTaskAttachmentRow(appointment?.attachment_files)}
       </div>
       <div class="task-meta-box">
         <div class="task-meta-item-row"><span>Date</span><strong>${escapeHtml(displayDate)}</strong></div>

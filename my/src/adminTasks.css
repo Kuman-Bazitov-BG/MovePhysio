@@ -341,6 +341,17 @@
   text-align: right;
 }
 
+.task-contact-item strong a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.task-contact-item strong a:hover {
+  opacity: 0.82;
+}
+
 .task-meta-box {
   display: flex;
   flex-direction: column;

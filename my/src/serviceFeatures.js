@@ -1,6 +1,8 @@
 import { checkUserIsAdmin, getSupabaseClient } from './auth.js'
 
 let authSubscription = null
+let appointmentsSubscription = null
+let appointmentSyncTimer = null
 
 const PILATES_WEEKLY_SCHEDULE = Object.freeze({
   1: Object.freeze([
@@ -38,6 +40,139 @@ const PILATES_WEEKLY_SCHEDULE = Object.freeze({
 const PHYSIOTHERAPY_FILES_BUCKET = 'physiotherapy-appointment-files'
 const MAX_PHYSIOTHERAPY_FILES = 5
 const MAX_PHYSIOTHERAPY_FILE_SIZE_BYTES = 10 * 1024 * 1024
+const APPOINTMENT_TIME_ZONE = 'Europe/Sofia'
+const DATE_KEY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+const DATE_TIME_LOCAL_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+const WEEKDAY_INDEX_BY_SHORT = Object.freeze({
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6
+})
+
+const APPOINTMENT_DATE_TIME_FORMATTER = new Intl.DateTimeFormat('en-CA', {
+  timeZone: APPOINTMENT_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23'
+})
+
+const APPOINTMENT_WEEKDAY_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: APPOINTMENT_TIME_ZONE,
+  weekday: 'short'
+})
+
+function pad2(value) {
+  return String(value).padStart(2, '0')
+}
+
+function parseDateKey(value) {
+  const match = DATE_KEY_PATTERN.exec(String(value || '').trim())
+  if (!match) return null
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3])
+  }
+}
+
+function parseDateTimeLocal(value) {
+  const match = DATE_TIME_LOCAL_PATTERN.exec(String(value || '').trim())
+  if (!match) return null
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hour: Number(match[4]),
+    minute: Number(match[5])
+  }
+}
+
+function buildDateKey(year, month, day) {
+  return `${year}-${pad2(month)}-${pad2(day)}`
+}
+
+function buildDateTimeLocal(year, month, day, hour, minute) {
+  return `${buildDateKey(year, month, day)}T${pad2(hour)}:${pad2(minute)}`
+}
+
+function getDateTimePartsInAppointmentTimeZone(dateInput) {
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
+  if (Number.isNaN(date.getTime())) return null
+
+  const partValues = APPOINTMENT_DATE_TIME_FORMATTER
+    .formatToParts(date)
+    .reduce((acc, part) => {
+      if (part.type !== 'literal') {
+        acc[part.type] = part.value
+      }
+      return acc
+    }, {})
+
+  return {
+    year: Number(partValues.year),
+    month: Number(partValues.month),
+    day: Number(partValues.day),
+    hour: Number(partValues.hour),
+    minute: Number(partValues.minute),
+    second: Number(partValues.second)
+  }
+}
+
+function addDaysToDateKey(dateKey, daysToAdd) {
+  const parsed = parseDateKey(dateKey)
+  if (!parsed) return ''
+
+  const date = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day))
+  date.setUTCDate(date.getUTCDate() + daysToAdd)
+
+  return buildDateKey(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate())
+}
+
+function toTimeValue(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return `${pad2(hours)}:${pad2(minutes)}`
+}
+
+function toMinutesOfDay(timeValue) {
+  const [hours, minutes] = String(timeValue || '')
+    .split(':')
+    .map(Number)
+
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null
+  return hours * 60 + minutes
+}
+
+function resolveAppointmentWeekday(dateInput) {
+  const parsedDateKey = parseDateKey(dateInput)
+  if (parsedDateKey) {
+    return new Date(Date.UTC(parsedDateKey.year, parsedDateKey.month - 1, parsedDateKey.day)).getUTCDay()
+  }
+
+  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
+  if (Number.isNaN(date.getTime())) return null
+
+  const weekdayShort = APPOINTMENT_WEEKDAY_FORMATTER.format(date)
+  return WEEKDAY_INDEX_BY_SHORT[weekdayShort] ?? null
+}
+
+function getAppointmentTimeZoneOffsetMs(date) {
+  const parts = getDateTimePartsInAppointmentTimeZone(date)
+  if (!parts) return 0
+
+  const asUtcTimestamp = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)
+  return asUtcTimestamp - date.getTime()
+}
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -113,6 +248,7 @@ function formatDateTime(value) {
   if (Number.isNaN(date.getTime())) return '—'
 
   return date.toLocaleString('en-US', {
+    timeZone: APPOINTMENT_TIME_ZONE,
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -126,18 +262,25 @@ function serviceLabel(service) {
 }
 
 function toIsoDateKey(dateInput) {
-  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
-  if (Number.isNaN(date.getTime())) return ''
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  return localDate.toISOString().slice(0, 10)
+  const parsedDateKey = parseDateKey(dateInput)
+  if (parsedDateKey) {
+    return buildDateKey(parsedDateKey.year, parsedDateKey.month, parsedDateKey.day)
+  }
+
+  const parts = getDateTimePartsInAppointmentTimeZone(dateInput)
+  if (!parts) return ''
+  return buildDateKey(parts.year, parts.month, parts.day)
 }
 
 function toLocalTimeKey(dateInput) {
-  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
-  if (Number.isNaN(date.getTime())) return ''
-  const hour = String(date.getHours()).padStart(2, '0')
-  const minute = String(date.getMinutes()).padStart(2, '0')
-  return `${hour}:${minute}`
+  const parsedDateTime = parseDateTimeLocal(dateInput)
+  if (parsedDateTime) {
+    return `${pad2(parsedDateTime.hour)}:${pad2(parsedDateTime.minute)}`
+  }
+
+  const parts = getDateTimePartsInAppointmentTimeZone(dateInput)
+  if (!parts) return ''
+  return `${pad2(parts.hour)}:${pad2(parts.minute)}`
 }
 
 function getMonthStart(referenceDate = new Date()) {
@@ -189,10 +332,8 @@ function getTimeSlotOptions(slotMinutes, workStartHour, workEndHour) {
 }
 
 function getPilatesSlotsForDate(dateInput) {
-  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput)
-  if (Number.isNaN(date.getTime())) return []
-
-  const dayOfWeek = date.getDay()
+  const dayOfWeek = resolveAppointmentWeekday(dateInput)
+  if (dayOfWeek == null) return []
   const daySlots = PILATES_WEEKLY_SCHEDULE[dayOfWeek] || []
 
   return daySlots.map((slot) => ({
@@ -245,6 +386,7 @@ function formatAppointmentPeriod(item) {
   if (item?.service === 'pilates') {
     const slot = getPilatesSlotForDateTime(appointmentDate)
     const dateLabel = appointmentDate.toLocaleDateString('en-US', {
+      timeZone: APPOINTMENT_TIME_ZONE,
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -380,6 +522,9 @@ function renderDayHoursSchedule(items, options = {}) {
   const timeSlots = slotDefinitions.map((slot) => slot.start)
   const safeMaxAppointmentsPerSlot = Number(maxAppointmentsPerSlot) > 0 ? Number(maxAppointmentsPerSlot) : 1
   const slotUsage = new Map()
+  const nowParts = getDateTimePartsInAppointmentTimeZone(new Date())
+  const todayDateKey = nowParts ? buildDateKey(nowParts.year, nowParts.month, nowParts.day) : ''
+  const nowMinutes = nowParts ? nowParts.hour * 60 + nowParts.minute : -1
 
   items
     .filter((item) => toIsoDateKey(item.appointment_at) === selectedDate)
@@ -399,14 +544,17 @@ function renderDayHoursSchedule(items, options = {}) {
         .map((timeValue) => {
           const slotDefinition = slotDefinitions.find((slot) => slot.start === timeValue)
           const usedSlots = slotUsage.get(timeValue) || 0
-          const isBusy = usedSlots >= safeMaxAppointmentsPerSlot
+          const slotMinutesOfDay = toMinutesOfDay(timeValue)
+          const isPastSlot = selectedDate === todayDateKey && slotMinutesOfDay != null && slotMinutesOfDay < nowMinutes
+          const isBusy = usedSlots >= safeMaxAppointmentsPerSlot || isPastSlot
+          const statusLabel = isPastSlot ? 'Past' : (isBusy ? 'Busy' : 'Available')
           return `
             <li
               class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open is-clickable'}"
               ${isBusy ? '' : `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"`}
             >
               <span>${escapeHtml(slotDefinition?.label || timeValue)}</span>
-              <strong>${isBusy ? 'Busy' : 'Available'} · ${usedSlots}/${safeMaxAppointmentsPerSlot}</strong>
+              <strong>${statusLabel} · ${usedSlots}/${safeMaxAppointmentsPerSlot}</strong>
             </li>
           `
         })
@@ -462,67 +610,58 @@ function renderAppointmentsList(items, options = {}) {
 }
 
 function toDateTimeLocal(value) {
-  const date = value ? new Date(value) : new Date()
-  if (Number.isNaN(date.getTime())) return ''
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  return localDate.toISOString().slice(0, 16)
+  const parts = getDateTimePartsInAppointmentTimeZone(value || new Date())
+  if (!parts) return ''
+  return buildDateTimeLocal(parts.year, parts.month, parts.day, parts.hour, parts.minute)
 }
 
 function alignDateTimeLocal(value, slotMinutes) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime()) || !slotMinutes) return value
+  const parsed = parseDateTimeLocal(value)
+  if (!parsed || !slotMinutes) return value
 
-  const minutes = date.getMinutes()
-  const alignedMinutes = Math.floor(minutes / slotMinutes) * slotMinutes
-  date.setMinutes(alignedMinutes, 0, 0)
-
-  return toDateTimeLocal(date.toISOString())
+  const alignedMinutes = Math.floor(parsed.minute / slotMinutes) * slotMinutes
+  return buildDateTimeLocal(parsed.year, parsed.month, parsed.day, parsed.hour, alignedMinutes)
 }
 
 function getNextSlotDateTimeLocal(slotMinutes) {
   const safeSlotMinutes = Number(slotMinutes) > 0 ? Number(slotMinutes) : 60
-  const now = new Date()
-  if (Number.isNaN(now.getTime())) {
-    return toDateTimeLocal(new Date().toISOString())
+  const nowParts = getDateTimePartsInAppointmentTimeZone(new Date())
+  if (!nowParts) {
+    return toDateTimeLocal(new Date())
   }
 
-  now.setSeconds(0, 0)
-  const totalMinutes = now.getHours() * 60 + now.getMinutes()
+  const totalMinutes = nowParts.hour * 60 + nowParts.minute
   const roundedMinutes = Math.ceil(totalMinutes / safeSlotMinutes) * safeSlotMinutes
   const dayMinutes = 24 * 60
-  const nextDayOffset = Math.floor(roundedMinutes / dayMinutes)
+  const dayOffset = Math.floor(roundedMinutes / dayMinutes)
   const nextMinutes = roundedMinutes % dayMinutes
+  const nextDateKey = addDaysToDateKey(buildDateKey(nowParts.year, nowParts.month, nowParts.day), dayOffset)
+  if (!nextDateKey) return ''
 
-  const nextDate = new Date(now)
-  if (nextDayOffset > 0) {
-    nextDate.setDate(nextDate.getDate() + nextDayOffset)
-  }
-  nextDate.setHours(Math.floor(nextMinutes / 60), nextMinutes % 60, 0, 0)
-
-  return toDateTimeLocal(nextDate.toISOString())
+  return `${nextDateKey}T${toTimeValue(nextMinutes)}`
 }
 
 function getNextPilatesSlotDateTimeLocal(referenceInput = new Date()) {
-  const referenceDate = referenceInput instanceof Date ? new Date(referenceInput) : new Date(referenceInput)
-  if (Number.isNaN(referenceDate.getTime())) {
+  const referenceParts = parseDateTimeLocal(referenceInput)
+    || getDateTimePartsInAppointmentTimeZone(referenceInput)
+  if (!referenceParts) {
     return ''
   }
 
-  const normalizedReference = new Date(referenceDate)
-  normalizedReference.setSeconds(0, 0)
+  const referenceDateKey = buildDateKey(referenceParts.year, referenceParts.month, referenceParts.day)
+  const referenceMinutes = referenceParts.hour * 60 + referenceParts.minute
 
   for (let dayOffset = 0; dayOffset < 14; dayOffset += 1) {
-    const candidateDay = new Date(normalizedReference)
-    candidateDay.setDate(normalizedReference.getDate() + dayOffset)
+    const candidateDateKey = addDaysToDateKey(referenceDateKey, dayOffset)
+    if (!candidateDateKey) continue
 
-    const daySlots = getPilatesSlotsForDate(candidateDay)
+    const daySlots = getPilatesSlotsForDate(candidateDateKey)
     for (const slot of daySlots) {
-      const [hours, minutes] = slot.start.split(':').map(Number)
-      const slotDate = new Date(candidateDay)
-      slotDate.setHours(hours, minutes, 0, 0)
+      const slotMinutes = toMinutesOfDay(slot.start)
+      if (slotMinutes == null) continue
 
-      if (slotDate >= normalizedReference) {
-        return toDateTimeLocal(slotDate.toISOString())
+      if (dayOffset > 0 || slotMinutes >= referenceMinutes) {
+        return `${candidateDateKey}T${slot.start}`
       }
     }
   }
@@ -531,15 +670,29 @@ function getNextPilatesSlotDateTimeLocal(referenceInput = new Date()) {
 }
 
 function isAlignedToSlot(value, slotMinutes) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime()) || !slotMinutes) return true
-  return date.getMinutes() % slotMinutes === 0
+  const parsed = parseDateTimeLocal(value)
+  if (!parsed || !slotMinutes) return true
+  return parsed.minute % slotMinutes === 0
 }
 
 function toUtcIsoString(value) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toISOString()
+  const parsed = parseDateTimeLocal(value)
+  if (!parsed) {
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return value
+    return date.toISOString()
+  }
+
+  const utcGuess = Date.UTC(parsed.year, parsed.month - 1, parsed.day, parsed.hour, parsed.minute, 0, 0)
+  const initialOffset = getAppointmentTimeZoneOffsetMs(new Date(utcGuess))
+  let utcTimestamp = utcGuess - initialOffset
+  const refinedOffset = getAppointmentTimeZoneOffsetMs(new Date(utcTimestamp))
+
+  if (refinedOffset !== initialOffset) {
+    utcTimestamp = utcGuess - refinedOffset
+  }
+
+  return new Date(utcTimestamp).toISOString()
 }
 
 function canViewAppointmentDetails(item, sessionUserId, isAdmin) {
@@ -1000,12 +1153,11 @@ async function renderServiceContent(root, service) {
     const timeValue = root.dataset.selectedTime || daySlots[0]?.start || `${String(workStartHour).padStart(2, '0')}:00`
     if (!dateKey) return
 
-    const localDate = new Date(`${dateKey}T${timeValue}:00`)
-    if (Number.isNaN(localDate.getTime())) return
+    const selectedValue = `${dateKey}T${timeValue}`
 
     const nextValue = service === 'pilates'
-      ? toDateTimeLocal(localDate.toISOString())
-      : alignDateTimeLocal(localDate.toISOString(), slotMinutes)
+      ? selectedValue
+      : alignDateTimeLocal(selectedValue, slotMinutes)
 
     dateInput.value = nextValue
   }
@@ -1092,10 +1244,10 @@ async function renderServiceContent(root, service) {
     const attachmentInput = modalElement.querySelector('[data-modal-physio-files]')
     if (!modalForm || !dateInput) return
 
-    const localDate = new Date(`${dateKey}T${timeValue}:00`)
+    const selectedValue = `${dateKey}T${timeValue}`
     const alignedValue = service === 'pilates'
-      ? toDateTimeLocal(localDate.toISOString())
-      : alignDateTimeLocal(localDate.toISOString(), slotMinutes)
+      ? selectedValue
+      : alignDateTimeLocal(selectedValue, slotMinutes)
 
     modalForm.reset()
     if (attachmentInput) {
@@ -1108,7 +1260,7 @@ async function renderServiceContent(root, service) {
     } else {
       const minSlotValue = getNextSlotDateTimeLocal(slotMinutes)
       dateInput.min = minSlotValue
-      dateInput.value = minSlotValue && alignedValue < minSlotValue ? minSlotValue : alignedValue
+      dateInput.value = alignedValue
     }
     if (modalStatus) {
       modalStatus.textContent = ''
@@ -1377,7 +1529,7 @@ async function renderServiceContent(root, service) {
         return
       }
 
-      const { error } = await supabase
+      let updateQuery = supabase
         .from('appointments')
         .update({
           name: nextName.trim(),
@@ -1388,6 +1540,12 @@ async function renderServiceContent(root, service) {
           updated_at: new Date().toISOString()
         })
         .eq('id', appointmentId)
+
+      if (!isAdmin && sessionUserId) {
+        updateQuery = updateQuery.eq('created_by', sessionUserId)
+      }
+
+      const { error } = await updateQuery
 
       if (error) {
         if (appointmentsStatus) {
@@ -1419,10 +1577,16 @@ async function renderServiceContent(root, service) {
 
       if (!window.confirm('Delete this appointment?')) return
 
-      const { error } = await supabase
+      let deleteQuery = supabase
         .from('appointments')
         .delete()
         .eq('id', appointmentId)
+
+      if (!isAdmin && sessionUserId) {
+        deleteQuery = deleteQuery.eq('created_by', sessionUserId)
+      }
+
+      const { error } = await deleteQuery
 
       if (error) {
         if (appointmentsStatus) {
@@ -1551,6 +1715,14 @@ export async function initServiceFeatures(pathname = window.location.pathname) {
       authSubscription.unsubscribe()
       authSubscription = null
     }
+    if (appointmentsSubscription) {
+      appointmentsSubscription.unsubscribe()
+      appointmentsSubscription = null
+    }
+    if (appointmentSyncTimer) {
+      window.clearTimeout(appointmentSyncTimer)
+      appointmentSyncTimer = null
+    }
     return
   }
 
@@ -1567,6 +1739,16 @@ export async function initServiceFeatures(pathname = window.location.pathname) {
     authSubscription = null
   }
 
+  if (appointmentsSubscription) {
+    appointmentsSubscription.unsubscribe()
+    appointmentsSubscription = null
+  }
+
+  if (appointmentSyncTimer) {
+    window.clearTimeout(appointmentSyncTimer)
+    appointmentSyncTimer = null
+  }
+
   const { data } = supabase.auth.onAuthStateChange(async () => {
     const currentService = getServiceFromPath(window.location.pathname)
     if (!currentService) return
@@ -1576,4 +1758,34 @@ export async function initServiceFeatures(pathname = window.location.pathname) {
   })
 
   authSubscription = data.subscription
+
+  const channelName = `appointments-sync-${service}`
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'appointments',
+        filter: `service=eq.${service}`
+      },
+      () => {
+        const currentService = getServiceFromPath(window.location.pathname)
+        if (currentService !== service) return
+
+        if (appointmentSyncTimer) {
+          window.clearTimeout(appointmentSyncTimer)
+        }
+
+        appointmentSyncTimer = window.setTimeout(async () => {
+          const activeRoot = document.querySelector(`[data-service-manager="${service}"]`)
+          if (!activeRoot) return
+          await renderServiceContent(activeRoot, service)
+        }, 120)
+      }
+    )
+    .subscribe()
+
+  appointmentsSubscription = channel
 }

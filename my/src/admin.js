@@ -7,6 +7,8 @@ const hasConfig =
   !/your-project-ref|your-anon-key|your-publishable-key/i.test(`${supabaseUrl} ${supabaseAnonKey}`)
 const supabase = hasConfig ? createClient(supabaseUrl, supabaseAnonKey) : null
 const PHYSIOTHERAPY_FILES_BUCKET = 'physiotherapy-appointment-files'
+let adminRealtimeChannel = null
+let adminRealtimeTimer = null
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -1246,6 +1248,16 @@ async function handleLogout() {
   if (!supabase) return
 
   try {
+    if (adminRealtimeChannel) {
+      adminRealtimeChannel.unsubscribe()
+      adminRealtimeChannel = null
+    }
+
+    if (adminRealtimeTimer) {
+      window.clearTimeout(adminRealtimeTimer)
+      adminRealtimeTimer = null
+    }
+
     await supabase.auth.signOut()
     if (window.location.pathname !== '/') {
       window.location.assign('/')
@@ -1263,19 +1275,36 @@ async function initAdminPanel() {
   const appElement = document.querySelector('#admin-app')
   if (!appElement) return
 
+  if (adminRealtimeChannel) {
+    adminRealtimeChannel.unsubscribe()
+    adminRealtimeChannel = null
+  }
+
+  if (adminRealtimeTimer) {
+    window.clearTimeout(adminRealtimeTimer)
+    adminRealtimeTimer = null
+  }
+
   // Check admin access
   const { isAdmin, error } = await checkAdminAccess()
 
   if (!isAdmin) {
     appElement.innerHTML = renderAccessDenied()
+    if (error) {
+      console.warn('Admin access denied:', error)
+    }
     return
   }
 
   const { data: sessionData } = await supabase.auth.getSession()
   const currentUserId = sessionData?.session?.user?.id || null
 
+  let isRenderingAdminPanel = false
   const renderAndBind = async () => {
-    appElement.innerHTML = await renderAdminPanel()
+    if (isRenderingAdminPanel) return
+    isRenderingAdminPanel = true
+    try {
+      appElement.innerHTML = await renderAdminPanel()
 
     const totalUsersCard = document.querySelector('#stat-total-users')
     const appointmentsCard = document.querySelector('#stat-appointments')
@@ -1682,20 +1711,54 @@ async function initAdminPanel() {
       await renderAndBind()
     })
 
-    appointmentFilesPanel?.addEventListener('click', (event) => {
-      const previewButton = event.target.closest('.appointment-file-preview-btn')
-      if (!previewButton) return
+      appointmentFilesPanel?.addEventListener('click', (event) => {
+        const previewButton = event.target.closest('.appointment-file-preview-btn')
+        if (!previewButton) return
 
-      const previewUrl = String(previewButton.dataset.previewFileUrl || '').trim()
-      if (!previewUrl || !appointmentFilePreviewWrapper || !appointmentFilePreviewFrame) return
+        const previewUrl = String(previewButton.dataset.previewFileUrl || '').trim()
+        if (!previewUrl || !appointmentFilePreviewWrapper || !appointmentFilePreviewFrame) return
 
-      appointmentFilePreviewFrame.src = previewUrl
-      appointmentFilePreviewWrapper.classList.remove('d-none')
-    })
+        appointmentFilePreviewFrame.src = previewUrl
+        appointmentFilePreviewWrapper.classList.remove('d-none')
+      })
+    } finally {
+      isRenderingAdminPanel = false
+    }
 
   }
 
   await renderAndBind()
+
+  const scheduleAdminRefresh = () => {
+    if (adminRealtimeTimer) {
+      window.clearTimeout(adminRealtimeTimer)
+    }
+
+    adminRealtimeTimer = window.setTimeout(async () => {
+      if (!document.body.contains(appElement)) return
+      await renderAndBind()
+    }, 150)
+  }
+
+  adminRealtimeChannel = supabase
+    .channel('admin-dashboard-sync')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, scheduleAdminRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'service_tasks' }, scheduleAdminRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_configurations' }, scheduleAdminRefresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles' }, scheduleAdminRefresh)
+    .subscribe()
+
+  window.addEventListener('beforeunload', () => {
+    if (adminRealtimeChannel) {
+      adminRealtimeChannel.unsubscribe()
+      adminRealtimeChannel = null
+    }
+
+    if (adminRealtimeTimer) {
+      window.clearTimeout(adminRealtimeTimer)
+      adminRealtimeTimer = null
+    }
+  }, { once: true })
 }
 
 // Initialize on page load
