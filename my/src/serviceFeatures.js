@@ -204,7 +204,10 @@ function renderDayHoursSchedule(items, options = {}) {
         .map((timeValue) => {
           const isBusy = busyTimes.has(timeValue)
           return `
-            <li class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open'}">
+            <li
+              class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open is-clickable'}"
+              ${isBusy ? '' : `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"`}
+            >
               <span>${escapeHtml(timeValue)}</span>
               <strong>${isBusy ? 'Busy' : 'Not busy'}</strong>
             </li>
@@ -666,6 +669,176 @@ async function renderServiceContent(root, service) {
     dateInput.value = alignedValue
   }
 
+  const openAddAppointmentModal = (dateKey, timeValue) => {
+    if (!dateKey || !timeValue) return
+
+    if (!isAuthenticated || !canCreateAppointments || !session?.user) {
+      if (appointmentsStatus) {
+        appointmentsStatus.dataset.type = 'info'
+        appointmentsStatus.textContent = 'Sign in as user/admin to create appointments.'
+      }
+      return
+    }
+
+    const modalId = `addAppointmentModal-${service}`
+    let modalElement = document.getElementById(modalId)
+
+    if (!modalElement) {
+      const modalWrapper = document.createElement('div')
+      modalWrapper.innerHTML = `
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content auth-modal">
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">Add Appointment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body pt-3">
+                <form class="d-grid gap-3" data-modal-appointment-form>
+                  <div>
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" name="name" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" name="telephone" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Appointment Title</label>
+                    <input type="text" class="form-control" name="title" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Date & Time</label>
+                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Notes</label>
+                    <input type="text" class="form-control" name="notes" placeholder="Optional" />
+                  </div>
+                  <p class="service-note mb-0" data-modal-appointment-status></p>
+                  <button type="submit" class="btn btn-primary btn-glow w-100">Add</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+
+      modalElement = modalWrapper.firstElementChild
+      if (!modalElement) return
+      document.body.appendChild(modalElement)
+    }
+
+    const modalForm = modalElement.querySelector('[data-modal-appointment-form]')
+    const modalStatus = modalElement.querySelector('[data-modal-appointment-status]')
+    const dateInput = modalElement.querySelector('input[name="appointment_at"]')
+    if (!modalForm || !dateInput) return
+
+    const localDate = new Date(`${dateKey}T${timeValue}:00`)
+    const alignedValue = alignDateTimeLocal(localDate.toISOString(), slotMinutes)
+
+    modalForm.reset()
+    dateInput.step = String(slotMinutes * 60)
+    dateInput.min = toDateTimeLocal(new Date().toISOString())
+    dateInput.value = alignedValue
+    if (modalStatus) {
+      modalStatus.textContent = ''
+      modalStatus.dataset.type = 'info'
+    }
+
+    const bootstrapApi = window.bootstrap
+    if (!bootstrapApi?.Modal) {
+      if (appointmentsStatus) {
+        appointmentsStatus.dataset.type = 'error'
+        appointmentsStatus.textContent = 'Modal is unavailable in this environment.'
+      }
+      return
+    }
+
+    const modalInstance = bootstrapApi.Modal.getOrCreateInstance(modalElement)
+
+    modalForm.onsubmit = async (event) => {
+      event.preventDefault()
+
+      const formData = new FormData(modalForm)
+      const payload = {
+        service,
+        name: String(formData.get('name') || '').trim(),
+        telephone: String(formData.get('telephone') || '').trim(),
+        title: String(formData.get('title') || '').trim(),
+        notes: String(formData.get('notes') || '').trim() || null,
+        appointment_at: String(formData.get('appointment_at') || '').trim(),
+        created_by: session.user.id,
+        email: await resolveCurrentUserEmail(supabase, session.user) || null
+      }
+
+      if (!payload.name || !payload.telephone || !payload.title || !payload.appointment_at) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = 'Please fill all required fields.'
+        }
+        return
+      }
+
+      if (!isAlignedToSlot(payload.appointment_at, slotMinutes)) {
+        const nextAligned = alignDateTimeLocal(payload.appointment_at, slotMinutes)
+        dateInput.value = nextAligned
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = `Time adjusted to match ${slotMinutes}-minute slot boundaries.`
+        }
+        return
+      }
+
+      const { error } = await supabase.from('appointments').insert(payload)
+      if (error) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = error.message
+        }
+        return
+      }
+
+      modalInstance.hide()
+      await renderServiceContent(root, service)
+    }
+
+    modalInstance.show()
+    window.setTimeout(() => {
+      modalForm.querySelector('input[name="name"]')?.focus()
+    }, 120)
+  }
+
+  const bindHourScheduleHandlers = () => {
+    appointmentsList?.querySelectorAll('[data-hour-time]').forEach((hourItem) => {
+      const handleHourSelection = () => {
+        const dateKey = root.dataset.selectedDate || ''
+        const timeValue = String(hourItem.dataset.hourTime || '').trim()
+        if (!dateKey || !timeValue) return
+
+        root.dataset.selectedTime = timeValue
+        applyDateTimeToInput()
+
+        const timeSelect = appointmentsList.querySelector('[data-calendar-time]')
+        if (timeSelect) {
+          timeSelect.disabled = !isAuthenticated || !canCreateAppointments
+          if (timeSelect.querySelector(`option[value="${timeValue}"]`)) {
+            timeSelect.value = timeValue
+          }
+        }
+
+        openAddAppointmentModal(dateKey, timeValue)
+      }
+
+      hourItem.addEventListener('click', handleHourSelection)
+      hourItem.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return
+        event.preventDefault()
+        handleHourSelection()
+      })
+    })
+  }
+
   appointmentsList?.querySelector('[data-calendar-time]')?.addEventListener('change', (event) => {
     const nextTime = String(event.target.value || '').trim()
     if (!nextTime) return
@@ -704,9 +877,12 @@ async function renderServiceContent(root, service) {
           workStartHour,
           workEndHour
         })
+        bindHourScheduleHandlers()
       }
     })
   })
+
+  bindHourScheduleHandlers()
 
   appointmentsList?.querySelectorAll('.appointment-edit-btn').forEach((button) => {
     button.addEventListener('click', async () => {
