@@ -44,29 +44,25 @@ body {
 
 .language-switcher-box {
   position: fixed;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 0.5rem;
+  right: 0.5rem;
   z-index: 1085;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.6rem;
-  border-radius: var(--radius-md);
+  padding: 0.25rem 0.3rem;
+  border-radius: 10px;
   background: var(--surface-glass);
   border: 1px solid rgba(173, 231, 255, 0.22);
   backdrop-filter: blur(10px);
 }
 
-.language-switcher-label {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 0.82rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 .language-switcher-select {
-  min-width: 7.2rem;
+  min-width: 5.6rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  padding-left: 0.45rem;
+  padding-right: 1.5rem;
+  font-size: 0.72rem;
   border-radius: 999px;
 }
 

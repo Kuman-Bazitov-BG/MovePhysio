@@ -241,10 +241,6 @@ export function applyTranslations(root = document.body) {
   elements.forEach((element) => translateElementAttributes(element, language))
 }
 
-function renderSelectorLabel(language) {
-  return language === 'el' ? 'Γλώσσα' : 'Language'
-}
-
 function ensureLanguageSelector() {
   let box = document.querySelector('#language-switcher-box')
   if (!box) {
@@ -253,7 +249,6 @@ function ensureLanguageSelector() {
     box.className = 'language-switcher-box'
     box.setAttribute('data-i18n-ignore', 'true')
     box.innerHTML = `
-      <label for="language-switcher" class="language-switcher-label">Language</label>
       <select id="language-switcher" class="form-select form-select-sm language-switcher-select" aria-label="Language selector">
         <option value="en">English</option>
         <option value="el">Ελληνικά</option>
@@ -262,11 +257,8 @@ function ensureLanguageSelector() {
     document.body.appendChild(box)
   }
 
-  const label = box.querySelector('.language-switcher-label')
   const select = box.querySelector('#language-switcher')
-  if (!label || !select) return
-
-  label.textContent = renderSelectorLabel(activeLanguage)
+  if (!select) return
   select.value = activeLanguage
 
   if (!select.dataset.boundChange) {
