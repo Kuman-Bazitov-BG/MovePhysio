@@ -96,6 +96,13 @@ function bootstrap() {
 
   const renderRoute = () => {
     cleanupBackground()
+    
+    // Cleanup any orphaned Bootstrap backdrops or body classes from closing modals/offcanvas during navigation
+    document.querySelectorAll('.modal-backdrop, .offcanvas-backdrop').forEach(el => el.remove())
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.body.style.paddingRight = ''
+
     root.innerHTML = renderApp(window.location.pathname)
 
     const backgroundCanvas = document.querySelector('#live-bg-canvas')

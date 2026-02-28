@@ -24,15 +24,247 @@ function renderPageContent(pathname) {
 
   if (pathname === '/about') {
     return `
-      <section class="page-screen container">
-        <div class="page-surface">
-          <h1 class="page-title">About Move Physio</h1>
-          <p class="page-copy">
-            We focus on evidence-based rehabilitation, movement quality, and long-term health outcomes.
-            Every therapy plan is personalized to your goals, your daily demands, and your recovery timeline.
-          </p>
+      <section class="page-screen container position-relative about-section">
+        <div class="page-surface overflow-hidden position-relative p-md-5 z-1 mt-4">
+          <!-- Floating Clouds Background Effects (Moved Inside Surface to prevent shadow bleed) -->
+          <div class="clouds-bg-wrapper position-absolute w-100 h-100 top-0 start-0 overflow-hidden" style="pointer-events: none; z-index: 0; border-radius: var(--radius-lg);">
+            <div class="cloud-blob blur-blob-1"></div>
+            <div class="cloud-blob blur-blob-2"></div>
+          </div>
+          
+          <div class="text-center mb-5 position-relative z-1">
+              <h1 class="page-title display-4 fw-bold mb-3 slide-up-fade">
+                <i class="bi bi-activity text-accent me-2"></i>About Move Physio
+              </h1>
+              <p class="page-copy lead mb-4 slide-up-fade" style="animation-delay: 0.1s;">
+                Bridging clinical precision with intelligent movement.<br/> Experience the synergy of Physiotherapy and Pilates for long-term health.
+              </p>
+              
+              <!-- Clouds / Tags -->
+              <div class="d-flex flex-wrap justify-content-center gap-2 slide-up-fade" style="animation-delay: 0.2s;">
+                  <span class="badge glass-badge px-3 py-2"><i class="bi bi-bandaid me-1"></i>Rehabilitation</span>
+                  <span class="badge glass-badge px-3 py-2"><i class="bi bi-person-arms-up me-1"></i>Mobility</span>
+                  <span class="badge glass-badge px-3 py-2"><i class="bi bi-heart-pulse me-1"></i>Evidence-Based</span>
+                  <span class="badge glass-badge px-3 py-2"><i class="bi bi-lightning-charge me-1"></i>Functional Strength</span>
+                  <span class="badge glass-badge px-3 py-2"><i class="bi bi-fire me-1"></i>Pain Relief</span>
+              </div>
+          </div>
+
+          <!-- Cards Row -->
+          <div class="row g-4 align-items-stretch mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.3s;">
+              <div class="col-md-6">
+                  <div class="glass-card h-100 p-4 rounded-4 transition-hover">
+                      <div class="card-icon-wrapper mb-3 text-info fs-1">
+                          <i class="bi bi-activity"></i>
+                      </div>
+                      <h3 class="h4 text-white">Physiotherapy</h3>
+                      <p class="text-subtle mb-0">Our approach bridges the gap between injury and peak performance. We use manual therapy, dry needling, and therapeutic exercise to restore joint mechanics, alleviate pain, and rebuild resilient tissues. Grounded in clinical science for optimal recovery.</p>
+                  </div>
+              </div>
+              <div class="col-md-6">
+                  <div class="glass-card h-100 p-4 rounded-4 transition-hover">
+                      <div class="card-icon-wrapper mb-3 text-accent fs-1">
+                          <i class="bi bi-person-arms-up"></i>
+                      </div>
+                      <h3 class="h4 text-white">Pilates</h3>
+                      <p class="text-subtle mb-0">The ultimate tool for neuromuscular re-education. Focusing on core stability, breath control, and precise movement patterns, our clinical Pilates programs correct postural imbalances, increase flexibility, and build a lasting foundation of strength.</p>
+                  </div>
+              </div>
+          </div>
+
+           <!-- Interactive Actions -->
+          <div class="d-flex flex-wrap justify-content-center gap-3 mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.4s;">
+              <button type="button" class="btn btn-outline-info auth-pill-btn px-4 py-2 hover-glow" data-bs-toggle="modal" data-bs-target="#philosophyModal">
+                 <i class="bi bi-stars me-2"></i>Our Philosophy
+              </button>
+              <button class="btn btn-primary auth-pill-btn px-4 py-2 hover-glow" type="button" data-bs-toggle="offcanvas" data-bs-target="#facilitiesDrawer" aria-controls="facilitiesDrawer">
+                 <i class="bi bi-building me-2"></i>Tour & Details
+              </button>
+          </div>
+
+          <!-- Glass Accordion -->
+          <h4 class="mb-4 text-white text-center position-relative z-1 slide-up-fade" style="animation-delay: 0.5s;">
+             <i class="bi bi-question-circle me-2"></i>Discover Our Approach
+          </h4>
+          <div class="accordion glass-accordion mb-3 position-relative z-1 slide-up-fade" id="aboutAccordion" style="animation-delay: 0.6s;">
+            <div class="accordion-item glass-accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                  <span class="d-flex align-items-center"><i class="bi bi-search text-info fs-5 me-3"></i> Comprehensive Assessments</span>
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#aboutAccordion">
+                <div class="accordion-body text-subtle lh-lg">
+                  Every journey begins with a meticulous full-body assessment. We look beyond the site of pain to investigate the whole biomechanical chain, analyzing your gait, posture, and movement patterns to find the root cause of discomfort.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item glass-accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                  <span class="d-flex align-items-center"><i class="bi bi-bullseye text-accent fs-5 me-3"></i> Targeted Intervention</span>
+                </button>
+              </h2>
+              <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#aboutAccordion">
+                <div class="accordion-body text-subtle lh-lg">
+                  Based on your assessment, we combine hands-on manual techniques with specific active movements. This immediately down-regulates pain signals, improves your range of motion, and facilitates immediate symptom relief.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item glass-accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                  <span class="d-flex align-items-center"><i class="bi bi-arrow-repeat text-success fs-5 me-3"></i> The Physio-Pilates Bridge</span>
+                </button>
+              </h2>
+              <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#aboutAccordion">
+                <div class="accordion-body text-subtle lh-lg">
+                  Once pain is managed, we seamlessly transition you into clinical Pilates. This ensures the newly acquired mobility is stabilized by a strong, reactive core—helping you become stronger and far more resilient than before.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deep Dive: Specialized Programs -->
+          <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.7s;">
+             <h4 class="mb-4 text-white text-center">
+               <i class="bi bi-grid-1x2 text-info me-2"></i>Targeted Specializations
+             </h4>
+             <div class="row g-3">
+                <div class="col-md-4">
+                   <div class="glass-card p-4 rounded-4 h-100 text-center hover-glow transition-hover">
+                      <div class="fs-1 text-accent mb-2"><i class="bi bi-lungs-fill"></i></div>
+                      <h5 class="text-white">Post-Operative</h5>
+                      <p class="text-subtle small mb-0">Structured protocols to reclaim mobility and strength after orthopedic surgeries.</p>
+                   </div>
+                </div>
+                <div class="col-md-4">
+                   <div class="glass-card p-4 rounded-4 h-100 text-center hover-glow transition-hover">
+                      <div class="fs-1 text-danger mb-2"><i class="bi bi-lightning-fill"></i></div>
+                      <h5 class="text-white">Sports Rehab</h5>
+                      <p class="text-subtle small mb-0">Dynamic movement analysis and return-to-sport planning for athletes of all levels.</p>
+                   </div>
+                </div>
+                <div class="col-md-4">
+                   <div class="glass-card p-4 rounded-4 h-100 text-center hover-glow transition-hover">
+                      <div class="fs-1 text-success mb-2"><i class="bi bi-person-wheelchair"></i></div>
+                      <h5 class="text-white">Geriatric Care</h5>
+                      <p class="text-subtle small mb-0">Fall prevention, balance training, and arthritis management for active aging.</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+
+          <!-- Meet The Experts Section -->
+          <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.8s;">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                   <h4 class="text-white mb-2"><i class="bi bi-people text-warning me-2"></i>Our Clinical Team</h4>
+                   <p class="text-subtle mb-0">Led by forward-thinking practitioners dedicated to your long-term success.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                   <a href="/contact" data-nav class="btn btn-outline-light auth-pill-btn btn-sm">Join Our Team</a>
+                </div>
+            </div>
+            
+            <div class="glass-card p-0 rounded-4 overflow-hidden position-relative mb-4">
+               <div class="row g-0">
+                  <div class="col-sm-4 bg-dark d-flex align-items-stretch justify-content-center">
+                     <img src="/Christoforos.png" alt="Christoforos Stavrou" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
+                  </div>
+                  <div class="col-sm-8 p-4 d-flex flex-column justify-content-center">
+                     <h5 class="text-white fw-bold mb-1">Christoforos Stavrou</h5>
+                     <h6 class="text-info small mb-3">Lead Physiotherapist</h6>
+                     <p class="text-subtle small mb-3 lh-lg">With extensive experience in musculoskeletal rehabilitation, Christoforos focuses on clinical therapy and functional restoration. His holistic approach ensures that every patient receives a personalized roadmap from pain management to peak physical performance.</p>
+                     <div class="d-flex gap-2">
+                        <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-success me-1"></i>BSc Physiotherapy</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div class="glass-card p-0 rounded-4 overflow-hidden position-relative">
+               <div class="row g-0">
+                  <div class="col-sm-4 bg-dark d-flex align-items-stretch justify-content-center order-sm-2">
+                     <img src="/Alexandra.jpg" alt="Alexandra Skenter" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
+                  </div>
+                  <div class="col-sm-8 p-4 d-flex flex-column justify-content-center order-sm-1 text-sm-end">
+                     <h5 class="text-white fw-bold mb-1">Alexandra Skenter</h5>
+                     <h6 class="text-accent small mb-3">Clinical Pilates Instructor</h6>
+                     <p class="text-subtle small mb-3 lh-lg">Alexandra leads our Pilates programs, blending core strengthening, breath work, and flexible movement patterns to prevent injuries and rehabilitate posture. Her classes re-educate the neuromuscular system for long-term health and stability.</p>
+                     <div class="d-flex justify-content-sm-end gap-2">
+                        <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-accent me-1"></i>Clinical Pilates Cert</span>
+                        <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-accent me-1"></i>Movement Specialist</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          </div>
+
         </div>
       </section>
+
+      <!-- Glass Modal (Popup) -->
+      <div class="modal fade" id="philosophyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content glass-modal border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+              <h4 class="modal-title text-white fw-bold"><i class="bi bi-lightbulb text-warning me-2"></i>The Move Physio Philosophy</h4>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+              <h5 class="text-info mb-3">Movement is Medicine</h5>
+              <p class="text-subtle lh-lg border-start border-3 border-info ps-3 ms-2">We believe the body is designed to heal itself when provided with the right environment and stimuli. Passive treatments alone are never enough. Our core philosophy empowers <strong>you</strong> to take an active role in your own recovery.</p>
+              <div class="row text-center mt-5 mb-3">
+                <div class="col-4">
+                   <div class="fs-1 text-accent mb-3 hover-float"><i class="bi bi-lungs"></i></div>
+                   <h6 class="text-white fw-bold">Breathe</h6>
+                </div>
+                <div class="col-4">
+                   <div class="fs-1 text-info mb-3 hover-float" style="animation-delay:0.1s"><i class="bi bi-bicycle"></i></div>
+                   <h6 class="text-white fw-bold">Move</h6>
+                </div>
+                <div class="col-4">
+                   <div class="fs-1 text-success mb-3 hover-float" style="animation-delay:0.2s"><i class="bi bi-tree"></i></div>
+                   <h6 class="text-white fw-bold">Thrive</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Glass Offcanvas (Drawer) -->
+      <div class="offcanvas offcanvas-end glass-drawer shadow-lg" tabindex="-1" id="facilitiesDrawer">
+        <div class="offcanvas-header border-bottom border-light border-opacity-10 glass-drawer-header p-4">
+          <h5 class="offcanvas-title text-white fw-bold"><i class="bi bi-hospital text-info me-2"></i>Clinical Setup</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4 custom-scrollbar">
+          <div class="rounded-4 overflow-hidden mb-4 shadow position-relative group-hover-zoom">
+            <img src="/pilates-training.webp" class="img-fluid w-100 object-fit-cover" style="height:220px;" alt="Pilates Equipment">
+            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 pointer-events-none"></div>
+          </div>
+          <h6 class="text-white fw-bold mb-2">State-of-the-Art Equipment</h6>
+          <p class="text-subtle small mb-4 lh-lg">Our studio is fully equipped with clinical-grade Pilates Reformers, Cadillacs, Wunda Chairs, and cutting-edge Physiotherapy modalities to support every phase of your journey.</p>
+          
+          <div class="glass-card p-4 rounded-4 mb-4">
+            <h6 class="text-white fw-bold mb-3"><i class="bi bi-card-checklist text-accent me-2"></i>First Visit Expectations:</h6>
+            <ul class="list-unstyled small text-subtle mb-0 d-grid gap-3">
+               <li class="d-flex align-items-center"><i class="bi bi-check2-circle text-success fs-5 me-3"></i> 60-minute thorough session</li>
+               <li class="d-flex align-items-center"><i class="bi bi-check2-circle text-success fs-5 me-3"></i> Medical history review</li>
+               <li class="d-flex align-items-center"><i class="bi bi-check2-circle text-success fs-5 me-3"></i> Posture & movement analysis</li>
+               <li class="d-flex align-items-center"><i class="bi bi-check2-circle text-success fs-5 me-3"></i> Custom plan creation</li>
+            </ul>
+          </div>
+          
+          <div class="d-grid mt-auto pt-4 border-top border-light border-opacity-10">
+             <a href="/contact" data-nav class="btn btn-outline-info auth-pill-btn w-100 hover-glow" data-bs-dismiss="offcanvas">
+               Book an Assessment <i class="bi bi-arrow-right ms-2"></i>
+             </a>
+          </div>
+        </div>
+      </div>
     `
   }
 
