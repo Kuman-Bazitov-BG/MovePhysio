@@ -155,6 +155,40 @@ function renderPageContent(pathname) {
              </div>
           </div>
 
+          <!-- Facility Gallery Strip -->
+          <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.75s;">
+             <div class="text-center mb-4">
+               <h4 class="text-white"><i class="bi bi-building text-info me-2"></i>Our Modern Clinic</h4>
+               <p class="text-subtle small">A peaceful, clean, and optimized environment designed for your comfort and recovery.</p>
+             </div>
+             <div class="row g-3">
+                <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                     <img src="/about-reception-1.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Move Physio Reception Area">
+                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Welcome Area</div>
+                   </div>
+                </div>
+                <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                     <img src="/about-pilates-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Clinical Pilates Reformer Room">
+                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Pilates Studio</div>
+                   </div>
+                </div>
+                <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                     <img src="/about-treatment-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Physiotherapy Treatment Room">
+                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Treatment Room</div>
+                   </div>
+                </div>
+                <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                     <img src="/about-reception-2.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Reception Detail">
+                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Comfortable Space</div>
+                   </div>
+                </div>
+             </div>
+          </div>
+
           <!-- Meet The Experts Section -->
           <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.8s;">
             <div class="row align-items-center mb-4">
