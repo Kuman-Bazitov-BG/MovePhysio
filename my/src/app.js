@@ -301,14 +301,6 @@ function renderPageContent(pathname) {
             <li>Post-operative rehabilitation</li>
             <li>Pain management strategies</li>
           </ul>
-
-          <div class="service-manager mt-4" data-service-manager="physiotherapy">
-            <div class="service-card mb-3">
-              <h2 class="service-card-title">Appointment Calendar</h2>
-              <p class="service-note" data-appointments-status></p>
-              <div data-appointments-list></div>
-            </div>
-          </div>
         </div>
       </section>
     `
@@ -330,14 +322,6 @@ function renderPageContent(pathname) {
             <li>Specialized programs for athletes</li>
             <li>Pre and postnatal Pilates</li>
           </ul>
-
-          <div class="service-manager mt-4" data-service-manager="pilates">
-            <div class="service-card mb-3">
-              <h2 class="service-card-title">Appointment Calendar</h2>
-              <p class="service-note" data-appointments-status></p>
-              <div data-appointments-list></div>
-            </div>
-          </div>
         </div>
       </section>
     `
@@ -350,8 +334,71 @@ function renderPageContent(pathname) {
           <h1 class="page-title">Contact</h1>
           <p class="page-copy mb-0">
             Reach us at <strong>contact@movephysio.com</strong> or call <strong>+359 000 000 000</strong>.
-            Online booking is coming soon.
           </p>
+        </div>
+      </section>
+    `
+  }
+
+  if (pathname === '/appointment-now') {
+    return `
+      <section class="page-screen container mt-4 position-relative appointment-section d-flex justify-content-center">
+        <!-- Floating Clouds Background Effects (Wrapped to prevent overflow) -->
+        <div class="clouds-bg-wrapper position-absolute top-0 overflow-hidden" style="width: min(1200px, 100%); height: 100%; pointer-events: none; z-index: 0; border-radius: var(--radius-lg);">
+          <div class="cloud-blob blur-blob-1" style="background: radial-gradient(circle, var(--info), transparent 70%); top: -100px; left: -100px;"></div>
+          <div class="cloud-blob blur-blob-2" style="background: radial-gradient(circle, var(--accent), transparent 70%); bottom: -150px; right: 200px;"></div>
+        </div>
+        
+        <div class="page-surface overflow-hidden position-relative p-md-5 z-1 w-100" style="background: linear-gradient(145deg, rgba(8, 20, 35, 0.8), rgba(4, 10, 18, 0.85));">
+          <div class="text-center mb-5 position-relative z-1">
+              <h1 class="page-title display-4 fw-bold mb-3 slide-up-fade">
+                <i class="bi bi-calendar-check text-success me-2"></i>Appointment Now
+              </h1>
+              <p class="page-copy lead mb-4 slide-up-fade" style="animation-delay: 0.1s;">
+                Select your preferred service below to schedule your visit.
+              </p>
+          </div>
+
+          <div class="row g-5 align-items-stretch position-relative z-1 slide-up-fade" style="animation-delay: 0.3s;">
+              <!-- Physiotherapy Appointments -->
+              <div class="col-lg-6">
+                  <div class="glass-card h-100 p-4 rounded-4 position-relative overflow-hidden" style="border-top: 4px solid var(--info);">
+                      <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-light border-opacity-10">
+                          <div class="card-icon-wrapper text-info fs-3 me-3" style="width: 50px; height: 50px;">
+                              <i class="bi bi-activity"></i>
+                          </div>
+                          <h3 class="h4 text-white mb-0">Physiotherapy Appointment</h3>
+                      </div>
+                      
+                      <div class="service-manager" data-service-manager="physiotherapy">
+                        <div class="service-card border-0 bg-transparent p-0">
+                          <p class="service-note text-info" data-appointments-status><i class="spinner-border spinner-border-sm me-2"></i>Loading calendar...</p>
+                          <div data-appointments-list></div>
+                        </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Pilates Appointments -->
+              <div class="col-lg-6">
+                  <div class="glass-card h-100 p-4 rounded-4 position-relative overflow-hidden" style="border-top: 4px solid var(--accent);">
+                      <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-light border-opacity-10">
+                          <div class="card-icon-wrapper text-accent fs-3 me-3" style="width: 50px; height: 50px;">
+                              <i class="bi bi-person-arms-up"></i>
+                          </div>
+                          <h3 class="h4 text-white mb-0">Pilates Appointment</h3>
+                      </div>
+                      
+                      <div class="service-manager" data-service-manager="pilates">
+                        <div class="service-card border-0 bg-transparent p-0">
+                          <p class="service-note text-accent" data-appointments-status><i class="spinner-border spinner-border-sm me-2"></i>Loading calendar...</p>
+                          <div data-appointments-list></div>
+                        </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          
         </div>
       </section>
     `
@@ -406,6 +453,7 @@ export function renderApp(pathname = '/') {
             <a href="/" data-nav class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
             <a href="/physiotherapy" data-nav class="nav-link ${currentPath === '/physiotherapy' ? 'active' : ''}">Physiotherapy</a>
             <a href="/pilates" data-nav class="nav-link ${currentPath === '/pilates' ? 'active' : ''}">Pilates</a>
+            <a href="/appointment-now" data-nav class="nav-link ${currentPath === '/appointment-now' ? 'active' : ''}">Appointment Now</a>
             <a href="/about" data-nav class="nav-link ${currentPath === '/about' ? 'active' : ''}">About</a>
             <a href="/contact" data-nav class="nav-link ${currentPath === '/contact' ? 'active' : ''}">Contact</a>
           </nav>

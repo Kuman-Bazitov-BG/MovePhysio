@@ -1705,15 +1705,16 @@ async function renderServiceContent(root, service) {
   })
 }
 
-function getServiceFromPath(pathname) {
-  if (pathname === '/physiotherapy') return 'physiotherapy'
-  if (pathname === '/pilates') return 'pilates'
-  return null
+function getServicesFromPath(pathname) {
+  if (pathname === '/physiotherapy') return ['physiotherapy']
+  if (pathname === '/pilates') return ['pilates']
+  if (pathname === '/appointment-now') return ['physiotherapy', 'pilates']
+  return []
 }
 
 export async function initServiceFeatures(pathname = window.location.pathname) {
-  const service = getServiceFromPath(pathname)
-  if (!service) {
+  const services = getServicesFromPath(pathname)
+  if (services.length === 0) {
     if (authSubscription) {
       authSubscription.unsubscribe()
       authSubscription = null
@@ -1729,10 +1730,13 @@ export async function initServiceFeatures(pathname = window.location.pathname) {
     return
   }
 
-  const root = document.querySelector(`[data-service-manager="${service}"]`)
-  if (!root) return
-
-  await renderServiceContent(root, service)
+  // Render all active services synchronously
+  for (const service of services) {
+    const root = document.querySelector(`[data-service-manager="${service}"]`)
+    if (root) {
+      await renderServiceContent(root, service)
+    }
+  }
 
   const supabase = getSupabaseClient()
   if (!supabase) return
@@ -1753,38 +1757,46 @@ export async function initServiceFeatures(pathname = window.location.pathname) {
   }
 
   const { data } = supabase.auth.onAuthStateChange(async () => {
-    const currentService = getServiceFromPath(window.location.pathname)
-    if (!currentService) return
-    const activeRoot = document.querySelector(`[data-service-manager="${currentService}"]`)
-    if (!activeRoot) return
-    await renderServiceContent(activeRoot, currentService)
+    const currentServices = getServicesFromPath(window.location.pathname)
+    if (currentServices.length === 0) return
+    
+    for (const serv of currentServices) {
+       const activeRoot = document.querySelector(`[data-service-manager="${serv}"]`)
+       if (activeRoot) {
+          await renderServiceContent(activeRoot, serv)
+       }
+    }
   })
 
   authSubscription = data.subscription
 
-  const channelName = `appointments-sync-${service}`
+  const channelName = `appointments-sync-${services.join('-')}`
+  
+  // Conditionally apply filter if there is only one service, otherwise listen to all
+  const filters = services.length === 1 
+      ? { event: '*', schema: 'public', table: 'appointments', filter: `service=eq.${services[0]}` }
+      : { event: '*', schema: 'public', table: 'appointments' }
+      
   const channel = supabase
     .channel(channelName)
     .on(
       'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'appointments',
-        filter: `service=eq.${service}`
-      },
+      filters,
       () => {
-        const currentService = getServiceFromPath(window.location.pathname)
-        if (currentService !== service) return
+        const currentServices = getServicesFromPath(window.location.pathname)
+        if (currentServices.length === 0) return
 
         if (appointmentSyncTimer) {
           window.clearTimeout(appointmentSyncTimer)
         }
 
         appointmentSyncTimer = window.setTimeout(async () => {
-          const activeRoot = document.querySelector(`[data-service-manager="${service}"]`)
-          if (!activeRoot) return
-          await renderServiceContent(activeRoot, service)
+          for (const serv of currentServices) {
+            const activeRoot = document.querySelector(`[data-service-manager="${serv}"]`)
+            if (activeRoot) {
+               await renderServiceContent(activeRoot, serv)
+            }
+          }
         }, 120)
       }
     )
