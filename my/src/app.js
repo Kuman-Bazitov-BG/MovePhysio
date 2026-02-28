@@ -287,20 +287,59 @@ function renderPageContent(pathname) {
 
   if (pathname === '/physiotherapy') {
     return `
-      <section class="page-screen container">
-        <div class="page-surface">
-          <h1 class="page-title">Physiotherapy</h1>
-          <p class="page-copy mb-2">
-            Our physiotherapy services focus on restoring movement, reducing pain, and improving overall function.
-            We use evidence-based techniques tailored to your specific needs.
-          </p>
-          <ul class="page-list mb-0">
-            <li>Manual therapy and soft tissue mobilization</li>
-            <li>Exercise prescription and rehabilitation programs</li>
-            <li>Sports injury assessment and treatment</li>
-            <li>Post-operative rehabilitation</li>
-            <li>Pain management strategies</li>
-          </ul>
+      <section class="page-screen container position-relative physiotherapy-section">
+        <div class="page-surface overflow-hidden position-relative p-md-5 z-1 mt-4">
+          <!-- Floating Background Effects -->
+          <div class="clouds-bg-wrapper position-absolute w-100 h-100 top-0 start-0 overflow-hidden" style="pointer-events: none; z-index: 0; border-radius: var(--radius-lg);">
+            <div class="cloud-blob blur-blob-1"></div>
+            <div class="cloud-blob blur-blob-2"></div>
+          </div>
+          
+          <div class="position-relative z-1 text-center mb-5 slide-up-fade">
+            <h1 class="page-title display-4 fw-bold mb-3"><i class="bi bi-activity text-info me-2"></i>Physiotherapy</h1>
+            <p class="page-copy lead mb-4">
+              Restoring movement, reducing pain, and improving overall function through evidence-based techniques.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-bandaid me-1"></i>Manual Therapy</span>
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-person-arms-up me-1"></i>Exercise Prescription</span>
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-lightning-charge me-1"></i>Sports Rehab</span>
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-heart-pulse me-1"></i>Post-Op Care</span>
+            </div>
+          </div>
+
+          <div class="row g-4 align-items-stretch mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.2s;">
+            <div class="col-12 text-center mb-3">
+              <h2 class="h3 text-white">Watch Our Techniques in Action</h2>
+              <p class="text-subtle">Take a look at how we perform our focused rehabilitation and manual therapy.</p>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
+                  <video src="/physio-video-1.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="max-height: 240px;"></video>
+                </div>
+                <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-info me-2"></i>Targeted Joint Mobilization</h3>
+                <p class="text-subtle small mb-0">Learn how our physiotherapists use precise hands-on methods to restore joint mobility, relieve stiffness, and stimulate the body's natural healing processes.</p>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
+                  <video src="/physio-video-2.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="max-height: 240px;"></video>
+                </div>
+                <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-accent me-2"></i>Active Rehabilitation Exercise</h3>
+                <p class="text-subtle small mb-0">Watch examples of functional exercise protocols designed specifically to strengthen vulnerable areas, improve balance, and prevent future injuries.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-center mt-4 pt-3 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.4s;">
+             <a href="/appointment-now" data-nav class="btn btn-outline-info auth-pill-btn px-4 py-2 hover-glow">
+               <i class="bi bi-calendar-check me-2"></i>Book a Physiotherapy Session
+             </a>
+          </div>
         </div>
       </section>
     `
@@ -308,20 +347,69 @@ function renderPageContent(pathname) {
 
   if (pathname === '/pilates') {
     return `
-      <section class="page-screen container">
-        <div class="page-surface">
-          <h1 class="page-title">Pilates</h1>
-          <p class="page-copy mb-2">
-            Our Pilates sessions combine core strengthening, flexibility, and mindful movement to enhance
-            body awareness and functional strength for everyday activities.
-          </p>
-          <ul class="page-list mb-0">
-            <li>Mat and equipment-based Pilates sessions</li>
-            <li>Clinical Pilates for injury recovery</li>
-            <li>One-on-one and small group classes</li>
-            <li>Specialized programs for athletes</li>
-            <li>Pre and postnatal Pilates</li>
-          </ul>
+      <section class="page-screen container position-relative pilates-section">
+        <div class="page-surface overflow-hidden position-relative p-md-5 z-1 mt-4">
+          <!-- Floating Background Effects -->
+          <div class="clouds-bg-wrapper position-absolute w-100 h-100 top-0 start-0 overflow-hidden" style="pointer-events: none; z-index: 0; border-radius: var(--radius-lg);">
+            <div class="cloud-blob blur-blob-1" style="background: radial-gradient(circle, var(--accent), transparent 70%);"></div>
+            <div class="cloud-blob blur-blob-2" style="background: radial-gradient(circle, rgba(131,232,187,0.4), transparent 70%);"></div>
+          </div>
+          
+          <div class="position-relative z-1 text-center mb-5 slide-up-fade">
+            <h1 class="page-title display-4 fw-bold mb-3"><i class="bi bi-person-arms-up text-accent me-2"></i>Pilates</h1>
+            <p class="page-copy lead mb-4">
+              Combining core strengthening, flexibility, and mindful movement to enhance body awareness and functional strength.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-circle me-1"></i>Reformer Equipment</span>
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-heart-pulse me-1"></i>Clinical Pilates</span>
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-lungs me-1"></i>Mindful Movement</span>
+                <span class="badge glass-badge px-3 py-2"><i class="bi bi-arrow-repeat me-1"></i>Core Stability</span>
+            </div>
+          </div>
+
+          <div class="row g-4 align-items-stretch mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.2s;">
+            <div class="col-12 text-center mb-3">
+              <h2 class="h3 text-white">Experience Our Pilates Approach</h2>
+              <p class="text-subtle">See how controlled movements and specialized equipment can transform your posture and strength.</p>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
+                  <video src="/pilates-video-1.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 200px; max-height: 240px;"></video>
+                </div>
+                <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-accent me-2"></i>Advanced Reformer</h3>
+                <p class="text-subtle small mb-0">Challenge your core strength, balance, and whole-body integration with these advanced movement sequences on the Reformer.</p>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
+                  <video src="/pilates-video-2.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 200px; max-height: 240px;"></video>
+                </div>
+                <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-success me-2"></i>Dynamic Mobility</h3>
+                <p class="text-subtle small mb-0">Watch smooth transitions that elevate your range of motion through active stretching combined with specialized equipment routines.</p>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
+                  <video src="/pilates-video-3.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 200px; max-height: 240px;"></video>
+                </div>
+                <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-info me-2"></i>Clinical Correction</h3>
+                <p class="text-subtle small mb-0">Targeted therapeutic movements addressing muscular imbalances and promoting injury recovery securely and effectively.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-center mt-4 pt-3 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.4s;">
+             <a href="/appointment-now" data-nav class="btn btn-outline-accent auth-pill-btn px-4 py-2 hover-glow" style="border-color: var(--accent); color: var(--accent);">
+               <i class="bi bi-calendar-check me-2"></i>Book a Pilates Session
+             </a>
+          </div>
         </div>
       </section>
     `
