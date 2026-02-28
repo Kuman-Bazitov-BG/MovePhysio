@@ -46,6 +46,22 @@ function refreshToHomePage() {
   window.location.reload()
 }
 
+function closeAuthModal() {
+  const modalElement = document.querySelector('#authModal')
+  if (!modalElement) return
+
+  const bootstrapModal = window.bootstrap?.Modal
+  if (!bootstrapModal) return
+
+  const instance = bootstrapModal.getInstance(modalElement)
+  instance?.hide()
+}
+
+function completeAuthFlow() {
+  closeAuthModal()
+  refreshToHomePage()
+}
+
 async function updateAuthUI(session) {
   const openButton = document.querySelector('#auth-open-btn')
   const logoutButton = document.querySelector('#logout-btn')
@@ -136,6 +152,7 @@ async function register(username, contact, password) {
     }
 
     setStatus('Registration successful. Verify your contact method if required.', 'success')
+    completeAuthFlow()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
@@ -169,7 +186,7 @@ async function login(contact, password) {
     }
 
     setStatus('Login successful. Welcome back.', 'success')
-    refreshToHomePage()
+    completeAuthFlow()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
@@ -189,7 +206,7 @@ async function logout() {
     }
 
     setStatus('You are logged out.', 'info')
-    refreshToHomePage()
+    completeAuthFlow()
   } catch (error) {
     setStatus(getAuthErrorMessage(error), 'error')
   }
