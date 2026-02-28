@@ -186,10 +186,10 @@ function renderPageContent(pathname) {
             <div class="glass-card p-0 rounded-4 overflow-hidden position-relative">
                <div class="row g-0">
                   <div class="col-sm-4 bg-dark d-flex align-items-stretch justify-content-center order-sm-2">
-                     <img src="/Alexandra.jpg" alt="Alexandra Skenter" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
+                     <img src="/Alexandra.jpg" alt="Alexandra Skender" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
                   </div>
                   <div class="col-sm-8 p-4 d-flex flex-column justify-content-center order-sm-1 text-sm-end">
-                     <h5 class="text-white fw-bold mb-1">Alexandra Skenter</h5>
+                     <h5 class="text-white fw-bold mb-1">Alexandra Skender</h5>
                      <h6 class="text-accent small mb-3">Clinical Pilates Instructor</h6>
                      <p class="text-subtle small mb-3 lh-lg">Alexandra leads our Pilates programs, blending core strengthening, breath work, and flexible movement patterns to prevent injuries and rehabilitate posture. Her classes re-educate the neuromuscular system for long-term health and stability.</p>
                      <div class="d-flex justify-content-sm-end gap-2">

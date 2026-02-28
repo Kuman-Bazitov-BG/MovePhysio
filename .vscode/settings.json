@@ -1,6 +1,7 @@
 {
     "chat.tools.terminal.autoApprove": {
         "npm run build": true,
-        "npm --prefix my": true
+        "npm --prefix my": true,
+        "Copy-Item": true
     }
 }
