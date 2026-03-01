@@ -1,14 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
-import { getSupabaseConfig } from './config.js'
+import { supabase, missingConfigMessage } from './supabaseClient.js'
 import { teardownSiteChat } from './chat.js'
-
-const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
-const hasConfig =
-  Boolean(supabaseUrl && supabaseAnonKey) &&
-  !/your-project-ref|your-anon-key|your-publishable-key/i.test(`${supabaseUrl} ${supabaseAnonKey}`)
-const supabase = hasConfig ? createClient(supabaseUrl, supabaseAnonKey) : null
-const missingConfigMessage =
-  'Supabase config is missing or still using placeholders. In my/.env.local set VITE_SUPABASE_URL and either VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY, then restart the dev server.'
 
 function getAuthErrorMessage(error) {
   if (error instanceof TypeError && /fetch/i.test(error.message)) {

@@ -185,6 +185,12 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_MEDIA_BUCKET=movephysio-media
 ```
 
+For Netlify deployment, set the same values in Site Configuration → Environment Variables.
+The frontend supports both naming styles:
+
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (recommended)
+- or `SUPABASE_URL` and `SUPABASE_ANON_KEY`
+
 ### 3) Apply database migrations
 
 Run your Supabase migration workflow so all files from `supabase/migrations/` are applied in order.

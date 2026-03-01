@@ -1,13 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
-import { getSupabaseConfig } from './config.js'
+import { supabase, hasConfig } from './supabaseClient.js'
 import { applyTranslations, initI18n } from './i18n.js'
 import { initAdminChat, teardownAdminChat } from './chat.js'
-
-const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
-const hasConfig =
-  Boolean(supabaseUrl && supabaseAnonKey) &&
-  !/your-project-ref|your-anon-key|your-publishable-key/i.test(`${supabaseUrl} ${supabaseAnonKey}`)
-const supabase = hasConfig ? createClient(supabaseUrl, supabaseAnonKey) : null
 const PHYSIOTHERAPY_FILES_BUCKET = 'physiotherapy-appointment-files'
 let adminRealtimeChannel = null
 let adminRealtimeTimer = null

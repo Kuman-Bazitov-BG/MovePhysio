@@ -1,11 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-import { getSupabaseConfig } from './config.js'
-
-const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
-const hasConfig =
-  Boolean(supabaseUrl && supabaseAnonKey) &&
-  !/your-project-ref|your-anon-key|your-publishable-key/i.test(`${supabaseUrl} ${supabaseAnonKey}`)
-const supabase = hasConfig ? createClient(supabaseUrl, supabaseAnonKey) : null
+import { supabase } from './supabaseClient.js'
 
 let siteChatState = null
 let adminChatState = null

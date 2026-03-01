@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "build": "npm --prefix my run build",
+    "dev": "npm --prefix my run dev"
+  },
   "dependencies": {
     "bootstrap-icons": "^1.13.1"
   }
