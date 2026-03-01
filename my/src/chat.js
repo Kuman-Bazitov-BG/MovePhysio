@@ -212,6 +212,9 @@ export function teardownSiteChat() {
 }
 
 export function teardownAdminChat() {
+  if (typeof adminChatState?.cleanup === 'function') {
+    adminChatState.cleanup()
+  }
   if (adminChatState?.channel) {
     adminChatState.channel.unsubscribe()
   }
@@ -349,6 +352,51 @@ export async function initAdminChat() {
 
   let allMessages = []
   let selectedUserId = ''
+  const closedConversations = new Map()
+  let contextTargetUserId = ''
+
+  const ensureContextMenu = () => {
+    let menu = document.querySelector('#admin-chat-context-menu')
+    if (menu) return menu
+
+    menu = document.createElement('div')
+    menu.id = 'admin-chat-context-menu'
+    menu.className = 'chat-context-menu d-none'
+    menu.innerHTML = `
+      <button type="button" class="chat-context-menu-btn" data-action="open">Open chat</button>
+      <button type="button" class="chat-context-menu-btn" data-action="close">Close chat</button>
+    `
+
+    document.body.appendChild(menu)
+    return menu
+  }
+
+  const contextMenu = ensureContextMenu()
+
+  const hideContextMenu = () => {
+    contextMenu.classList.add('d-none')
+    contextMenu.style.left = '-9999px'
+    contextMenu.style.top = '-9999px'
+    contextTargetUserId = ''
+  }
+
+  const showContextMenu = (x, y, userId) => {
+    if (!userId) return
+    contextTargetUserId = userId
+
+    contextMenu.classList.remove('d-none')
+    contextMenu.style.left = `${x}px`
+    contextMenu.style.top = `${y}px`
+
+    const rect = contextMenu.getBoundingClientRect()
+    const maxLeft = window.innerWidth - rect.width - 8
+    const maxTop = window.innerHeight - rect.height - 8
+    const clampedLeft = Math.max(8, Math.min(x, maxLeft))
+    const clampedTop = Math.max(8, Math.min(y, maxTop))
+
+    contextMenu.style.left = `${clampedLeft}px`
+    contextMenu.style.top = `${clampedTop}px`
+  }
 
   const buildConversationModel = () => {
     const conversations = new Map()
@@ -361,7 +409,9 @@ export async function initAdminChat() {
         userId,
         contact: item.sender_contact || `user-${String(userId).slice(0, 8)}`,
         unread: false,
-        latest: item
+        latest: item,
+        hasUserMessage: false,
+        latestFromUserAt: null
       }
 
       if (!model.contact || model.contact.startsWith('user-')) {
@@ -378,13 +428,35 @@ export async function initAdminChat() {
         model.unread = true
       }
 
+      if (item.sender_user_id === userId && item.recipient_user_id == null) {
+        model.hasUserMessage = true
+        if (!model.latestFromUserAt || new Date(item.created_at) > new Date(model.latestFromUserAt)) {
+          model.latestFromUserAt = item.created_at
+        }
+      }
+
       conversations.set(userId, model)
     })
 
-    return [...conversations.values()].sort(
+    return [...conversations.values()]
+      .filter((item) => item.hasUserMessage)
+      .sort(
       (a, b) => new Date(b.latest?.created_at || 0).getTime() - new Date(a.latest?.created_at || 0).getTime()
     )
   }
+
+  const filterVisibleConversations = (conversations) => conversations.filter((conversation) => {
+    const closedAt = closedConversations.get(conversation.userId)
+    if (!closedAt) return true
+
+    const latestFromUserTime = conversation.latestFromUserAt ? new Date(conversation.latestFromUserAt).getTime() : 0
+    if (latestFromUserTime > closedAt) {
+      closedConversations.delete(conversation.userId)
+      return true
+    }
+
+    return false
+  })
 
   const renderInbox = (conversations) => {
     if (!inbox) return
@@ -410,31 +482,55 @@ export async function initAdminChat() {
   }
 
   const renderCurrentThread = () => {
+    if (!selectedUserId) {
+      if (thread) {
+        thread.innerHTML = '<p class="chat-empty mb-0">Select a user to open the conversation.</p>'
+      }
+      return
+    }
+
     const threadMessages = allMessages.filter(
       (item) =>
-        selectedUserId && (
-          (item.sender_user_id === selectedUserId && item.recipient_user_id == null) ||
-          (item.sender_user_id === user.id && item.recipient_user_id === selectedUserId)
-        )
+        (item.sender_user_id === selectedUserId && item.recipient_user_id == null) ||
+        (item.sender_user_id === user.id && item.recipient_user_id === selectedUserId)
     )
 
     renderThread(thread, threadMessages, user.id, 'admin')
+  }
+
+  const updateComposerState = () => {
+    const sendButton = form?.querySelector('.chat-send-btn')
+    const hasSelection = Boolean(selectedUserId)
+
+    if (input) {
+      input.disabled = !hasSelection
+      input.placeholder = hasSelection ? 'Type your message...' : 'Select a user to reply...'
+      if (!hasSelection) {
+        input.value = ''
+      }
+    }
+
+    if (sendButton) {
+      sendButton.disabled = !hasSelection
+    }
   }
 
   const syncAndRender = async () => {
     try {
       allMessages = await fetchAdminMessages()
       const conversations = buildConversationModel()
+      const visibleConversations = filterVisibleConversations(conversations)
 
-      if (!selectedUserId && conversations.length) {
-        selectedUserId = conversations[0].userId
+      if (selectedUserId && !visibleConversations.some((item) => item.userId === selectedUserId)) {
+        selectedUserId = ''
       }
 
-      renderInbox(conversations)
+      renderInbox(visibleConversations)
       renderCurrentThread()
-      setChatStatus(panel)
+      updateComposerState()
+      setChatStatus(panel, selectedUserId ? '' : 'Select a user from the list to open the chat.')
 
-      const unreadUsersCount = conversations.filter((item) => item.unread).length
+      const unreadUsersCount = visibleConversations.filter((item) => item.unread).length
       setUnreadBadge(toggle, unreadUsersCount)
     } catch (error) {
       setChatStatus(panel, `Chat load failed: ${error.message}`, 'error')
@@ -457,6 +553,8 @@ export async function initAdminChat() {
   }
 
   const handleInboxClick = async (event) => {
+    hideContextMenu()
+
     const button = event.target.closest('.chat-conversation-chip')
     if (!button) return
 
@@ -465,6 +563,41 @@ export async function initAdminChat() {
 
     await markConversationReadAsAdmin(selectedUserId)
     await syncAndRender()
+  }
+
+  const handleInboxContextMenu = (event) => {
+    const button = event.target.closest('.chat-conversation-chip')
+    if (!button) return
+
+    event.preventDefault()
+    const targetUserId = String(button.dataset.userId || '').trim()
+    showContextMenu(event.clientX, event.clientY, targetUserId)
+  }
+
+  const handleContextMenuAction = async (event) => {
+    const actionButton = event.target.closest('.chat-context-menu-btn')
+    if (!actionButton) return
+
+    const action = String(actionButton.dataset.action || '').trim()
+    const targetUserId = String(contextTargetUserId || '').trim()
+    hideContextMenu()
+
+    if (!targetUserId) return
+
+    if (action === 'open') {
+      selectedUserId = targetUserId
+      await markConversationReadAsAdmin(selectedUserId)
+      await syncAndRender()
+      return
+    }
+
+    if (action === 'close') {
+      closedConversations.set(targetUserId, Date.now())
+      if (selectedUserId === targetUserId) {
+        selectedUserId = ''
+      }
+      await syncAndRender()
+    }
   }
 
   const handleSubmit = async (event) => {
@@ -504,14 +637,31 @@ export async function initAdminChat() {
   toggle.addEventListener('click', handleToggle)
   closeButton?.addEventListener('click', () => closePanel(panel))
   inbox?.addEventListener('click', handleInboxClick)
+  inbox?.addEventListener('contextmenu', handleInboxContextMenu)
   form?.addEventListener('submit', handleSubmit)
   input?.addEventListener('keydown', handleInputKeydown)
+  contextMenu.addEventListener('click', handleContextMenuAction)
+  document.addEventListener('click', hideContextMenu)
+  window.addEventListener('resize', hideContextMenu)
+  panel.addEventListener('scroll', hideContextMenu, true)
 
   const channel = supabase
     .channel(`admin-chat-${user.id}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, syncAndRender)
     .subscribe()
 
-  adminChatState = { channel, toggle }
+  adminChatState = {
+    channel,
+    toggle,
+    cleanup: () => {
+      contextMenu.removeEventListener('click', handleContextMenuAction)
+      document.removeEventListener('click', hideContextMenu)
+      window.removeEventListener('resize', hideContextMenu)
+      panel.removeEventListener('scroll', hideContextMenu, true)
+      inbox?.removeEventListener('contextmenu', handleInboxContextMenu)
+      contextMenu.remove()
+    }
+  }
+  updateComposerState()
   await syncAndRender()
 }
