@@ -165,6 +165,8 @@ Copy `.env.example` to `.env.local` inside `my/` and set real values:
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 # or use VITE_SUPABASE_PUBLISHABLE_KEY
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_MEDIA_BUCKET=movephysio-media
 ```
 
 ### 3) Run the app
@@ -182,6 +184,7 @@ From `my/`:
 - `npm run dev` – start development server
 - `npm run build` – create production build
 - `npm run preview` – preview production build locally
+- `npm run sync:media` – upload all files from `../Images` and `../Videos` to Supabase Storage
 
 ## Supabase Setup
 
@@ -207,6 +210,30 @@ set user_role = excluded.user_role,
 ```
 
 After this, that user can access `admin.html` and manage roles from the UI.
+
+### Sync project media to Supabase Storage
+
+Apply migration `supabase/migrations/20260301170000_create_movephysio_media_bucket.sql` and run:
+
+```bash
+cd my
+npm run sync:media
+```
+
+Optional dry run to preview mapping only:
+
+```bash
+npm run sync:media -- --dry-run
+```
+
+Destination structure in bucket `movephysio-media`:
+
+- `Pictures/Pilates/*`
+- `Pictures/Physiotherapy/*`
+- `Pictures/Movephysio/*`
+- `Videos/Pilates/*`
+- `Videos/Physiotherapy/*`
+- `Videos/Movephysio/*`
 
 ## Deployment
 

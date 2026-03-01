@@ -76,6 +76,14 @@ function completeAuthFlow(modalId) {
   refreshToHomePage()
 }
 
+function resetFormState(formElement, statusId) {
+  if (!formElement) return
+  formElement.reset()
+  if (statusId) {
+    setStatus('', 'info', statusId)
+  }
+}
+
 function isRegisteredSessionUser(user) {
   return Boolean(user?.id) && !Boolean(user?.is_anonymous)
 }
@@ -324,6 +332,7 @@ export function initAuth() {
   const sessionActionsModal = bootstrapModal && sessionActionsModalElement ? new bootstrapModal(sessionActionsModalElement) : null
 
   registerOpenBtn.addEventListener('click', () => {
+    resetFormState(registerForm, 'register-status')
     if (registerModal) registerModal.show()
   })
 
@@ -353,6 +362,7 @@ export function initAuth() {
 
   switchToRegister?.addEventListener('click', (e) => {
     e.preventDefault()
+    resetFormState(registerForm, 'register-status')
     if (loginModal && registerModal) {
       loginModal.hide()
       registerModal.show()
