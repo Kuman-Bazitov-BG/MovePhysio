@@ -492,7 +492,8 @@ function renderDayHoursSchedule(items, options = {}) {
     slotMinutes = 60,
     workStartHour = 8,
     workEndHour = 20,
-    maxAppointmentsPerSlot = 1
+    maxAppointmentsPerSlot = 1,
+    isAuthenticated = false
   } = options
 
   if (!selectedDate) {
@@ -546,11 +547,12 @@ function renderDayHoursSchedule(items, options = {}) {
           const slotMinutesOfDay = toMinutesOfDay(timeValue)
           const isPastSlot = selectedDate === todayDateKey && slotMinutesOfDay != null && slotMinutesOfDay < nowMinutes
           const isBusy = usedSlots >= safeMaxAppointmentsPerSlot || isPastSlot
+          const canClickSlot = isAuthenticated
           const statusLabel = isPastSlot ? 'Past' : (isBusy ? 'Busy' : 'Available')
           return `
             <li
-              class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open is-clickable'}"
-              ${isBusy ? '' : `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"`}
+              class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open'} ${canClickSlot ? 'is-clickable' : ''}"
+              ${canClickSlot ? `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"` : ''}
             >
               <span>${escapeHtml(slotDefinition?.label || timeValue)}</span>
               <strong>${statusLabel} · ${usedSlots}/${safeMaxAppointmentsPerSlot}</strong>
@@ -860,7 +862,8 @@ function renderAppointmentCalendar(items, options = {}) {
             slotMinutes,
             workStartHour,
             workEndHour,
-            maxAppointmentsPerSlot
+            maxAppointmentsPerSlot,
+            isAuthenticated
           })}
         </div>
       </div>
@@ -1435,9 +1438,177 @@ async function renderServiceContent(root, service) {
     }, 120)
   }
 
+  const openEditAppointmentFlow = async (currentItem) => {
+    const appointmentId = currentItem?.id
+    if (!appointmentId || !sessionUserId) return
+
+    if (!canManageAppointment(currentItem, sessionUserId, isAdmin)) {
+      if (appointmentsStatus) {
+        appointmentsStatus.dataset.type = 'error'
+        appointmentsStatus.textContent = 'You can edit only your own appointments.'
+      }
+      return
+    }
+
+    const modalId = `editAppointmentModal-${service}`
+    let modalElement = document.getElementById(modalId)
+
+    if (!modalElement) {
+      const modalWrapper = document.createElement('div')
+      modalWrapper.innerHTML = `
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content auth-modal">
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title">Edit Appointment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body pt-3">
+                <form class="d-grid gap-3" data-modal-edit-appointment-form>
+                  <div>
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" name="name" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" name="telephone" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Appointment Title</label>
+                    <input type="text" class="form-control" name="title" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Date & Time</label>
+                    <input type="datetime-local" class="form-control" name="appointment_at" required />
+                  </div>
+                  <div>
+                    <label class="form-label">Notes</label>
+                    <input type="text" class="form-control" name="notes" placeholder="Optional" />
+                  </div>
+                  <p class="service-note mb-0" data-modal-edit-appointment-status></p>
+                  <button type="submit" class="btn btn-primary btn-glow w-100">Save Changes</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+
+      modalElement = modalWrapper.firstElementChild
+      if (!modalElement) return
+      document.body.appendChild(modalElement)
+    }
+
+    const modalForm = modalElement.querySelector('[data-modal-edit-appointment-form]')
+    const modalStatus = modalElement.querySelector('[data-modal-edit-appointment-status]')
+    const dateInput = modalElement.querySelector('input[name="appointment_at"]')
+    if (!modalForm || !dateInput) return
+
+    const nameInput = modalForm.querySelector('input[name="name"]')
+    const telephoneInput = modalForm.querySelector('input[name="telephone"]')
+    const titleInput = modalForm.querySelector('input[name="title"]')
+    const notesInput = modalForm.querySelector('input[name="notes"]')
+
+    if (nameInput) nameInput.value = currentItem.name || ''
+    if (telephoneInput) telephoneInput.value = currentItem.telephone || ''
+    if (titleInput) titleInput.value = currentItem.title || ''
+    if (notesInput) notesInput.value = currentItem.notes || ''
+
+    dateInput.step = service === 'pilates' ? '60' : String(slotMinutes * 60)
+    dateInput.min = service === 'pilates' ? '' : getNextSlotDateTimeLocal(slotMinutes)
+    dateInput.value = toDateTimeLocal(currentItem.appointment_at)
+
+    if (modalStatus) {
+      modalStatus.textContent = ''
+      modalStatus.dataset.type = 'info'
+    }
+
+    const bootstrapApi = window.bootstrap
+    if (!bootstrapApi?.Modal) {
+      if (appointmentsStatus) {
+        appointmentsStatus.dataset.type = 'error'
+        appointmentsStatus.textContent = 'Modal is unavailable in this environment.'
+      }
+      return
+    }
+
+    const modalInstance = bootstrapApi.Modal.getOrCreateInstance(modalElement)
+
+    modalForm.onsubmit = async (event) => {
+      event.preventDefault()
+
+      const formData = new FormData(modalForm)
+      const nextName = String(formData.get('name') || '').trim()
+      const nextTelephone = String(formData.get('telephone') || '').trim()
+      const nextTitle = String(formData.get('title') || '').trim()
+      const nextDate = String(formData.get('appointment_at') || '').trim()
+      const nextNotes = String(formData.get('notes') || '').trim()
+
+      if (!nextName || !nextTelephone || !nextTitle || !nextDate) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = 'Please fill all required fields.'
+        }
+        return
+      }
+
+      if (service !== 'pilates' && !isAlignedToSlot(nextDate, slotMinutes)) {
+        const nextAligned = alignDateTimeLocal(nextDate, slotMinutes)
+        dateInput.value = nextAligned
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = `Time adjusted to match ${slotMinutes}-minute slot boundaries.`
+        }
+        return
+      }
+
+      if (service === 'pilates' && !isPilatesDateTimeAllowed(nextDate)) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = 'Selected time is outside the Pilates schedule.'
+        }
+        return
+      }
+
+      let updateQuery = supabase
+        .from('appointments')
+        .update({
+          name: nextName,
+          telephone: nextTelephone,
+          title: nextTitle,
+          appointment_at: toUtcIsoString(nextDate),
+          notes: nextNotes || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', appointmentId)
+
+      if (!isAdmin && sessionUserId) {
+        updateQuery = updateQuery.eq('created_by', sessionUserId)
+      }
+
+      const { error } = await updateQuery
+
+      if (error) {
+        if (modalStatus) {
+          modalStatus.dataset.type = 'error'
+          modalStatus.textContent = error.message
+        }
+        return
+      }
+
+      modalInstance.hide()
+      await renderServiceContent(root, service)
+    }
+
+    modalInstance.show()
+    window.setTimeout(() => {
+      nameInput?.focus()
+    }, 120)
+  }
+
   const bindHourScheduleHandlers = () => {
     appointmentsList?.querySelectorAll('[data-hour-time]').forEach((hourItem) => {
-      const handleHourSelection = () => {
+      const handleHourSelection = async () => {
         const dateKey = root.dataset.selectedDate || ''
         const timeValue = String(hourItem.dataset.hourTime || '').trim()
         if (!dateKey || !timeValue) return
@@ -1453,14 +1624,63 @@ async function renderServiceContent(root, service) {
           }
         }
 
-        openAddAppointmentModal(dateKey, timeValue)
+        const slotAppointments = appointmentsResult.data
+          .filter((item) => toIsoDateKey(item.appointment_at) === dateKey && toLocalTimeKey(item.appointment_at) === timeValue)
+
+        if (!slotAppointments.length) {
+          openAddAppointmentModal(dateKey, timeValue)
+          return
+        }
+
+        if (!sessionUserId) {
+          if (appointmentsStatus) {
+            appointmentsStatus.dataset.type = 'info'
+            appointmentsStatus.textContent = 'Guests can only view busy slots.'
+          }
+          return
+        }
+
+        const manageableAppointments = slotAppointments.filter((item) => canManageAppointment(item, sessionUserId, isAdmin))
+        if (!manageableAppointments.length) {
+          if (appointmentsStatus) {
+            appointmentsStatus.dataset.type = 'error'
+            appointmentsStatus.textContent = 'You can edit only your own appointments.'
+          }
+          return
+        }
+
+        if (manageableAppointments.length === 1) {
+          await openEditAppointmentFlow(manageableAppointments[0])
+          return
+        }
+
+        const optionsText = manageableAppointments
+          .map((item, index) => `${index + 1}. ${item.title || 'Appointment'} · ${item.name || 'Client'} · ${formatAppointmentPeriod(item)}`)
+          .join('\n')
+
+        const selectedOption = window.prompt(`Select appointment to edit:\n${optionsText}`, '1')
+        if (!selectedOption) return
+
+        const selectedIndex = Number(selectedOption) - 1
+        const selectedAppointment = manageableAppointments[selectedIndex]
+        if (!selectedAppointment) {
+          if (appointmentsStatus) {
+            appointmentsStatus.dataset.type = 'error'
+            appointmentsStatus.textContent = 'Invalid appointment selection.'
+          }
+          return
+        }
+
+        await openEditAppointmentFlow(selectedAppointment)
       }
 
-      hourItem.addEventListener('click', handleHourSelection)
-      hourItem.addEventListener('keydown', (event) => {
+      hourItem.addEventListener('click', async () => {
+        await handleHourSelection()
+      })
+      hourItem.addEventListener('keydown', async (event) => {
         if (event.key !== 'Enter' && event.key !== ' ') return
         event.preventDefault()
-        handleHourSelection()
+        await handleHourSelection()
       })
     })
   }
@@ -1500,73 +1720,7 @@ async function renderServiceContent(root, service) {
 
       const currentItem = appointmentsResult.data.find((item) => item.id === appointmentId)
       if (!currentItem) return
-
-      if (!canManageAppointment(currentItem, sessionUserId, isAdmin)) {
-        if (appointmentsStatus) {
-          appointmentsStatus.dataset.type = 'error'
-          appointmentsStatus.textContent = 'You can edit only your own appointments.'
-        }
-        return
-      }
-
-      const nextName = window.prompt('Edit name:', currentItem.name || '')
-      if (!nextName) return
-
-      const nextTelephone = window.prompt('Edit phone number:', currentItem.telephone || '')
-      if (!nextTelephone) return
-
-      const nextTitle = window.prompt('Edit title:', currentItem.title || '')
-      if (!nextTitle) return
-
-      const defaultDate = toDateTimeLocal(currentItem.appointment_at)
-      const nextDate = window.prompt('Edit date/time (YYYY-MM-DDTHH:mm):', defaultDate)
-      if (!nextDate) return
-
-      const nextNotes = window.prompt('Edit notes (optional):', currentItem.notes || '')
-
-      if (service !== 'pilates' && !isAlignedToSlot(nextDate, slotMinutes)) {
-        if (appointmentsStatus) {
-          appointmentsStatus.dataset.type = 'error'
-          appointmentsStatus.textContent = `Time must align to ${slotMinutes}-minute slot boundaries.`
-        }
-        return
-      }
-
-      if (service === 'pilates' && !isPilatesDateTimeAllowed(nextDate)) {
-        if (appointmentsStatus) {
-          appointmentsStatus.dataset.type = 'error'
-          appointmentsStatus.textContent = 'Selected time is outside the Pilates schedule.'
-        }
-        return
-      }
-
-      let updateQuery = supabase
-        .from('appointments')
-        .update({
-          name: nextName.trim(),
-          telephone: nextTelephone.trim(),
-          title: nextTitle.trim(),
-          appointment_at: toUtcIsoString(nextDate),
-          notes: (nextNotes || '').trim() || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', appointmentId)
-
-      if (!isAdmin && sessionUserId) {
-        updateQuery = updateQuery.eq('created_by', sessionUserId)
-      }
-
-      const { error } = await updateQuery
-
-      if (error) {
-        if (appointmentsStatus) {
-          appointmentsStatus.dataset.type = 'error'
-          appointmentsStatus.textContent = error.message
-        }
-        return
-      }
-
-      await renderServiceContent(root, service)
+      await openEditAppointmentFlow(currentItem)
     })
   })
 
