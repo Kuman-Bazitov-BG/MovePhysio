@@ -4,20 +4,22 @@ const SUPPORTED_LANGUAGES = new Set(['en', 'el'])
 
 const textNodeOriginals = new WeakMap()
 const attributeOriginals = new WeakMap()
+const metadataOriginals = new WeakMap()
 
 let activeLanguage = 'en'
 let initialized = false
 
 const exactTranslations = {
   Home: 'Αρχική',
-  Physiotherapy: 'Φυσικοθεραπεία',
-  Pilates: 'Πιλάτες',
+  home: 'αρχική',
   About: 'Σχετικά',
   Contact: 'Επικοινωνία',
   Services: 'Υπηρεσίες',
-  Logout: 'Αποσύνδεση',
+  Physiotherapy: 'Φυσικοθεραπεία',
+  Pilates: 'Πιλάτες',
   Register: 'Εγγραφή',
   Login: 'Σύνδεση',
+  Logout: 'Αποσύνδεση',
   'Register / Login': 'Εγγραφή / Σύνδεση',
   'Create Account': 'Δημιουργία Λογαριασμού',
   'Sign In': 'Είσοδος',
@@ -27,15 +29,79 @@ const exactTranslations = {
   'Choose a username': 'Επιλέξτε όνομα χρήστη',
   'Create a secure password': 'Δημιουργήστε ασφαλή κωδικό',
   'Your password': 'Ο κωδικός σας',
+  'Already have an account? Login': 'Έχετε ήδη λογαριασμό; Σύνδεση',
+  "Don't have an account? Register": 'Δεν έχετε λογαριασμό; Εγγραφή',
+  'You are currently signed in.': 'Είστε ήδη συνδεδεμένος.',
   'Welcome to Move Physio': 'Καλωσήρθατε στο Move Physio',
   'About Move Physio': 'Σχετικά με το Move Physio',
   'Our current core services include:': 'Οι βασικές υπηρεσίες μας περιλαμβάνουν:',
   'Appointment Calendar': 'Ημερολόγιο Ραντεβού',
   'Page Not Found': 'Η Σελίδα Δεν Βρέθηκε',
-  home: 'αρχική',
   'All rights reserved.': 'Με επιφύλαξη παντός δικαιώματος.',
   'Access Denied': 'Η πρόσβαση απορρίφθηκε',
   'Return to Home': 'Επιστροφή στην Αρχική',
+  Chat: 'Συνομιλία',
+  'Keep Login': 'Παραμονή συνδεδεμένου',
+  'Book an Appointment': 'Κλείστε Ραντεβού',
+  'Phone Numbers': 'Τηλέφωνα',
+  'Email Address': 'Διεύθυνση Email',
+  'Our Modern Clinic': 'Η σύγχρονη κλινική μας',
+  'Our Clinical Team': 'Η κλινική μας ομάδα',
+  'Join Our Team': 'Γίνετε μέλος της ομάδας μας',
+  Rehabilitation: 'Αποκατάσταση',
+  Mobility: 'Κινητικότητα',
+  'Evidence-Based': 'Τεκμηριωμένη προσέγγιση',
+  'Functional Strength': 'Λειτουργική δύναμη',
+  'Pain Relief': 'Ανακούφιση πόνου',
+  'Lead Physiotherapist': 'Επικεφαλής Φυσικοθεραπευτής',
+  'Clinical Pilates Instructor': 'Εκπαιδεύτρια Clinical Pilates',
+  'Clinical Pilates Cert': 'Πιστοποίηση Clinical Pilates',
+  'Movement Specialist': 'Ειδικός Κίνησης',
+  'Our Philosophy': 'Η φιλοσοφία μας',
+  'Tour & Details': 'Περιήγηση & Λεπτομέρειες',
+  'Discover Our Approach': 'Ανακαλύψτε την προσέγγισή μας',
+  'Comprehensive Assessments': 'Ολοκληρωμένες αξιολογήσεις',
+  'Targeted Intervention': 'Στοχευμένη παρέμβαση',
+  'The Physio-Pilates Bridge': 'Η γέφυρα Φυσικοθεραπείας-Πιλάτες',
+  'Targeted Specializations': 'Στοχευμένες εξειδικεύσεις',
+  'Post-Operative': 'Μετεγχειρητική αποκατάσταση',
+  'Sports Rehab': 'Αθλητική αποκατάσταση',
+  'Geriatric Care': 'Γηριατρική φροντίδα',
+  'Movement is Medicine': 'Η κίνηση είναι φάρμακο',
+  Breathe: 'Αναπνοή',
+  Move: 'Κίνηση',
+  Thrive: 'Ευεξία',
+  Information: 'Πληροφορίες',
+  techniques: 'τεχνικές',
+  'Physiotherapy may consist of:': 'Η φυσικοθεραπεία μπορεί να περιλαμβάνει:',
+  'Electro stimulation': 'Ηλεκτροδιέγερση',
+  'Tecar therapy': 'Tecar therapy',
+  'Shockwave therapy': 'Θεραπεία κρουστικών κυμάτων',
+  'Cupping therapy': 'Θεραπεία βεντουζών',
+  'Dry needling &': 'Dry needling &',
+  acupuncture: 'βελονισμός',
+  Taping: 'Taping',
+  'Ergon IASTM': 'Ergon IASTM',
+  'Targeted Joint Mobilization': 'Στοχευμένη κινητοποίηση αρθρώσεων',
+  'Active Rehabilitation Exercise': 'Ενεργητική άσκηση αποκατάστασης',
+  'Watch Our Techniques in Action': 'Δείτε τις τεχνικές μας σε δράση',
+  'Experience Our Pilates Approach': 'Γνωρίστε την προσέγγισή μας στο Πιλάτες',
+  'Core Exercises & Techniques': 'Ασκήσεις & τεχνικές κορμού',
+  'Reformer Equipment': 'Εξοπλισμός Reformer',
+  'Reformer Basics': 'Βασικά Reformer',
+  'Core Stability': 'Σταθερότητα κορμού',
+  'Spinal Articulation': 'Κινητικότητα σπονδυλικής στήλης',
+  'Mindful Movement': 'Συνειδητή κίνηση',
+  'Dynamic Mobility': 'Δυναμική κινητικότητα',
+  'Lower Body Power': 'Δύναμη κάτω σώματος',
+  'Core Awakening': 'Ενεργοποίηση κορμού',
+  'Clinical Correction': 'Κλινική διόρθωση',
+  'Advanced Reformer': 'Προχωρημένο Reformer',
+  'Full Body Tone': 'Τόνωση όλου του σώματος',
+  'Physiotherapy Appointment': 'Ραντεβού Φυσικοθεραπείας',
+  'Pilates Appointment': 'Ραντεβού Πιλάτες',
+  'Loading calendar...': 'Φόρτωση ημερολογίου...',
+  'Book an Assessment': 'Κλείστε Αξιολόγηση',
   'Admin Panel': 'Πίνακας Διαχείρισης',
   'Task Workspace': 'Χώρος Εργασίας Εργασιών',
   'Back to Site': 'Επιστροφή στον Ιστότοπο',
@@ -77,11 +143,56 @@ const exactTranslations = {
   'Supabase not configured': 'Το Supabase δεν έχει ρυθμιστεί',
   'Not authenticated': 'Δεν είστε συνδεδεμένος',
   'No role found': 'Δεν βρέθηκε ρόλος',
-  'physiotherapy': 'φυσικοθεραπεία',
-  'pilates': 'πιλάτες',
+  Action: 'Ενέργεια',
+  Actions: 'Ενέργειες',
+  Add: 'Προσθήκη',
+  'Add / Update User': 'Προσθήκη / Ενημέρωση χρήστη',
+  Appointments: 'Ραντεβού',
+  Close: 'Κλείσιμο',
+  Created: 'Δημιουργήθηκε',
+  'Date/Time': 'Ημερομηνία/Ώρα',
+  Download: 'Λήψη',
+  'End Hour': 'Ώρα λήξης',
+  'File Preview': 'Προεπισκόπηση αρχείου',
+  'Max / Slot': 'Μέγιστο / Θυρίδα',
+  Notes: 'Σημειώσεις',
+  Open: 'Άνοιγμα',
+  Preview: 'Προεπισκόπηση',
+  Registered: 'Εγγεγραμμένος',
+  Role: 'Ρόλος',
+  'Slot (min)': 'Θυρίδα (λεπτά)',
+  'Start Hour': 'Ώρα έναρξης',
+  Supabase: 'Supabase',
+  Title: 'Τίτλος',
+  'To Do': 'Εργασίες',
+  Today: 'Σήμερα',
+  'Total Users': 'Σύνολο χρηστών',
+  Version: 'Έκδοση',
+  Weekends: 'Σαββατοκύριακα',
+  Yes: 'Ναι',
+  No: 'Όχι',
+  Application: 'Εφαρμογή',
+  Environment: 'Περιβάλλον',
+  Connected: 'Συνδεδεμένο',
+  'Not Configured': 'Μη ρυθμισμένο',
+  'No users found in the system.': 'Δεν βρέθηκαν χρήστες στο σύστημα.',
+  'No appointments found.': 'Δεν βρέθηκαν ραντεβού.',
+  'No appointment configuration found.': 'Δεν βρέθηκε ρύθμιση ραντεβού.',
+  'No uploaded files for this appointment.': 'Δεν υπάρχουν ανεβασμένα αρχεία για αυτό το ραντεβού.',
+  'No URL available': 'Δεν υπάρχει διαθέσιμο URL',
+  'Physiotherapy Files': 'Αρχεία Φυσικοθεραπείας',
+  'Move Physio & Pilates': 'Move Physio & Pilates',
+  'Admin Panel - Move Physio': 'Πίνακας Διαχείρισης - Move Physio',
+  'Task Workspace - Move Physio': 'Χώρος Εργασίας Εργασιών - Move Physio',
+  'Admin Panel for Move Physio': 'Πίνακας διαχείρισης για το Move Physio',
+  'Admin Task Workspace for Move Physio': 'Χώρος εργασίας διαχειριστικών εργασιών για το Move Physio',
+  physiotherapy: 'φυσικοθεραπεία',
+  pilates: 'πιλάτες',
   pending: 'εκκρεμής',
   completed: 'ολοκληρωμένη',
-  overdue: 'καθυστερημένη'
+  overdue: 'καθυστερημένη',
+  user: 'χρήστης',
+  admin: 'διαχειριστής'
 }
 
 const regexTranslations = [
@@ -160,6 +271,12 @@ function withOriginalSpacing(source, translated) {
   return `${lead}${translated}${tail}`
 }
 
+function normalizeTextKey(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+}
+
 function translateString(value, language = activeLanguage) {
   if (language !== 'el') return value
 
@@ -167,7 +284,11 @@ function translateString(value, language = activeLanguage) {
   const trimmed = source.trim()
   if (!trimmed) return source
 
-  const exact = exactTranslations[trimmed]
+  const normalizedKey = normalizeTextKey(trimmed)
+  const exact =
+    exactTranslations[trimmed] ||
+    exactTranslations[normalizedKey] ||
+    exactTranslations[normalizedKey.toLowerCase()]
   if (exact) {
     return withOriginalSpacing(source, exact)
   }
@@ -221,6 +342,27 @@ function shouldSkipNode(node) {
   return tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT'
 }
 
+function translateDocumentMetadata(language) {
+  const titleElement = document.querySelector('title')
+  if (titleElement) {
+    if (!metadataOriginals.has(titleElement)) {
+      metadataOriginals.set(titleElement, titleElement.textContent || '')
+    }
+    const original = metadataOriginals.get(titleElement) || ''
+    titleElement.textContent = language === 'el' ? translateString(original, language) : original
+  }
+
+  const descriptionElement = document.querySelector('meta[name="description"]')
+  if (descriptionElement) {
+    if (!metadataOriginals.has(descriptionElement)) {
+      metadataOriginals.set(descriptionElement, descriptionElement.getAttribute('content') || '')
+    }
+    const original = metadataOriginals.get(descriptionElement) || ''
+    const translated = language === 'el' ? translateString(original, language) : original
+    descriptionElement.setAttribute('content', translated)
+  }
+}
+
 export function applyTranslations(root = document.body) {
   const walkRoot = root && root.nodeType ? root : document.body
   if (!walkRoot) return
@@ -239,6 +381,7 @@ export function applyTranslations(root = document.body) {
 
   const elements = typeof walkRoot.querySelectorAll === 'function' ? walkRoot.querySelectorAll('*') : []
   elements.forEach((element) => translateElementAttributes(element, language))
+  translateDocumentMetadata(language)
 }
 
 function ensureLanguageSelector() {
