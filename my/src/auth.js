@@ -17,8 +17,8 @@ function getAuthErrorMessage(error) {
   return error?.message || 'Authentication failed. Please try again.'
 }
 
-function setStatus(message, type = 'info') {
-  const statusElement = document.querySelector('#auth-status')
+function setStatus(message, type = 'info', targetId) {
+  const statusElement = document.querySelector(`#${targetId}`)
   if (!statusElement) return
 
   statusElement.textContent = message
@@ -46,8 +46,8 @@ function refreshToHomePage() {
   window.location.reload()
 }
 
-function closeAuthModal() {
-  const modalElement = document.querySelector('#authModal')
+function closeAuthModal(modalId) {
+  const modalElement = document.querySelector(`#${modalId}`)
   if (!modalElement) return
 
   const bootstrapModal = window.bootstrap?.Modal
@@ -57,23 +57,24 @@ function closeAuthModal() {
   instance?.hide()
 }
 
-function completeAuthFlow() {
-  closeAuthModal()
+function completeAuthFlow(modalId) {
+  closeAuthModal(modalId)
   refreshToHomePage()
 }
 
 async function updateAuthUI(session) {
-  const openButton = document.querySelector('#auth-open-btn')
+  const registerButton = document.querySelector('#register-open-btn')
+  const loginButton = document.querySelector('#login-open-btn')
   const logoutButton = document.querySelector('#logout-btn')
   const adminButton = document.querySelector('#admin-btn')
 
-  if (!openButton || !logoutButton) return
+  if (!registerButton || !loginButton || !logoutButton) return
 
   if (session?.user) {
-    openButton.classList.add('d-none')
+    registerButton.classList.add('d-none')
+    loginButton.classList.add('d-none')
     logoutButton.classList.remove('d-none')
     
-    // Check if user is admin and show/hide admin button
     if (adminButton) {
       const isAdmin = await checkUserIsAdmin()
       if (isAdmin) {
@@ -83,7 +84,8 @@ async function updateAuthUI(session) {
       }
     }
   } else {
-    openButton.classList.remove('d-none')
+    registerButton.classList.remove('d-none')
+    loginButton.classList.remove('d-none')
     logoutButton.classList.add('d-none')
     if (adminButton) {
       adminButton.classList.add('d-none')
@@ -93,7 +95,7 @@ async function updateAuthUI(session) {
 
 async function register(username, contact, password) {
   if (!supabase) {
-    setStatus(missingConfigMessage, 'error')
+    setStatus(missingConfigMessage, 'error', 'register-status')
     return
   }
 
@@ -102,12 +104,12 @@ async function register(username, contact, password) {
   const normalizedPhone = normalizePhone(normalizedContact)
 
   if (!normalizedUsername) {
-    setStatus('Username is required.', 'error')
+    setStatus('Username is required.', 'error', 'register-status')
     return
   }
 
   if (!normalizedContact) {
-    setStatus('Phone number or email is required.', 'error')
+    setStatus('Phone number or email is required.', 'error', 'register-status')
     return
   }
 
@@ -115,7 +117,7 @@ async function register(username, contact, password) {
   const isContactPhone = !isContactEmail && isLikelyPhone(normalizedContact)
 
   if (!isContactEmail && !isContactPhone) {
-    setStatus('Enter a valid phone number or email.', 'error')
+    setStatus('Enter a valid phone number or email.', 'error', 'register-status')
     return
   }
 
@@ -147,20 +149,20 @@ async function register(username, contact, password) {
     const { error } = await supabase.auth.signUp(payload)
 
     if (error) {
-      setStatus(error.message, 'error')
+      setStatus(error.message, 'error', 'register-status')
       return
     }
 
-    setStatus('Registration successful. Verify your contact method if required.', 'success')
-    completeAuthFlow()
+    setStatus('Registration successful. Verify your contact method if required.', 'success', 'register-status')
+    completeAuthFlow('registerModal')
   } catch (error) {
-    setStatus(getAuthErrorMessage(error), 'error')
+    setStatus(getAuthErrorMessage(error), 'error', 'register-status')
   }
 }
 
 async function login(contact, password) {
   if (!supabase) {
-    setStatus(missingConfigMessage, 'error')
+    setStatus(missingConfigMessage, 'error', 'login-status')
     return
   }
 
@@ -169,7 +171,7 @@ async function login(contact, password) {
   const isContactPhone = !isContactEmail && isLikelyPhone(normalizedContact)
 
   if (!isContactEmail && !isContactPhone) {
-    setStatus('Enter a valid phone number or email.', 'error')
+    setStatus('Enter a valid phone number or email.', 'error', 'login-status')
     return
   }
 
@@ -181,34 +183,33 @@ async function login(contact, password) {
     const { error } = await supabase.auth.signInWithPassword(credentials)
 
     if (error) {
-      setStatus(error.message, 'error')
+      setStatus(error.message, 'error', 'login-status')
       return
     }
 
-    setStatus('Login successful. Welcome back.', 'success')
-    completeAuthFlow()
+    setStatus('Login successful. Welcome back.', 'success', 'login-status')
+    completeAuthFlow('loginModal')
   } catch (error) {
-    setStatus(getAuthErrorMessage(error), 'error')
+    setStatus(getAuthErrorMessage(error), 'error', 'login-status')
   }
 }
 
 async function logout() {
   if (!supabase) {
-    setStatus(missingConfigMessage, 'error')
+    // console.error(missingConfigMessage)
     return
   }
 
   try {
     const { error } = await supabase.auth.signOut()
     if (error) {
-      setStatus(error.message, 'error')
+      // console.error(error.message)
       return
     }
 
-    setStatus('You are logged out.', 'info')
-    completeAuthFlow()
+    refreshToHomePage()
   } catch (error) {
-    setStatus(getAuthErrorMessage(error), 'error')
+    // console.error(getAuthErrorMessage(error))
   }
 }
 
@@ -246,29 +247,45 @@ export function getSupabaseClient() {
 }
 
 export function initAuth() {
-  const modalElement = document.querySelector('#authModal')
-  const openModalButton = document.querySelector('#auth-open-btn')
-  const heroAuthButton = document.querySelector('#hero-auth-btn')
+  const loginModalElement = document.querySelector('#loginModal')
+  const registerModalElement = document.querySelector('#registerModal')
+  const registerOpenBtn = document.querySelector('#register-open-btn')
+  const loginOpenBtn = document.querySelector('#login-open-btn')
   const registerForm = document.querySelector('#register-form')
   const loginForm = document.querySelector('#login-form')
   const logoutButton = document.querySelector('#logout-btn')
+  const switchToLogin = document.querySelector('#switch-to-login')
+  const switchToRegister = document.querySelector('#switch-to-register')
 
-  if (!modalElement || !openModalButton || !registerForm || !loginForm || !logoutButton) {
+  if (!loginModalElement || !registerModalElement || !registerOpenBtn || !loginOpenBtn || !registerForm || !loginForm || !logoutButton) {
     return
   }
 
   const bootstrapModal = window.bootstrap?.Modal
-  const modal = bootstrapModal ? new bootstrapModal(modalElement) : null
+  const loginModal = bootstrapModal ? new bootstrapModal(loginModalElement) : null
+  const registerModal = bootstrapModal ? new bootstrapModal(registerModalElement) : null
 
-  openModalButton.addEventListener('click', () => {
-    if (modal) {
-      modal.show()
+  registerOpenBtn.addEventListener('click', () => {
+    if (registerModal) registerModal.show()
+  })
+
+  loginOpenBtn.addEventListener('click', () => {
+    if (loginModal) loginModal.show()
+  })
+
+  switchToLogin?.addEventListener('click', (e) => {
+    e.preventDefault()
+    if (registerModal && loginModal) {
+      registerModal.hide()
+      loginModal.show()
     }
   })
 
-  heroAuthButton?.addEventListener('click', () => {
-    if (modal) {
-      modal.show()
+  switchToRegister?.addEventListener('click', (e) => {
+    e.preventDefault()
+    if (loginModal && registerModal) {
+      loginModal.hide()
+      registerModal.show()
     }
   })
 

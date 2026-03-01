@@ -896,10 +896,13 @@ export function renderApp(pathname = '/') {
 
           <div class="auth-actions d-flex align-items-center gap-2">
             <a href="/admin.html" id="admin-btn" class="btn auth-pill-btn d-none">
-              <i class="bi bi-shield-check action-icon me-2" aria-hidden="true"></i>Adnim Pannel
+              <i class="bi bi-shield-check action-icon me-2" aria-hidden="true"></i>Admin Panel
             </a>
-            <button id="auth-open-btn" class="btn auth-pill-btn">
-              <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register / Login
+            <button id="register-open-btn" class="btn auth-pill-btn">
+              <i class="bi bi-person-plus-fill action-icon me-1" aria-hidden="true"></i>Register
+            </button>
+            <button id="login-open-btn" class="btn auth-pill-btn">
+              <i class="bi bi-box-arrow-in-right action-icon me-1" aria-hidden="true"></i>Login
             </button>
             <button id="logout-btn" class="btn auth-pill-btn d-none">
               Logout
@@ -918,62 +921,67 @@ export function renderApp(pathname = '/') {
       </footer>
     </main>
 
-    <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content auth-modal">
           <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title" id="authModalLabel">Welcome to Move Physio</h5>
+            <h5 class="modal-title" id="registerModalLabel">
+              <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register
+            </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body pt-3">
-            <ul class="nav nav-tabs auth-tabs" id="authTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-pane" type="button" role="tab" aria-controls="register-pane" aria-selected="true">
-                  <i class="bi bi-person-plus-fill action-icon me-2" aria-hidden="true"></i>Register
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-pane" type="button" role="tab" aria-controls="login-pane" aria-selected="false">
-                  <i class="bi bi-box-arrow-in-right action-icon me-2" aria-hidden="true"></i>Login
-                </button>
-              </li>
-            </ul>
-
-            <div class="tab-content pt-3">
-              <div class="tab-pane fade show active" id="register-pane" role="tabpanel" aria-labelledby="register-tab" tabindex="0">
-                <form id="register-form" class="d-grid gap-3">
-                  <div>
-                    <label for="register-username" class="form-label">Username</label>
-                    <input id="register-username" type="text" class="form-control" placeholder="Choose a username" required />
-                  </div>
-                  <div>
-                    <label for="register-contact" class="form-label">Phone Number or Email</label>
-                    <input id="register-contact" type="text" class="form-control" placeholder="+357... or you@example.com" required />
-                  </div>
-                  <div>
-                    <label for="register-password" class="form-label">Password</label>
-                    <input id="register-password" type="password" class="form-control" placeholder="Create a secure password" minlength="6" required />
-                  </div>
-                  <button type="submit" class="btn btn-primary btn-glow w-100">Create Account</button>
-                </form>
+            <form id="register-form" class="d-grid gap-3">
+              <div>
+                <label for="register-username" class="form-label">Username</label>
+                <input id="register-username" type="text" class="form-control" placeholder="Choose a username" required />
               </div>
-
-              <div class="tab-pane fade" id="login-pane" role="tabpanel" aria-labelledby="login-tab" tabindex="0">
-                <form id="login-form" class="d-grid gap-3">
-                  <div>
-                    <label for="login-contact" class="form-label">Phone Number or Email</label>
-                    <input id="login-contact" type="text" class="form-control" placeholder="+357... or you@example.com" required />
-                  </div>
-                  <div>
-                    <label for="login-password" class="form-label">Password</label>
-                    <input id="login-password" type="password" class="form-control" placeholder="Your password" required />
-                  </div>
-                  <button type="submit" class="btn btn-primary btn-glow w-100">Sign In</button>
-                </form>
+              <div>
+                <label for="register-contact" class="form-label">Phone Number or Email</label>
+                <input id="register-contact" type="text" class="form-control" placeholder="+357... or you@example.com" required />
               </div>
+              <div>
+                <label for="register-password" class="form-label">Password</label>
+                <input id="register-password" type="password" class="form-control" placeholder="Create a secure password" minlength="6" required />
+              </div>
+              <button type="submit" class="btn btn-primary btn-glow w-100">Create Account</button>
+            </form>
+            <p id="register-status" class="auth-status mt-3 mb-0" role="status" aria-live="polite"></p>
+            <div class="mt-3 text-center">
+              <a href="#" id="switch-to-login" class="text-info text-decoration-none" style="font-size: 0.9em;">Already have an account? Login</a>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            <p id="auth-status" class="auth-status mt-3 mb-0" role="status" aria-live="polite"></p>
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content auth-modal">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title" id="loginModalLabel">
+              <i class="bi bi-box-arrow-in-right action-icon me-2" aria-hidden="true"></i>Login
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pt-3">
+            <form id="login-form" class="d-grid gap-3">
+              <div>
+                <label for="login-contact" class="form-label">Phone Number or Email</label>
+                <input id="login-contact" type="text" class="form-control" placeholder="+357... or you@example.com" required />
+              </div>
+              <div>
+                <label for="login-password" class="form-label">Password</label>
+                <input id="login-password" type="password" class="form-control" placeholder="Your password" required />
+              </div>
+              <button type="submit" class="btn btn-primary btn-glow w-100">Sign In</button>
+            </form>
+            <p id="login-status" class="auth-status mt-3 mb-0" role="status" aria-live="polite"></p>
+            <div class="mt-3 text-center">
+              <a href="#" id="switch-to-register" class="text-info text-decoration-none" style="font-size: 0.9em;">Don't have an account? Register</a>
+            </div>
           </div>
         </div>
       </div>
