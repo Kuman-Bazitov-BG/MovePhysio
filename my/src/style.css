@@ -938,6 +938,32 @@ body {
   border-radius: var(--radius-lg);
 }
 
+.physio-info-card {
+  padding: clamp(1rem, 3vw, 1.6rem);
+  border-radius: calc(var(--radius-lg) - 6px);
+  background: linear-gradient(145deg, rgba(17, 34, 53, 0.72), rgba(11, 22, 36, 0.76));
+  border: 1px solid rgba(173, 231, 255, 0.18);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.physio-info-heading i {
+  font-size: 1.15rem;
+}
+
+.physio-card-item img {
+  transform: scale(1);
+  transition: transform 0.4s ease;
+}
+
+.physio-card-item:hover img {
+  transform: scale(1.08);
+}
+
+.physio-card-item i {
+  font-size: 1.1rem;
+}
+
 /* Glass Drawer */
 .glass-drawer {
   background: var(--bg-dark); /* Changed from highly transparent color to hard, readable background */

@@ -165,25 +165,21 @@ function renderPageContent(pathname) {
                 <div class="col-6 col-md-3">
                    <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
                      <img src="/about-reception-1.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Move Physio Reception Area">
-                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Welcome Area</div>
                    </div>
                 </div>
                 <div class="col-6 col-md-3">
                    <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
                      <img src="/about-pilates-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Clinical Pilates Reformer Room">
-                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Pilates Studio</div>
                    </div>
                 </div>
                 <div class="col-6 col-md-3">
                    <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
                      <img src="/about-treatment-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Physiotherapy Treatment Room">
-                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Treatment Room</div>
                    </div>
                 </div>
                 <div class="col-6 col-md-3">
                    <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
                      <img src="/about-reception-2.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Reception Detail">
-                     <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-center text-white small fw-bold" style="backdrop-filter: blur(4px);">Comfortable Space</div>
                    </div>
                 </div>
              </div>
@@ -339,6 +335,80 @@ function renderPageContent(pathname) {
                 <span class="badge glass-badge px-3 py-2"><i class="bi bi-person-arms-up me-1"></i>Exercise Prescription</span>
                 <span class="badge glass-badge px-3 py-2"><i class="bi bi-lightning-charge me-1"></i>Sports Rehab</span>
                 <span class="badge glass-badge px-3 py-2"><i class="bi bi-heart-pulse me-1"></i>Post-Op Care</span>
+            </div>
+          </div>
+
+          <div class="physio-info-card position-relative z-1 mb-5 slide-up-fade" style="animation-delay: 0.1s;">
+            <div class="physio-info-heading d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-3">
+              <i class="bi bi-info-circle-fill text-info"></i>
+              <h2 class="h4 text-white mb-0">Information</h2>
+            </div>
+            <p class="text-subtle mb-4 text-center text-md-start">Physiotherapy may consist of:</p>
+            <div class="row g-4 physio-technique-cards">
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/electrical-muscle-stim.jpeg" class="w-100 h-100 object-fit-cover" alt="Electro stimulation">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-accent-strong"></i>Electro stimulation</h3>
+                </div>
+              </div>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/tecar-2.jpg" class="w-100 h-100 object-fit-cover" alt="Tecar therapy">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-accent-strong"></i>Tecar therapy</h3>
+                </div>
+              </div>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/Shockwave.jpg" class="w-100 h-100 object-fit-cover" alt="Shockwave therapy">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-accent-strong"></i>Shockwave therapy</h3>
+                </div>
+              </div>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/cupping therapy.webp" class="w-100 h-100 object-fit-cover" alt="Cupping therapy">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-accent-strong"></i>Cupping therapy</h3>
+                </div>
+              </div>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/dry needling and acupuncture.jpeg" class="w-100 h-100 object-fit-cover" alt="Dry needling and acupuncture">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2 text-start justify-content-center lh-sm"><i class="bi bi-check2-circle text-accent-strong"></i>Dry needling &<br>acupuncture</h3>
+                </div>
+              </div>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/Ergon-IASTM-technique-5-kopie.jpg" class="w-100 h-100 object-fit-cover" alt="Ergon IASTM">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-accent-strong"></i>Ergon IASTM</h3>
+                </div>
+              </div>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/Manual-Therapy-Techniques.webp" class="w-100 h-100 object-fit-cover" alt="Manual therapy techniques">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2 text-start justify-content-center lh-sm"><i class="bi bi-check2-circle text-accent-strong"></i>Manual therapy<br>techniques</h3>
+                </div>
+              </div>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="physio-card-item glass-card h-100 p-3 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-between">
+                  <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm" style="aspect-ratio: 1; min-height: 120px;">
+                    <img src="/taping.jpg" class="w-100 h-100 object-fit-cover" alt="Taping">
+                  </div>
+                  <h3 class="h6 text-white mb-0 d-flex align-items-center gap-2"><i class="bi bi-check2-circle text-accent-strong"></i>Taping</h3>
+                </div>
+              </div>
             </div>
           </div>
 
