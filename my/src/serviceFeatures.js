@@ -428,8 +428,7 @@ function resolveSelectedCalendarDate(options) {
   const hasValidSelection = selectableDays.some((day) => day.dayKey === selectedDate)
   if (hasValidSelection) return selectedDate
 
-  const firstOpenDay = selectableDays.find((day) => day.isOpen)
-  return firstOpenDay?.dayKey || selectableDays[0].dayKey
+  return selectableDays[0].dayKey
 }
 
 function buildCalendarDays(options) {
@@ -1039,9 +1038,18 @@ async function renderServiceContent(root, service) {
 
   updateCalendarDrawerState(drawerOpen)
 
-  calendarDrawerToggle?.addEventListener('click', () => {
+  calendarDrawerToggle?.addEventListener('click', async () => {
     const isOpen = root.dataset.calendarDrawerOpen === 'true'
-    updateCalendarDrawerState(!isOpen)
+    if (isOpen) {
+      updateCalendarDrawerState(false)
+      return
+    }
+
+    root.dataset.calendarDrawerOpen = 'true'
+    root.dataset.calendarMonth = toIsoDateKey(getMonthStart(new Date()))
+    root.dataset.selectedDate = ''
+    root.dataset.selectedTime = ''
+    await renderServiceContent(root, service)
   })
 
   if (appointmentForm) {
