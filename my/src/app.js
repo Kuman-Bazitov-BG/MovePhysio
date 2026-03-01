@@ -474,6 +474,157 @@ function renderPageContent(pathname) {
 
           <div class="row g-4 align-items-stretch mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.2s;">
             <div class="col-12 text-center mb-3">
+              <h2 class="h3 text-white">Core Exercises & Techniques</h2>
+              <p class="text-subtle">Key principles and training movements to master your Pilates practice.</p>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Articulation.webp" class="w-100 h-100 object-fit-cover" alt="Articulation">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-activity text-accent"></i> Articulation
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Moving the spine sequentially, maximizing mobility and segmental control.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/C-Curve.webp" class="w-100 h-100 object-fit-cover" alt="C-Curve">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-arrow-return-right text-info"></i> C-Curve
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Engaging the deep abdominal muscles and flexing the spine to protect the lower back.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Flow.jpg" class="w-100 h-100 object-fit-cover" alt="Flow">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-water text-primary"></i> Flow
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Seamless transitions between movements, building endurance and continuous engagement.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Imprinting.webp" class="w-100 h-100 object-fit-cover" alt="Imprinting">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-fingerprint text-warning"></i> Imprinting
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">A technique to stabilize the pelvis and spine by slightly flexing the lumbar spine.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/mat-exercise-Complete-Pilates-scaled.webp" class="w-100 h-100 object-fit-cover" alt="Mat Exercises">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-person-fill text-success"></i> Mat Exercises
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Fundamental bodyweight movements on the mat to build foundational core strength.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Neutral Spine_IMG_7692.jpg" class="w-100 h-100 object-fit-cover" alt="Neutral Spine">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-align-middle text-info"></i> Neutral Spine
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Maintaining the natural curves of the spine to optimize shock absorption and posture.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/powerhouse2_orig.png" class="w-100 h-100 object-fit-cover" alt="Powerhouse">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-lightning-charge text-danger"></i> Powerhouse
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Focusing on the center of the body—abdominals, lower back, and pelvic floor.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/reformer-hero-emiko-0V2A3803.webp" class="w-100 h-100 object-fit-cover" alt="Reformer Training">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-gear-wide-connected text-secondary"></i> Reformer
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Using spring resistance to build lean muscle, flexibility, and balanced strength.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Roller-scaled.webp" class="w-100 h-100 object-fit-cover" alt="Foam Roller">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-record-circle text-accent"></i> Foam Roller
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Implementing the foam roller for myofascial release, balance challenges, and stabilization.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Tabletop_nd-021.jpg" class="w-100 h-100 object-fit-cover" alt="Tabletop">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-box text-warning"></i> Tabletop
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">A fundamental starting position that challenges core stability and proper hip alignment.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Move.webp" class="w-100 h-100 object-fit-cover" alt="Advanced Movements">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-diagram-3 text-info"></i> Complex Moves
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Integrating full-body control emphasizing precision and deep muscular contraction.</p>
+              </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover d-flex flex-column">
+                <div class="rounded-3 overflow-hidden mb-3 w-100 position-relative shadow-sm group-hover-zoom" style="aspect-ratio: 4/3;">
+                  <img src="/Advanced.jpg" class="w-100 h-100 object-fit-cover" alt="Equipment Deep Stretch">
+                </div>
+                <h3 class="h6 text-white mb-2 d-flex align-items-center gap-2">
+                  <i class="bi bi-arrows-expand text-success"></i> Deep Stretch
+                </h3>
+                <p class="text-subtle small mb-0 flex-grow-1">Using the reformer to facilitate unsupported back extensions and chest opening.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4 align-items-stretch mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.3s;">
+            <div class="col-12 text-center mb-3">
               <h2 class="h3 text-white">Experience Our Pilates Approach</h2>
               <p class="text-subtle">See how controlled movements and specialized equipment can transform your posture and strength.</p>
             </div>
