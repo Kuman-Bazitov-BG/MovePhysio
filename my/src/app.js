@@ -420,8 +420,8 @@ function renderPageContent(pathname) {
             
             <div class="col-md-6">
               <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16;">
-                  <video src="/physio-video-1.mp4" class="w-100 h-100 object-fit-cover" controls controlsList="nofullscreen" disablePictureInPicture preload="metadata"></video>
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/physio-video-1.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-info me-2"></i>Targeted Joint Mobilization</h3>
                 <p class="text-subtle small mb-0">Learn how our physiotherapists use precise hands-on methods to restore joint mobility, relieve stiffness, and stimulate the body's natural healing processes.</p>
@@ -430,8 +430,8 @@ function renderPageContent(pathname) {
             
             <div class="col-md-6">
               <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16;">
-                  <video src="/physio-video-2.mp4" class="w-100 h-100 object-fit-cover" controls controlsList="nofullscreen" disablePictureInPicture preload="metadata"></video>
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/physio-video-2.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-accent me-2"></i>Active Rehabilitation Exercise</h3>
                 <p class="text-subtle small mb-0">Watch examples of functional exercise protocols designed specifically to strengthen vulnerable areas, improve balance, and prevent future injuries.</p>
@@ -478,80 +478,80 @@ function renderPageContent(pathname) {
               <p class="text-subtle">See how controlled movements and specialized equipment can transform your posture and strength.</p>
             </div>
             
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-basic.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-basic.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-primary me-2"></i>Reformer Basics</h3>
                 <p class="text-subtle small mb-0">Discover standard Reformer exercises focusing on alignment, control, and building deep core stability.</p>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-video-4.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-video-4.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-warning me-2"></i>Core Awakening</h3>
                 <p class="text-subtle small mb-0">Activate deep core muscles essential for a healthy spine and foundational stability using tailored spring tension.</p>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-video-3.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-video-3.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-info me-2"></i>Clinical Correction</h3>
                 <p class="text-subtle small mb-0">Targeted therapeutic movements addressing muscular imbalances and promoting injury recovery effectively.</p>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-video-5.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-video-5.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-danger me-2"></i>Spinal Articulation</h3>
                 <p class="text-subtle small mb-0">Fluid exercises to mobilize the spine segment by segment, creating space and relieving accumulated tightness.</p>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-video-6.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-video-6.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-light me-2"></i>Full Body Tone</h3>
                 <p class="text-subtle small mb-0">Strengthen arms, shoulders, and legs simultaneously with comprehensive, full-body functional movements.</p>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-video-2.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-video-2.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-success me-2"></i>Dynamic Mobility</h3>
                 <p class="text-subtle small mb-0">Watch smooth transitions that elevate your range of motion through active stretching combined with equipment routines.</p>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-video-7.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-video-7.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-secondary me-2"></i>Lower Body Power</h3>
                 <p class="text-subtle small mb-0">Target the hips, glutes, and legs intensely, building powerful lower-body resilience with Reformer resistance.</p>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/pilates-video-1.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="height: 160px; max-height: 240px;"></video>
+            <div class="col-md-6">
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16; cursor: pointer;">
+                  <video src="/pilates-video-1.mp4" class="w-100 h-100 object-fit-cover" muted loop onmouseenter="this.play()" onmouseleave="this.pause()" onclick="this.paused ? this.play() : this.pause()" preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-accent me-2"></i>Advanced Reformer</h3>
                 <p class="text-subtle small mb-0">Challenge your core strength, balance, and whole-body integration with these advanced movement sequences.</p>
