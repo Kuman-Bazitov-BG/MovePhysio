@@ -120,27 +120,6 @@ async function getUsersCount() {
   }
 }
 
-async function getAdminsCount() {
-  if (!supabase) return 0
-
-  try {
-    const { count, error } = await supabase
-      .from('user_roles')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_role', 'admin')
-
-    if (error) {
-      console.error('Error getting admins count:', error)
-      return 0
-    }
-
-    return count || 0
-  } catch (error) {
-    console.error('Error getting admins count:', error)
-    return 0
-  }
-}
-
 async function getAppointmentsCount() {
   if (!supabase) return 0
 
@@ -914,8 +893,6 @@ function renderTaskRow(task) {
 
 async function renderAdminPanel() {
   const usersCount = await getUsersCount()
-  const adminsCount = await getAdminsCount()
-  const regularUsersCount = usersCount - adminsCount
   const appointmentsCount = await getAppointmentsCount()
   const users = await loadUsersList()
   const appointmentConfigurations = await loadAppointmentConfigurations()
@@ -947,18 +924,6 @@ async function renderAdminPanel() {
             <i class="bi bi-people-fill stat-icon"></i>
             <div class="stat-value">${usersCount}</div>
             <div class="stat-label">Total Users</div>
-          </div>
-
-          <div class="stat-card">
-            <i class="bi bi-shield-fill-check stat-icon"></i>
-            <div class="stat-value">${adminsCount}</div>
-            <div class="stat-label">Administrators</div>
-          </div>
-
-          <div class="stat-card">
-            <i class="bi bi-person-fill stat-icon"></i>
-            <div class="stat-value">${regularUsersCount}</div>
-            <div class="stat-label">Regular Users</div>
           </div>
 
           <div class="stat-card">
