@@ -159,7 +159,7 @@ npm install
 
 ### 2) Configure environment
 
-Copy `.env.example` to `.env` inside `my/` and set real values:
+Copy `.env.example` to `.env.local` inside `my/` and set real values:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co

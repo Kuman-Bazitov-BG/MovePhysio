@@ -7,11 +7,11 @@ const hasConfig =
   !/your-project-ref|your-anon-key|your-publishable-key/i.test(`${supabaseUrl} ${supabaseAnonKey}`)
 const supabase = hasConfig ? createClient(supabaseUrl, supabaseAnonKey) : null
 const missingConfigMessage =
-  'Supabase config is missing or still using placeholders. In my/.env set VITE_SUPABASE_URL and either VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY, then restart the dev server.'
+  'Supabase config is missing or still using placeholders. In my/.env.local set VITE_SUPABASE_URL and either VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY, then restart the dev server.'
 
 function getAuthErrorMessage(error) {
   if (error instanceof TypeError && /fetch/i.test(error.message)) {
-    return 'Cannot reach Supabase. Check your URL/key in my/.env and make sure they are real project values.'
+    return 'Cannot reach Supabase. Check your URL/key in my/.env.local and make sure they are real project values.'
   }
 
   return error?.message || 'Authentication failed. Please try again.'

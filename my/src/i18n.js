@@ -129,8 +129,8 @@ const regexTranslations = [
   [/^Phone number or email is required\.$/i, 'Το τηλέφωνο ή το email είναι υποχρεωτικό.'],
   [/^Enter a valid phone number or email\.$/i, 'Εισάγετε έγκυρο τηλέφωνο ή email.'],
   [/^Authentication failed\. Please try again\.$/i, 'Η ταυτοποίηση απέτυχε. Παρακαλώ δοκιμάστε ξανά.'],
-  [/^Cannot reach Supabase\. Check your URL\/key in my\/.env and make sure they are real project values\.$/i, 'Αδυναμία σύνδεσης με το Supabase. Ελέγξτε URL/key στο my/.env και βεβαιωθείτε ότι είναι πραγματικές τιμές.'],
-  [/^Supabase config is missing or still using placeholders\. In my\/.env set VITE_SUPABASE_URL and either VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY, then restart the dev server\.$/i, 'Η ρύθμιση του Supabase λείπει ή χρησιμοποιεί placeholders. Στο my/.env ορίστε VITE_SUPABASE_URL και είτε VITE_SUPABASE_ANON_KEY είτε VITE_SUPABASE_PUBLISHABLE_KEY και επανεκκινήστε τον dev server.']
+  [/^Cannot reach Supabase\. Check your URL\/key in my\/\.env\.local and make sure they are real project values\.$/i, 'Αδυναμία σύνδεσης με το Supabase. Ελέγξτε URL/key στο my/.env.local και βεβαιωθείτε ότι είναι πραγματικές τιμές.'],
+  [/^Supabase config is missing or still using placeholders\. In my\/\.env\.local set VITE_SUPABASE_URL and either VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY, then restart the dev server\.$/i, 'Η ρύθμιση του Supabase λείπει ή χρησιμοποιεί placeholders. Στο my/.env.local ορίστε VITE_SUPABASE_URL και είτε VITE_SUPABASE_ANON_KEY είτε VITE_SUPABASE_PUBLISHABLE_KEY και επανεκκινήστε τον dev server.'],
 ]
 
 function normalizeLanguage(value) {
