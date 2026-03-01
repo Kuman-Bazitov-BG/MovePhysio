@@ -69,6 +69,100 @@ const APPOINTMENT_WEEKDAY_FORMATTER = new Intl.DateTimeFormat('en-US', {
   weekday: 'short'
 })
 
+function showStyledConfirmDialog(options = {}) {
+  const {
+    title = 'Please confirm',
+    message = 'Are you sure?',
+    confirmLabel = 'OK',
+    cancelLabel = 'Cancel'
+  } = options
+
+  const bootstrapApi = window.bootstrap
+  if (!bootstrapApi?.Modal) {
+    return Promise.resolve(window.confirm(message))
+  }
+
+  const modalId = 'serviceFeaturesConfirmModal'
+  let modalElement = document.getElementById(modalId)
+
+  if (!modalElement) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = `
+      <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content auth-modal">
+            <div class="modal-header border-0 pb-0">
+              <h5 class="modal-title" data-confirm-title></h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-2">
+              <p class="service-note mb-3" data-confirm-message></p>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-light w-50" data-confirm-cancel></button>
+                <button type="button" class="btn btn-danger w-50" data-confirm-accept></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+
+    modalElement = wrapper.firstElementChild
+    if (modalElement) {
+      document.body.appendChild(modalElement)
+    }
+  }
+
+  if (!modalElement) {
+    return Promise.resolve(window.confirm(message))
+  }
+
+  const titleElement = modalElement.querySelector('[data-confirm-title]')
+  const messageElement = modalElement.querySelector('[data-confirm-message]')
+  const cancelButton = modalElement.querySelector('[data-confirm-cancel]')
+  const acceptButton = modalElement.querySelector('[data-confirm-accept]')
+
+  if (titleElement) titleElement.textContent = title
+  if (messageElement) messageElement.textContent = message
+  if (cancelButton) cancelButton.textContent = cancelLabel
+  if (acceptButton) acceptButton.textContent = confirmLabel
+
+  const modalInstance = bootstrapApi.Modal.getOrCreateInstance(modalElement)
+
+  return new Promise((resolve) => {
+    let settled = false
+
+    const finalize = (value) => {
+      if (settled) return
+      settled = true
+      resolve(value)
+    }
+
+    const onCancel = () => {
+      finalize(false)
+      modalInstance.hide()
+    }
+
+    const onAccept = () => {
+      finalize(true)
+      modalInstance.hide()
+    }
+
+    const onHidden = () => {
+      finalize(false)
+      modalElement.removeEventListener('hidden.bs.modal', onHidden)
+      cancelButton?.removeEventListener('click', onCancel)
+      acceptButton?.removeEventListener('click', onAccept)
+    }
+
+    modalElement.addEventListener('hidden.bs.modal', onHidden)
+    cancelButton?.addEventListener('click', onCancel)
+    acceptButton?.addEventListener('click', onAccept)
+
+    modalInstance.show()
+  })
+}
+
 function pad2(value) {
   return String(value).padStart(2, '0')
 }
@@ -1486,6 +1580,7 @@ async function renderServiceContent(root, service) {
                     <input type="text" class="form-control" name="notes" placeholder="Optional" />
                   </div>
                   <p class="service-note mb-0" data-modal-edit-appointment-status></p>
+                  <button type="button" class="btn btn-outline-danger w-100" data-modal-edit-appointment-delete>Remove</button>
                   <button type="submit" class="btn btn-primary btn-glow w-100">Save Changes</button>
                 </form>
               </div>
@@ -1501,6 +1596,7 @@ async function renderServiceContent(root, service) {
 
     const modalForm = modalElement.querySelector('[data-modal-edit-appointment-form]')
     const modalStatus = modalElement.querySelector('[data-modal-edit-appointment-status]')
+    const modalDeleteButton = modalElement.querySelector('[data-modal-edit-appointment-delete]')
     const dateInput = modalElement.querySelector('input[name="appointment_at"]')
     if (!modalForm || !dateInput) return
 
@@ -1598,6 +1694,40 @@ async function renderServiceContent(root, service) {
 
       modalInstance.hide()
       await renderServiceContent(root, service)
+    }
+
+    if (modalDeleteButton) {
+      modalDeleteButton.onclick = async () => {
+        const confirmed = await showStyledConfirmDialog({
+          title: 'Delete Appointment',
+          message: 'Delete this appointment?',
+          confirmLabel: 'Remove',
+          cancelLabel: 'Cancel'
+        })
+        if (!confirmed) return
+
+        let deleteQuery = supabase
+          .from('appointments')
+          .delete()
+          .eq('id', appointmentId)
+
+        if (!isAdmin && sessionUserId) {
+          deleteQuery = deleteQuery.eq('created_by', sessionUserId)
+        }
+
+        const { error } = await deleteQuery
+
+        if (error) {
+          if (modalStatus) {
+            modalStatus.dataset.type = 'error'
+            modalStatus.textContent = error.message
+          }
+          return
+        }
+
+        modalInstance.hide()
+        await renderServiceContent(root, service)
+      }
     }
 
     modalInstance.show()
@@ -1740,7 +1870,13 @@ async function renderServiceContent(root, service) {
         return
       }
 
-      if (!window.confirm('Delete this appointment?')) return
+      const confirmed = await showStyledConfirmDialog({
+        title: 'Delete Appointment',
+        message: 'Delete this appointment?',
+        confirmLabel: 'Remove',
+        cancelLabel: 'Cancel'
+      })
+      if (!confirmed) return
 
       let deleteQuery = supabase
         .from('appointments')
@@ -1848,7 +1984,13 @@ async function renderServiceContent(root, service) {
       const taskId = button.dataset.taskId
       if (!taskId) return
 
-      if (!window.confirm('Delete this task?')) {
+      const confirmed = await showStyledConfirmDialog({
+        title: 'Delete Task',
+        message: 'Delete this task?',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel'
+      })
+      if (!confirmed) {
         return
       }
 
