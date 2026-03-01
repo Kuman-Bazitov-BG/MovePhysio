@@ -419,9 +419,9 @@ function renderPageContent(pathname) {
             </div>
             
             <div class="col-md-6">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/physio-video-1.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="max-height: 240px;"></video>
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16;">
+                  <video src="/physio-video-1.mp4" class="w-100 h-100 object-fit-cover" controls controlsList="nofullscreen" disablePictureInPicture preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-info me-2"></i>Targeted Joint Mobilization</h3>
                 <p class="text-subtle small mb-0">Learn how our physiotherapists use precise hands-on methods to restore joint mobility, relieve stiffness, and stimulate the body's natural healing processes.</p>
@@ -429,9 +429,9 @@ function renderPageContent(pathname) {
             </div>
             
             <div class="col-md-6">
-              <div class="glass-card h-100 p-3 rounded-4 transition-hover">
-                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm">
-                  <video src="/physio-video-2.mp4" class="w-100 object-fit-cover rounded-3" controls preload="metadata" style="max-height: 240px;"></video>
+              <div class="glass-card h-100 p-3 rounded-4 transition-hover text-center">
+                <div class="rounded-3 overflow-hidden mb-3 position-relative bg-dark shadow-sm mx-auto" style="width: 300px; max-width: 100%; aspect-ratio: 9/16;">
+                  <video src="/physio-video-2.mp4" class="w-100 h-100 object-fit-cover" controls controlsList="nofullscreen" disablePictureInPicture preload="metadata"></video>
                 </div>
                 <h3 class="h5 text-white mb-2"><i class="bi bi-play-circle text-accent me-2"></i>Active Rehabilitation Exercise</h3>
                 <p class="text-subtle small mb-0">Watch examples of functional exercise protocols designed specifically to strengthen vulnerable areas, improve balance, and prevent future injuries.</p>
