@@ -48,11 +48,11 @@ body {
   z-index: 1085;
   display: flex;
   align-items: center;
-  padding: 0.25rem 0.3rem;
-  border-radius: 10px;
-  background: var(--surface-glass);
-  border: 1px solid rgba(173, 231, 255, 0.22);
-  backdrop-filter: blur(10px);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
 }
 
 .language-switcher-select {
@@ -63,6 +63,13 @@ body {
   padding-right: 1.5rem;
   font-size: 0.72rem;
   border-radius: 999px;
+  border: none;
+  box-shadow: none;
+}
+
+.language-switcher-select:focus {
+  border: none;
+  box-shadow: none;
 }
 
 .site-shell {
