@@ -57,6 +57,19 @@ function closeAuthModal(modalId) {
   instance?.hide()
 }
 
+function getUserDisplayName(user) {
+  const metadata = user?.user_metadata || {}
+  const displayName =
+    user?.email ||
+    (isEmail(metadata.contact) ? metadata.contact : '') ||
+    metadata.full_name ||
+    metadata.username ||
+    user?.phone ||
+    'Account'
+
+  return String(displayName).trim()
+}
+
 function completeAuthFlow(modalId) {
   closeAuthModal(modalId)
   refreshToHomePage()
@@ -67,16 +80,23 @@ async function updateAuthUI(session) {
   const loginButton = document.querySelector('#login-open-btn')
   const logoutButton = document.querySelector('#logout-btn')
   const adminButton = document.querySelector('#admin-btn')
+  const authUserPill = document.querySelector('#auth-user-pill')
 
   if (!registerButton || !loginButton || !logoutButton) return
 
   if (session?.user) {
     registerButton.classList.add('d-none')
     loginButton.classList.add('d-none')
-    logoutButton.classList.remove('d-none')
+    logoutButton.classList.add('d-none')
+
+    const isAdmin = await checkUserIsAdmin()
+
+    if (authUserPill) {
+      authUserPill.textContent = getUserDisplayName(session.user)
+      authUserPill.classList.remove('d-none')
+    }
     
     if (adminButton) {
-      const isAdmin = await checkUserIsAdmin()
       if (isAdmin) {
         adminButton.classList.remove('d-none')
       } else {
@@ -87,6 +107,10 @@ async function updateAuthUI(session) {
     registerButton.classList.remove('d-none')
     loginButton.classList.remove('d-none')
     logoutButton.classList.add('d-none')
+    if (authUserPill) {
+      authUserPill.textContent = ''
+      authUserPill.classList.add('d-none')
+    }
     if (adminButton) {
       adminButton.classList.add('d-none')
     }
@@ -249,11 +273,15 @@ export function getSupabaseClient() {
 export function initAuth() {
   const loginModalElement = document.querySelector('#loginModal')
   const registerModalElement = document.querySelector('#registerModal')
+  const sessionActionsModalElement = document.querySelector('#sessionActionsModal')
   const registerOpenBtn = document.querySelector('#register-open-btn')
   const loginOpenBtn = document.querySelector('#login-open-btn')
+  const authUserPill = document.querySelector('#auth-user-pill')
   const registerForm = document.querySelector('#register-form')
   const loginForm = document.querySelector('#login-form')
   const logoutButton = document.querySelector('#logout-btn')
+  const keepLoginButton = document.querySelector('#session-keep-login-btn')
+  const sessionLogoutConfirmButton = document.querySelector('#session-logout-confirm-btn')
   const switchToLogin = document.querySelector('#switch-to-login')
   const switchToRegister = document.querySelector('#switch-to-register')
 
@@ -264,6 +292,7 @@ export function initAuth() {
   const bootstrapModal = window.bootstrap?.Modal
   const loginModal = bootstrapModal ? new bootstrapModal(loginModalElement) : null
   const registerModal = bootstrapModal ? new bootstrapModal(registerModalElement) : null
+  const sessionActionsModal = bootstrapModal && sessionActionsModalElement ? new bootstrapModal(sessionActionsModalElement) : null
 
   registerOpenBtn.addEventListener('click', () => {
     if (registerModal) registerModal.show()
@@ -271,6 +300,18 @@ export function initAuth() {
 
   loginOpenBtn.addEventListener('click', () => {
     if (loginModal) loginModal.show()
+  })
+
+  authUserPill?.addEventListener('click', () => {
+    if (sessionActionsModal) {
+      sessionActionsModal.show()
+    }
+  })
+
+  keepLoginButton?.addEventListener('click', () => {
+    if (sessionActionsModal) {
+      sessionActionsModal.hide()
+    }
   })
 
   switchToLogin?.addEventListener('click', (e) => {
@@ -305,6 +346,13 @@ export function initAuth() {
   })
 
   logoutButton.addEventListener('click', logout)
+
+  sessionLogoutConfirmButton?.addEventListener('click', async () => {
+    if (sessionActionsModal) {
+      sessionActionsModal.hide()
+    }
+    await logout()
+  })
 
   if (!supabase) {
     updateAuthUI(null)

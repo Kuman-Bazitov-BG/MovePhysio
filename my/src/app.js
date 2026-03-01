@@ -904,6 +904,7 @@ export function renderApp(pathname = '/') {
             <button id="login-open-btn" class="btn auth-pill-btn">
               <i class="bi bi-box-arrow-in-right action-icon me-1" aria-hidden="true"></i>Login
             </button>
+            <button id="auth-user-pill" type="button" class="auth-user-pill d-none" aria-live="polite" aria-label="Open session options"></button>
             <button id="logout-btn" class="btn auth-pill-btn d-none">
               Logout
             </button>
@@ -981,6 +982,28 @@ export function renderApp(pathname = '/') {
             <p id="login-status" class="auth-status mt-3 mb-0" role="status" aria-live="polite"></p>
             <div class="mt-3 text-center">
               <a href="#" id="switch-to-register" class="text-info text-decoration-none" style="font-size: 0.9em;">Don't have an account? Register</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="sessionActionsModal" tabindex="-1" aria-labelledby="sessionActionsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content auth-modal session-actions-modal">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title" id="sessionActionsModalLabel">
+              <i class="bi bi-person-circle action-icon me-2" aria-hidden="true"></i>Session Options
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pt-2 pb-4">
+            <p class="session-actions-copy mb-3">You are currently signed in.</p>
+            <div class="d-grid gap-2">
+              <button id="session-keep-login-btn" type="button" class="btn session-keep-btn" data-bs-dismiss="modal">Keep Login</button>
+              <button id="session-logout-confirm-btn" type="button" class="btn session-logout-btn">
+                <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Logout
+              </button>
             </div>
           </div>
         </div>
