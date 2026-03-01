@@ -10,6 +10,23 @@ const supabase = hasConfig ? createClient(supabaseUrl, supabaseAnonKey) : null
 let siteChatState = null
 let adminChatState = null
 
+function isRegisteredUser(user) {
+  return Boolean(user?.id) && !Boolean(user?.is_anonymous)
+}
+
+async function checkUserIsAdminById(userId) {
+  if (!userId) return false
+
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('user_role')
+    .eq('user_id', userId)
+    .single()
+
+  if (error) return false
+  return data?.user_role === 'admin'
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -213,8 +230,14 @@ export async function initSiteChat() {
 
   const { data: sessionData, error } = await supabase.auth.getSession()
   const user = sessionData?.session?.user
-  if (error || !user) {
+  if (error || !isRegisteredUser(user)) {
     toggle.classList.add('d-none')
+    return
+  }
+
+  const isAdmin = await checkUserIsAdminById(user.id)
+  if (isAdmin) {
+    await initAdminChat()
     return
   }
 
@@ -299,12 +322,18 @@ export async function initSiteChat() {
 export async function initAdminChat() {
   teardownAdminChat()
 
-  const toggle = document.querySelector('#admin-chat-toggle-btn')
+  const toggle = document.querySelector('#admin-chat-toggle-btn') || document.querySelector('#chat-toggle-btn')
   if (!toggle || !supabase) return
 
   const { data: sessionData, error } = await supabase.auth.getSession()
   const user = sessionData?.session?.user
-  if (error || !user) {
+  if (error || !isRegisteredUser(user)) {
+    toggle.classList.add('d-none')
+    return
+  }
+
+  const isAdmin = await checkUserIsAdminById(user.id)
+  if (!isAdmin) {
     toggle.classList.add('d-none')
     return
   }

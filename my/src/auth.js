@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getSupabaseConfig } from './config.js'
+import { teardownSiteChat } from './chat.js'
 
 const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
 const hasConfig =
@@ -75,6 +76,10 @@ function completeAuthFlow(modalId) {
   refreshToHomePage()
 }
 
+function isRegisteredSessionUser(user) {
+  return Boolean(user?.id) && !Boolean(user?.is_anonymous)
+}
+
 async function updateAuthUI(session) {
   const registerButton = document.querySelector('#register-open-btn')
   const loginButton = document.querySelector('#login-open-btn')
@@ -92,6 +97,7 @@ async function updateAuthUI(session) {
     logoutButton.classList.add('d-none')
 
     const isAdmin = await checkUserIsAdmin()
+    const isRegisteredUser = isRegisteredSessionUser(session.user)
 
     if (authUserPill) {
       authUserPill.textContent = getUserDisplayName(session.user)
@@ -107,7 +113,12 @@ async function updateAuthUI(session) {
     }
 
     if (chatToggleButton) {
-      chatToggleButton.classList.remove('d-none')
+      if (isRegisteredUser) {
+        chatToggleButton.classList.remove('d-none')
+      } else {
+        chatToggleButton.classList.add('d-none')
+        teardownSiteChat()
+      }
     }
 
     if (authActions) {
@@ -127,6 +138,7 @@ async function updateAuthUI(session) {
     if (chatToggleButton) {
       chatToggleButton.classList.add('d-none')
     }
+    teardownSiteChat()
 
     if (authActions) {
       authActions.classList.remove('is-admin-chat-stacked')
