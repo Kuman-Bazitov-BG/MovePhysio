@@ -1696,6 +1696,31 @@ async function renderServiceContent(root, service) {
       await renderServiceContent(root, service)
     }
 
+    const deleteAppointmentById = async (targetAppointmentId) => {
+      let deleteQuery = supabase
+        .from('appointments')
+        .delete()
+        .eq('id', targetAppointmentId)
+
+      if (!isAdmin && sessionUserId) {
+        deleteQuery = deleteQuery.eq('created_by', sessionUserId)
+      }
+
+      const { data, error } = await deleteQuery.select('id').maybeSingle()
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      if (!data?.id) {
+        return {
+          success: false,
+          error: 'Delete was blocked. Please refresh and ensure your user has owner delete policy in Supabase RLS.'
+        }
+      }
+
+      return { success: true, error: null }
+    }
+
     if (modalDeleteButton) {
       modalDeleteButton.onclick = async () => {
         const confirmed = await showStyledConfirmDialog({
@@ -1706,21 +1731,11 @@ async function renderServiceContent(root, service) {
         })
         if (!confirmed) return
 
-        let deleteQuery = supabase
-          .from('appointments')
-          .delete()
-          .eq('id', appointmentId)
-
-        if (!isAdmin && sessionUserId) {
-          deleteQuery = deleteQuery.eq('created_by', sessionUserId)
-        }
-
-        const { error } = await deleteQuery
-
-        if (error) {
+        const result = await deleteAppointmentById(appointmentId)
+        if (!result.success) {
           if (modalStatus) {
             modalStatus.dataset.type = 'error'
-            modalStatus.textContent = error.message
+            modalStatus.textContent = result.error
           }
           return
         }
@@ -1887,12 +1902,12 @@ async function renderServiceContent(root, service) {
         deleteQuery = deleteQuery.eq('created_by', sessionUserId)
       }
 
-      const { error } = await deleteQuery
+      const { data, error } = await deleteQuery.select('id').maybeSingle()
 
-      if (error) {
+      if (error || !data?.id) {
         if (appointmentsStatus) {
           appointmentsStatus.dataset.type = 'error'
-          appointmentsStatus.textContent = error.message
+          appointmentsStatus.textContent = error?.message || 'Delete was blocked. Please refresh and ensure your user has owner delete policy in Supabase RLS.'
         }
         return
       }
