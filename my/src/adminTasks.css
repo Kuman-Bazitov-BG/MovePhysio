@@ -574,6 +574,19 @@
 }
 
 @media (max-width: 992px) {
+  .workspace-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .workspace-actions {
+    width: 100%;
+  }
+
+  .workspace-actions .admin-pill-btn {
+    width: 100%;
+  }
+
   .workspace-grid {
     grid-template-columns: 1fr;
   }
@@ -587,9 +600,127 @@
     min-width: 0;
   }
 
+  .task-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .task-card-actions .action-btn {
+    flex: 1 1 calc(50% - 0.4rem);
+  }
+
   .quick-add-task-btn {
     right: 1rem;
     bottom: 1rem;
     padding: 0.58rem 0.9rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .tasks-workspace {
+    padding: 0 0.75rem;
+  }
+
+  .workspace-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .workspace-title {
+    font-size: 1.35rem;
+  }
+
+  .workspace-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-item {
+    padding: 0.65rem;
+  }
+
+  .task-board-wrap {
+    padding: 0.7rem;
+  }
+
+  .task-board-heading {
+    gap: 0.6rem;
+  }
+
+  .task-column-header h3 {
+    font-size: 0.78rem;
+  }
+
+  .task-title {
+    font-size: 0.92rem;
+  }
+
+  .task-contact-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .task-contact-item strong {
+    text-align: left;
+  }
+
+  .task-meta-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .task-meta-item-row strong {
+    text-align: left;
+  }
+
+  .task-card-actions .action-btn {
+    flex: 1 1 100%;
+  }
+
+  .quick-add-task-btn {
+    right: 0.75rem;
+    bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .workspace-title {
+    font-size: 1.15rem;
+  }
+
+  .workspace-subtitle {
+    font-size: 0.84rem;
+  }
+
+  .trello-board-left .admin-card-title {
+    font-size: 0.95rem;
+  }
+
+  .board-pill {
+    font-size: 0.64rem;
+  }
+
+  .task-column-list {
+    padding: 0.6rem;
+    gap: 0.6rem;
+  }
+
+  .task-card {
+    padding: 0.68rem;
+  }
+
+  .task-chip {
+    font-size: 0.62rem;
+    padding: 0.22rem 0.45rem;
+  }
+
+  .quick-add-task-btn {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    text-align: center;
+    justify-content: center;
   }
 }

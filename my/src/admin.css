@@ -555,3 +555,165 @@
   color: #ff9ab0;
   border: 1px solid rgba(255, 154, 176, 0.6);
 }
+
+@media (max-width: 991px) {
+  .admin-shell {
+    padding-top: 1.2rem;
+  }
+
+  .admin-header {
+    padding: 1rem 0;
+    margin-bottom: 1.25rem;
+  }
+
+  .admin-header .container > .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.9rem;
+  }
+
+  .admin-header h1 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .admin-header .admin-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .admin-card {
+    padding: 1.2rem;
+  }
+
+  .admin-card-title {
+    font-size: 1.2rem;
+  }
+
+  .admin-card-header-drawer {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .drawer-toggle-btn {
+    width: 100%;
+  }
+
+  .appointment-file-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .appointment-file-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .appointment-file-actions .action-btn {
+    flex: 1 1 8rem;
+    text-align: center;
+  }
+
+  .appointment-file-preview-frame {
+    min-height: 300px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 0.75rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-content {
+    padding: 0 0.75rem;
+  }
+
+  .admin-pill-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .admin-header .admin-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .admin-header .admin-actions .chat-pill-btn {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .stat-card {
+    padding: 1.05rem;
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+  }
+
+  .stat-value {
+    font-size: 1.45rem;
+  }
+
+  .admin-card {
+    padding: 1rem;
+  }
+
+  .task-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .task-metric-card {
+    padding: 0.6rem 0.7rem;
+  }
+
+  .task-metric-card span,
+  .task-metric-card strong {
+    font-size: 0.78rem;
+  }
+
+  .access-denied-icon {
+    font-size: 3.4rem;
+  }
+
+  .access-denied p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .admin-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .admin-card-title {
+    font-size: 1.03rem;
+  }
+
+  .role-badge,
+  .task-badge {
+    font-size: 0.72rem;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .appointment-file-preview-frame {
+    min-height: 230px;
+  }
+
+  .task-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

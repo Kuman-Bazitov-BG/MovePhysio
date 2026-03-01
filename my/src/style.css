@@ -1672,3 +1672,164 @@ body {
     width: 100%;
   }
 }
+
+@media (max-width: 991px) {
+  .site-nav .nav-link,
+  .auth-actions .auth-pill-btn,
+  .auth-user-pill {
+    min-width: 0;
+  }
+
+  .site-nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .auth-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .page-screen {
+    padding-bottom: 2.2rem;
+  }
+
+  .page-surface {
+    margin-top: 1rem;
+    padding: 1.15rem;
+  }
+
+  .chat-slide-panel {
+    width: min(440px, 100vw);
+    border-left: none;
+    box-shadow: none;
+  }
+
+  .chat-bubble {
+    max-width: 86%;
+  }
+
+  .appointment-calendar-weekdays,
+  .appointment-calendar-grid {
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .language-switcher-box {
+    top: 0.35rem;
+    right: 0.35rem;
+  }
+
+  .language-switcher-select {
+    min-width: 5rem;
+    font-size: 0.68rem;
+    padding-left: 0.4rem;
+    padding-right: 1.35rem;
+  }
+
+  .site-nav {
+    gap: 0.4rem !important;
+  }
+
+  .site-nav .nav-link,
+  .auth-actions .auth-pill-btn,
+  .auth-user-pill {
+    width: 100%;
+    max-width: 100%;
+    font-size: 0.84rem;
+    padding: 0.42rem 0.75rem;
+  }
+
+  .chat-pill-btn {
+    min-width: 0 !important;
+    width: auto;
+  }
+
+  .wordmark {
+    font-size: 2.1rem;
+    letter-spacing: 0.04em;
+  }
+
+  .physio-text {
+    margin-left: 0;
+    margin-top: -0.1rem;
+    text-align: center;
+    letter-spacing: 0.18em;
+    font-size: 0.9rem;
+  }
+
+  .home-screen {
+    min-height: calc(100vh - 420px);
+    padding-top: 0.8rem;
+  }
+
+  .home-surface {
+    width: 100%;
+  }
+
+  .physio-shortcut,
+  .pilates-shortcut {
+    width: min(100%, 320px);
+  }
+
+  .hero-subtitle {
+    font-size: 0.92rem;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .chat-panel-head,
+  .chat-thread,
+  .chat-input-row,
+  .chat-conversation-list-wrap {
+    padding-left: 0.62rem;
+    padding-right: 0.62rem;
+  }
+
+  .chat-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-send-btn {
+    width: 100%;
+    height: 2.25rem;
+  }
+
+  .chat-bubble {
+    max-width: 94%;
+  }
+
+  .appointment-calendar-title {
+    font-size: 0.9rem;
+  }
+
+  .appointment-calendar-day {
+    font-size: 0.8rem;
+  }
+
+  .appointment-calendar-weekdays {
+    font-size: 0.7rem;
+  }
+
+  .cloud-blob {
+    opacity: 0.22;
+  }
+
+  .blur-blob-1 {
+    width: 220px;
+    height: 220px;
+    left: -70px;
+    top: -35px;
+  }
+
+  .blur-blob-2 {
+    width: 260px;
+    height: 260px;
+    right: -80px;
+    bottom: -95px;
+  }
+}
