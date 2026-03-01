@@ -93,8 +93,9 @@ body {
   color: var(--text-subtle);
   border: 1px solid rgba(173, 231, 255, 0.2);
   border-radius: 999px;
-  padding: 0.45rem 1rem;
-  width: 8.5rem;
+  padding: 0.45rem 1.2rem;
+  min-width: 8.5rem;
+  width: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -211,8 +212,9 @@ body {
   color: #f6fdff;
   border: 1px solid transparent;
   border-radius: 999px;
-  padding: 0.45rem 1rem;
-  width: 8.5rem;
+  padding: 0.45rem 1.2rem;
+  min-width: 8.5rem;
+  width: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -220,8 +222,8 @@ body {
   background: linear-gradient(120deg, #2f9ff7, #34d3ff);
   box-shadow: none;
   font-size: 0.9rem;
-  line-height: 1.15;
-  white-space: normal;
+  line-height: inherit;
+  white-space: nowrap;
   text-align: center;
 }
 
@@ -564,12 +566,12 @@ body {
 
 .appointment-calendar-drawer-indicator {
   line-height: 1;
-  font-size: 1.05rem;
-  transition: transform 0.2s ease;
+  font-size: 1.25rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .appointment-calendar-drawer-toggle.is-open .appointment-calendar-drawer-indicator {
-  transform: rotate(180deg);
+  opacity: 0.8;
 }
 
 .appointment-calendar-drawer-panel {

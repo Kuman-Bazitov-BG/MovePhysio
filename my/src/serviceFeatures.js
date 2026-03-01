@@ -759,7 +759,7 @@ function renderAppointmentCalendar(items, options = {}) {
         aria-controls="${drawerId}"
       >
         <span>Appointment Calendar</span>
-        <span class="appointment-calendar-drawer-indicator" aria-hidden="true">⌄</span>
+        <span class="appointment-calendar-drawer-indicator" aria-hidden="true"><i class="bi bi-list"></i></span>
       </button>
 
       <div id="${drawerId}" class="appointment-calendar-drawer-panel ${drawerOpen ? 'is-open' : ''}" data-calendar-drawer>
