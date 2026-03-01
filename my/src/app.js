@@ -440,7 +440,7 @@ function renderPageContent(pathname) {
           </div>
           
           <div class="d-flex justify-content-center mt-4 pt-3 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.4s;">
-             <a href="/appointment-now" data-nav class="btn btn-outline-info auth-pill-btn px-4 py-2 hover-glow">
+             <a href="/contact" data-nav class="btn btn-outline-info auth-pill-btn px-4 py-2 hover-glow">
                <i class="bi bi-calendar-check me-2"></i>Book a Physiotherapy Session
              </a>
           </div>
@@ -560,7 +560,7 @@ function renderPageContent(pathname) {
           </div>
           
           <div class="d-flex justify-content-center mt-4 pt-3 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.4s;">
-             <a href="/appointment-now" data-nav class="btn btn-outline-accent auth-pill-btn px-4 py-2 hover-glow" style="border-color: var(--accent); color: var(--accent);">
+             <a href="/contact" data-nav class="btn btn-outline-accent auth-pill-btn px-4 py-2 hover-glow" style="border-color: var(--accent); color: var(--accent);">
                <i class="bi bi-calendar-check me-2"></i>Book a Pilates Session
              </a>
           </div>
@@ -641,31 +641,11 @@ function renderPageContent(pathname) {
                   </div>
               </div>
           </div>
-        </div>
-      </section>
-    `
-  }
 
-  if (pathname === '/appointment-now') {
-    return `
-      <section class="page-screen container mt-4 position-relative appointment-section d-flex justify-content-center">
-        <!-- Floating Clouds Background Effects (Wrapped to prevent overflow) -->
-        <div class="clouds-bg-wrapper position-absolute top-0 overflow-hidden" style="width: min(1200px, 100%); height: 100%; pointer-events: none; z-index: 0; border-radius: var(--radius-lg);">
-          <div class="cloud-blob blur-blob-1" style="background: radial-gradient(circle, var(--info), transparent 70%); top: -100px; left: -100px;"></div>
-          <div class="cloud-blob blur-blob-2" style="background: radial-gradient(circle, var(--accent), transparent 70%); bottom: -150px; right: 200px;"></div>
-        </div>
-        
-        <div class="page-surface overflow-hidden position-relative p-md-5 z-1 w-100" style="background: linear-gradient(145deg, rgba(8, 20, 35, 0.8), rgba(4, 10, 18, 0.85));">
-          <div class="text-center mb-5 position-relative z-1">
-              <h1 class="page-title display-4 fw-bold mb-3 slide-up-fade">
-                <i class="bi bi-calendar-check text-success me-2"></i>Appointment Now
-              </h1>
-              <p class="page-copy lead mb-4 slide-up-fade" style="animation-delay: 0.1s;">
-                Select your preferred service below to schedule your visit.
-              </p>
-          </div>
-
-          <div class="row g-5 align-items-stretch position-relative z-1 slide-up-fade" style="animation-delay: 0.3s;">
+          <div class="row g-5 align-items-stretch position-relative z-1 mt-2 slide-up-fade" style="animation-delay: 0.4s;">
+              <div class="col-12 text-center mb-2 mt-4">
+                  <h2 class="h3 fw-bold text-white"><i class="bi bi-calendar-check text-success me-2"></i>Book an Appointment</h2>
+              </div>
               <!-- Physiotherapy Appointments -->
               <div class="col-lg-6">
                   <div class="glass-card h-100 p-4 rounded-4 position-relative overflow-hidden" style="border-top: 4px solid var(--info);">
@@ -704,7 +684,7 @@ function renderPageContent(pathname) {
                   </div>
               </div>
           </div>
-          
+
         </div>
       </section>
     `
@@ -759,7 +739,6 @@ export function renderApp(pathname = '/') {
             <a href="/" data-nav class="nav-link ${currentPath === '/' ? 'active' : ''}">Home</a>
             <a href="/physiotherapy" data-nav class="nav-link ${currentPath === '/physiotherapy' ? 'active' : ''}">Physiotherapy</a>
             <a href="/pilates" data-nav class="nav-link ${currentPath === '/pilates' ? 'active' : ''}">Pilates</a>
-            <a href="/appointment-now" data-nav class="nav-link ${currentPath === '/appointment-now' ? 'active' : ''}">Appointment Now</a>
             <a href="/about" data-nav class="nav-link ${currentPath === '/about' ? 'active' : ''}">About</a>
             <a href="/contact" data-nav class="nav-link ${currentPath === '/contact' ? 'active' : ''}">Contact</a>
           </nav>

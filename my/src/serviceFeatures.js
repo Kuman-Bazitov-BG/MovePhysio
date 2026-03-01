@@ -1708,7 +1708,7 @@ async function renderServiceContent(root, service) {
 function getServicesFromPath(pathname) {
   if (pathname === '/physiotherapy') return ['physiotherapy']
   if (pathname === '/pilates') return ['pilates']
-  if (pathname === '/appointment-now') return ['physiotherapy', 'pilates']
+  if (pathname === '/contact') return ['physiotherapy', 'pilates']
   return []
 }
 
