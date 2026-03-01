@@ -50,8 +50,84 @@ function renderPageContent(pathname) {
               </div>
           </div>
 
+             <!-- Facility Gallery Strip -->
+             <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.3s;">
+               <div class="text-center mb-4">
+                <h4 class="text-white"><i class="bi bi-building text-info me-2"></i>Our Modern Clinic</h4>
+                <p class="text-subtle small">A peaceful, clean, and optimized environment designed for your comfort and recovery.</p>
+               </div>
+               <div class="row g-3">
+                 <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                    <img src="/about-reception-1.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Move Physio Reception Area">
+                   </div>
+                 </div>
+                 <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                    <img src="/about-pilates-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Clinical Pilates Reformer Room">
+                   </div>
+                 </div>
+                 <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                    <img src="/about-treatment-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Physiotherapy Treatment Room">
+                   </div>
+                 </div>
+                 <div class="col-6 col-md-3">
+                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
+                    <img src="/about-reception-2.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Reception Detail">
+                   </div>
+                 </div>
+               </div>
+             </div>
+
+             <!-- Meet The Experts Section -->
+             <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.4s;">
+              <div class="row align-items-center mb-4">
+                 <div class="col-md-8">
+                   <h4 class="text-white mb-2"><i class="bi bi-people text-warning me-2"></i>Our Clinical Team</h4>
+                   <p class="text-subtle mb-0">Led by forward-thinking practitioners dedicated to your long-term success.</p>
+                 </div>
+                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                   <a href="/contact" data-nav class="btn btn-outline-light auth-pill-btn btn-sm">Join Our Team</a>
+                 </div>
+              </div>
+            
+              <div class="glass-card p-0 rounded-4 overflow-hidden position-relative mb-4">
+                <div class="row g-0">
+                  <div class="col-sm-4 bg-dark d-flex align-items-stretch justify-content-center">
+                    <img src="/Christoforos.png" alt="Christoforos Stavrou" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
+                  </div>
+                  <div class="col-sm-8 p-4 d-flex flex-column justify-content-center">
+                    <h5 class="text-white fw-bold mb-1">Christoforos Stavrou</h5>
+                    <h6 class="text-info small mb-3">Lead Physiotherapist</h6>
+                    <p class="text-subtle small mb-3 lh-lg">With extensive experience in musculoskeletal rehabilitation, Christoforos focuses on clinical therapy and functional restoration. His holistic approach ensures that every patient receives a personalized roadmap from pain management to peak physical performance.</p>
+                    <div class="d-flex gap-2">
+                      <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-success me-1"></i>BSc Physiotherapy</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="glass-card p-0 rounded-4 overflow-hidden position-relative">
+                <div class="row g-0">
+                  <div class="col-sm-4 bg-dark d-flex align-items-stretch justify-content-center order-sm-2">
+                    <img src="/Alexandra.jpg" alt="Alexandra Skender" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
+                  </div>
+                  <div class="col-sm-8 p-4 d-flex flex-column justify-content-center order-sm-1 text-sm-end">
+                    <h5 class="text-white fw-bold mb-1">Alexandra Skender</h5>
+                    <h6 class="text-accent small mb-3">Clinical Pilates Instructor</h6>
+                    <p class="text-subtle small mb-3 lh-lg">Alexandra leads our Pilates programs, blending core strengthening, breath work, and flexible movement patterns to prevent injuries and rehabilitate posture. Her classes re-educate the neuromuscular system for long-term health and stability.</p>
+                    <div class="d-flex justify-content-sm-end gap-2">
+                      <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-accent me-1"></i>Clinical Pilates Cert</span>
+                      <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-accent me-1"></i>Movement Specialist</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+             </div>
+
           <!-- Cards Row -->
-          <div class="row g-4 align-items-stretch mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.3s;">
+            <div class="row g-5 align-items-stretch mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.5s;">
               <div class="col-md-6">
                   <div class="glass-card h-100 p-4 rounded-4 transition-hover">
                       <div class="card-icon-wrapper mb-3 text-info fs-1">
@@ -73,7 +149,7 @@ function renderPageContent(pathname) {
           </div>
 
            <!-- Interactive Actions -->
-          <div class="d-flex flex-wrap justify-content-center gap-3 mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.4s;">
+          <div class="d-flex flex-wrap justify-content-center gap-3 mb-5 position-relative z-1 slide-up-fade" style="animation-delay: 0.6s;">
               <button type="button" class="btn btn-outline-info auth-pill-btn px-4 py-2 hover-glow" data-bs-toggle="modal" data-bs-target="#philosophyModal">
                  <i class="bi bi-stars me-2"></i>Our Philosophy
               </button>
@@ -83,10 +159,10 @@ function renderPageContent(pathname) {
           </div>
 
           <!-- Glass Accordion -->
-          <h4 class="mb-4 text-white text-center position-relative z-1 slide-up-fade" style="animation-delay: 0.5s;">
+           <h4 class="mb-4 text-white text-center position-relative z-1 slide-up-fade" style="animation-delay: 0.7s;">
              <i class="bi bi-question-circle me-2"></i>Discover Our Approach
           </h4>
-          <div class="accordion glass-accordion mb-3 position-relative z-1 slide-up-fade" id="aboutAccordion" style="animation-delay: 0.6s;">
+           <div class="accordion glass-accordion mb-3 position-relative z-1 slide-up-fade" id="aboutAccordion" style="animation-delay: 0.8s;">
             <div class="accordion-item glass-accordion-item">
               <h2 class="accordion-header">
                 <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
@@ -126,7 +202,7 @@ function renderPageContent(pathname) {
           </div>
 
           <!-- Deep Dive: Specialized Programs -->
-          <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.7s;">
+          <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.9s;">
              <h4 class="mb-4 text-white text-center">
                <i class="bi bi-grid-1x2 text-info me-2"></i>Targeted Specializations
              </h4>
@@ -153,82 +229,6 @@ function renderPageContent(pathname) {
                    </div>
                 </div>
              </div>
-          </div>
-
-          <!-- Facility Gallery Strip -->
-          <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.75s;">
-             <div class="text-center mb-4">
-               <h4 class="text-white"><i class="bi bi-building text-info me-2"></i>Our Modern Clinic</h4>
-               <p class="text-subtle small">A peaceful, clean, and optimized environment designed for your comfort and recovery.</p>
-             </div>
-             <div class="row g-3">
-                <div class="col-6 col-md-3">
-                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
-                     <img src="/about-reception-1.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Move Physio Reception Area">
-                   </div>
-                </div>
-                <div class="col-6 col-md-3">
-                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
-                     <img src="/about-pilates-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Clinical Pilates Reformer Room">
-                   </div>
-                </div>
-                <div class="col-6 col-md-3">
-                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
-                     <img src="/about-treatment-room.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Physiotherapy Treatment Room">
-                   </div>
-                </div>
-                <div class="col-6 col-md-3">
-                   <div class="rounded-4 overflow-hidden shadow-sm position-relative group-hover-zoom h-100" style="min-height: 200px;">
-                     <img src="/about-reception-2.jpg" class="img-fluid w-100 h-100 object-fit-cover" alt="Reception Detail">
-                   </div>
-                </div>
-             </div>
-          </div>
-
-          <!-- Meet The Experts Section -->
-          <div class="mt-5 pt-4 border-top border-light border-opacity-10 position-relative z-1 slide-up-fade" style="animation-delay: 0.8s;">
-            <div class="row align-items-center mb-4">
-                <div class="col-md-8">
-                   <h4 class="text-white mb-2"><i class="bi bi-people text-warning me-2"></i>Our Clinical Team</h4>
-                   <p class="text-subtle mb-0">Led by forward-thinking practitioners dedicated to your long-term success.</p>
-                </div>
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                   <a href="/contact" data-nav class="btn btn-outline-light auth-pill-btn btn-sm">Join Our Team</a>
-                </div>
-            </div>
-            
-            <div class="glass-card p-0 rounded-4 overflow-hidden position-relative mb-4">
-               <div class="row g-0">
-                  <div class="col-sm-4 bg-dark d-flex align-items-stretch justify-content-center">
-                     <img src="/Christoforos.png" alt="Christoforos Stavrou" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
-                  </div>
-                  <div class="col-sm-8 p-4 d-flex flex-column justify-content-center">
-                     <h5 class="text-white fw-bold mb-1">Christoforos Stavrou</h5>
-                     <h6 class="text-info small mb-3">Lead Physiotherapist</h6>
-                     <p class="text-subtle small mb-3 lh-lg">With extensive experience in musculoskeletal rehabilitation, Christoforos focuses on clinical therapy and functional restoration. His holistic approach ensures that every patient receives a personalized roadmap from pain management to peak physical performance.</p>
-                     <div class="d-flex gap-2">
-                        <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-success me-1"></i>BSc Physiotherapy</span>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            <div class="glass-card p-0 rounded-4 overflow-hidden position-relative">
-               <div class="row g-0">
-                  <div class="col-sm-4 bg-dark d-flex align-items-stretch justify-content-center order-sm-2">
-                     <img src="/Alexandra.jpg" alt="Alexandra Skender" class="img-fluid w-100 object-fit-cover" style="min-height: 250px;">
-                  </div>
-                  <div class="col-sm-8 p-4 d-flex flex-column justify-content-center order-sm-1 text-sm-end">
-                     <h5 class="text-white fw-bold mb-1">Alexandra Skender</h5>
-                     <h6 class="text-accent small mb-3">Clinical Pilates Instructor</h6>
-                     <p class="text-subtle small mb-3 lh-lg">Alexandra leads our Pilates programs, blending core strengthening, breath work, and flexible movement patterns to prevent injuries and rehabilitate posture. Her classes re-educate the neuromuscular system for long-term health and stability.</p>
-                     <div class="d-flex justify-content-sm-end gap-2">
-                        <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-accent me-1"></i>Clinical Pilates Cert</span>
-                        <span class="badge bg-dark bg-opacity-50 border border-secondary border-opacity-25 text-light fw-normal"><i class="bi bi-check-circle text-accent me-1"></i>Movement Specialist</span>
-                     </div>
-                  </div>
-               </div>
-            </div>
           </div>
 
         </div>
