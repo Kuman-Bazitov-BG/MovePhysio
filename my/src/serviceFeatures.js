@@ -502,7 +502,8 @@ function resolveSelectedCalendarDate(options) {
     selectedDate,
     allowWeekends,
     isAuthenticated,
-    canCreateAppointments
+    canCreateAppointments,
+    sessionUserId = null
   } = options
 
   const monthDate = getCalendarMonth(monthReference)
@@ -513,7 +514,8 @@ function resolveSelectedCalendarDate(options) {
     allowWeekends,
     selectedDate,
     isAuthenticated,
-    canCreateAppointments
+    canCreateAppointments,
+    sessionUserId
   })
 
   const selectableDays = calendarDays.filter((day) => !day.disabled)
@@ -533,7 +535,8 @@ function buildCalendarDays(options) {
     allowWeekends,
     selectedDate,
     isAuthenticated,
-    canCreateAppointments
+    canCreateAppointments,
+    sessionUserId = null
   } = options
 
   const today = new Date()
@@ -541,6 +544,13 @@ function buildCalendarDays(options) {
 
   const appointmentDays = new Set(
     items
+      .map((item) => toIsoDateKey(item.appointment_at))
+      .filter(Boolean)
+  )
+
+  const ownAppointmentDays = new Set(
+    items
+      .filter((item) => sessionUserId && item.created_by === sessionUserId)
       .map((item) => toIsoDateKey(item.appointment_at))
       .filter(Boolean)
   )
@@ -558,6 +568,7 @@ function buildCalendarDays(options) {
     const inCurrentMonth = currentDate >= monthStart && currentDate <= monthEnd
     const dayKey = toIsoDateKey(currentDate)
     const hasBusySlots = appointmentDays.has(dayKey)
+    const hasOwnAppointments = ownAppointmentDays.has(dayKey)
     const isPast = currentDate < todayStart
     const hasPilatesSchedule = service === 'pilates' ? getPilatesSlotsForDate(currentDate).length > 0 : true
     const nonWorking = isPast || (!allowWeekends && isWeekendDate(currentDate)) || !inCurrentMonth || !hasPilatesSchedule
@@ -569,6 +580,7 @@ function buildCalendarDays(options) {
       dayNumber: currentDate.getDate(),
       inCurrentMonth,
       hasBusySlots,
+      hasOwnAppointments,
       nonWorking,
       isOpen,
       isSelected: selectedDate === dayKey,
@@ -587,7 +599,8 @@ function renderDayHoursSchedule(items, options = {}) {
     workStartHour = 8,
     workEndHour = 20,
     maxAppointmentsPerSlot = 1,
-    isAuthenticated = false
+    isAuthenticated = false,
+    sessionUserId = null
   } = options
 
   if (!selectedDate) {
@@ -616,16 +629,21 @@ function renderDayHoursSchedule(items, options = {}) {
   const timeSlots = slotDefinitions.map((slot) => slot.start)
   const safeMaxAppointmentsPerSlot = Number(maxAppointmentsPerSlot) > 0 ? Number(maxAppointmentsPerSlot) : 1
   const slotUsage = new Map()
+  const ownSlotUsage = new Map()
   const nowParts = getDateTimePartsInAppointmentTimeZone(new Date())
   const todayDateKey = nowParts ? buildDateKey(nowParts.year, nowParts.month, nowParts.day) : ''
   const nowMinutes = nowParts ? nowParts.hour * 60 + nowParts.minute : -1
 
   items
     .filter((item) => toIsoDateKey(item.appointment_at) === selectedDate)
-    .map((item) => toLocalTimeKey(item.appointment_at))
-    .filter(Boolean)
-    .forEach((timeValue) => {
+    .forEach((item) => {
+      const timeValue = toLocalTimeKey(item.appointment_at)
+      if (!timeValue) return
+
       slotUsage.set(timeValue, (slotUsage.get(timeValue) || 0) + 1)
+      if (sessionUserId && item.created_by === sessionUserId) {
+        ownSlotUsage.set(timeValue, (ownSlotUsage.get(timeValue) || 0) + 1)
+      }
     })
 
   const busyCount = timeSlots.filter((timeValue) => (slotUsage.get(timeValue) || 0) >= safeMaxAppointmentsPerSlot).length
@@ -638,6 +656,8 @@ function renderDayHoursSchedule(items, options = {}) {
         .map((timeValue) => {
           const slotDefinition = slotDefinitions.find((slot) => slot.start === timeValue)
           const usedSlots = slotUsage.get(timeValue) || 0
+          const ownUsedSlots = ownSlotUsage.get(timeValue) || 0
+          const hasOwnAppointment = ownUsedSlots > 0
           const slotMinutesOfDay = toMinutesOfDay(timeValue)
           const isPastSlot = selectedDate === todayDateKey && slotMinutesOfDay != null && slotMinutesOfDay < nowMinutes
           const isBusy = usedSlots >= safeMaxAppointmentsPerSlot || isPastSlot
@@ -645,7 +665,7 @@ function renderDayHoursSchedule(items, options = {}) {
           const statusLabel = isPastSlot ? 'Past' : (isBusy ? 'Busy' : 'Available')
           return `
             <li
-              class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open'} ${canClickSlot ? 'is-clickable' : ''}"
+              class="hour-schedule-item ${isBusy ? 'is-busy' : 'is-open'} ${hasOwnAppointment ? 'is-own-appointment' : ''} ${canClickSlot ? 'is-clickable' : ''}"
               ${canClickSlot ? `data-hour-time="${escapeHtml(timeValue)}" role="button" tabindex="0"` : ''}
             >
               <span>${escapeHtml(slotDefinition?.label || timeValue)}</span>
@@ -815,7 +835,8 @@ function renderAppointmentCalendar(items, options = {}) {
     workEndHour = 20,
     maxAppointmentsPerSlot = 1,
     isAuthenticated = false,
-    canCreateAppointments = false
+    canCreateAppointments = false,
+    sessionUserId = null
   } = options
 
   const activeMonth = getCalendarMonth(monthReference)
@@ -841,7 +862,8 @@ function renderAppointmentCalendar(items, options = {}) {
     allowWeekends,
     selectedDate,
     isAuthenticated,
-    canCreateAppointments
+    canCreateAppointments,
+    sessionUserId
   })
 
   return `
@@ -929,6 +951,7 @@ function renderAppointmentCalendar(items, options = {}) {
                     'appointment-calendar-day',
                     day.nonWorking ? 'is-non-working' : '',
                     day.hasBusySlots ? 'is-busy' : '',
+                    day.hasOwnAppointments ? 'is-own-appointment' : '',
                     day.isOpen ? 'is-open' : '',
                     day.isSelected ? 'is-selected' : ''
                   ]
@@ -957,7 +980,8 @@ function renderAppointmentCalendar(items, options = {}) {
             workStartHour,
             workEndHour,
             maxAppointmentsPerSlot,
-            isAuthenticated
+            isAuthenticated,
+            sessionUserId
           })}
         </div>
       </div>
@@ -1078,7 +1102,8 @@ async function renderServiceContent(root, service) {
     selectedDate,
     allowWeekends,
     isAuthenticated,
-    canCreateAppointments
+    canCreateAppointments,
+    sessionUserId
   })
   root.dataset.selectedDate = effectiveSelectedDate
 
@@ -1107,7 +1132,8 @@ async function renderServiceContent(root, service) {
         workEndHour,
         maxAppointmentsPerSlot,
         isAuthenticated,
-        canCreateAppointments
+        canCreateAppointments,
+        sessionUserId
       })}
     `
   }

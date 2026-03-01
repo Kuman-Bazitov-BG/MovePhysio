@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "sync:media": "node scripts/sync-media-to-supabase.mjs"
+    "sync:media": "node scripts/sync-media-to-supabase.mjs",
+    "seed:simple": "node scripts/seed-simple-data.mjs"
   },
   "devDependencies": {
     "vite": "^7.3.1"
