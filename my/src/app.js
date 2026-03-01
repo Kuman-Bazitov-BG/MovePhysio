@@ -571,12 +571,76 @@ function renderPageContent(pathname) {
 
   if (pathname === '/contact') {
     return `
-      <section class="page-screen container">
-        <div class="page-surface">
-          <h1 class="page-title">Contact</h1>
-          <p class="page-copy mb-0">
-            Reach us at <strong>contact@movephysio.com</strong> or call <strong>+359 000 000 000</strong>.
-          </p>
+      <section class="page-screen container position-relative contact-section">
+        <div class="page-surface overflow-hidden position-relative p-md-5 z-1 mt-4">
+          <!-- Floating Clouds Background Effects -->
+          <div class="clouds-bg-wrapper position-absolute w-100 h-100 top-0 start-0 overflow-hidden" style="pointer-events: none; z-index: 0; border-radius: var(--radius-lg);">
+            <div class="cloud-blob blur-blob-1"></div>
+            <div class="cloud-blob blur-blob-2"></div>
+          </div>
+          
+          <div class="text-center mb-5 position-relative z-1">
+              <h1 class="page-title display-4 fw-bold mb-3 slide-up-fade">
+                <i class="bi bi-envelope-paper text-accent me-2"></i>Contact Us
+              </h1>
+              <p class="page-copy lead mb-4 slide-up-fade" style="animation-delay: 0.1s;">
+                Get in touch with us for appointments, inquiries, or more information.
+              </p>
+          </div>
+
+          <div class="row g-4 justify-content-center position-relative z-1 slide-up-fade" style="animation-delay: 0.3s;">
+              <!-- Email Card -->
+              <div class="col-md-6 col-lg-4">
+                  <div class="glass-card h-100 p-4 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-center">
+                      <div class="card-icon-wrapper mb-3 text-info fs-1">
+                          <i class="bi bi-envelope"></i>
+                      </div>
+                      <h3 class="h4 text-white mb-3">Email Address</h3>
+                      <p class="text-subtle mb-0 fs-5">
+                        <a href="mailto:MovephysioCY@gmail.com" class="text-decoration-none text-info hover-glow">MovephysioCY@gmail.com</a>
+                      </p>
+                  </div>
+              </div>
+
+              <!-- Phone Numbers Card -->
+              <div class="col-md-6 col-lg-4">
+                  <div class="glass-card h-100 p-4 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-center">
+                      <div class="card-icon-wrapper mb-3 text-success fs-1">
+                          <i class="bi bi-telephone"></i>
+                      </div>
+                      <h3 class="h4 text-white mb-3">Phone Numbers</h3>
+                      <div class="text-subtle mb-0 text-start w-100 px-3">
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-2 rounded bg-dark bg-opacity-25">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-activity text-info me-2 fs-5"></i>
+                                <strong class="text-white">Physiotherapy</strong>
+                            </span>
+                            <a href="tel:94604515" class="text-decoration-none text-success fs-5 fw-medium hover-glow">94604515</a>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded bg-dark bg-opacity-25">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-person-arms-up text-accent me-2 fs-5"></i>
+                                <strong class="text-white">Pilates</strong>
+                            </span>
+                            <a href="tel:99865531" class="text-decoration-none text-success fs-5 fw-medium hover-glow">99865531</a>
+                        </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Instagram Card -->
+              <div class="col-md-6 col-lg-4">
+                  <div class="glass-card h-100 p-4 rounded-4 transition-hover text-center d-flex flex-column align-items-center justify-content-center">
+                      <div class="card-icon-wrapper mb-3 fs-1" style="color: #E1306C;">
+                          <i class="bi bi-instagram"></i>
+                      </div>
+                      <h3 class="h4 text-white mb-3">Instagram</h3>
+                      <p class="text-subtle mb-0 fs-5">
+                        <a href="https://instagram.com/move.physio.pilates" target="_blank" rel="noopener noreferrer" class="text-decoration-none hover-glow" style="color: #E1306C;">@move.physio.pilates</a>
+                      </p>
+                  </div>
+              </div>
+          </div>
         </div>
       </section>
     `
