@@ -1,247 +1,245 @@
 # MovePhysio
 
-MovePhysio is a modern physiotherapy website built with vanilla JavaScript + Vite, styled with Bootstrap, and connected to Supabase for authentication and role-based admin access.
+MovePhysio is a physiotherapy and pilates web platform with appointment booking, admin operations, and real-time support chat. It is built as a Vite + vanilla JavaScript frontend connected directly to Supabase (Auth, Postgres, Storage, and Realtime).
 
-## Features
+## Project Description
 
-- Animated live background and responsive public pages
-- Client-side route rendering for Home, About, Services, Physiotherapy, Pilates, Contact
-- Supabase authentication (register, login, logout)
-- Role-based admin button visibility
-- Dedicated admin panel for user role management
-- Admin TODO app for service operations (daily / weekly / monthly tasks with pending, completed and overdue states)
-- Dedicated admin task workspace page (`admin-tasks.html`) separated from main admin panel
-- Appointment visibility rules: guests see `BUSY` + time only, users can fully manage only their own appointments, admins can manage all appointments
-- RLS-ready `user_roles` model with Supabase migration
+### What the project does
 
-## Tech Stack
+- Presents a public website for MovePhysio services and clinic information.
+- Lets users register/login with email or phone and manage their session.
+- Supports appointment workflows for Physiotherapy and Pilates.
+- Provides admin workspaces for role management, appointment oversight, service task tracking, and support chat.
+- Supports media/file management through Supabase Storage.
 
-- Frontend: HTML, CSS, JavaScript (ES modules), Bootstrap 5, Bootstrap Icons
-- Tooling: Vite, npm
-- Backend: Supabase Auth + Postgres (RLS policies)
+### User roles and permissions
 
+- **Guest (anonymous)**
+  - Can browse public pages.
+  - Can read limited appointment availability data (policy-controlled).
+  - Cannot access admin pages or authenticated chat actions.
 
-## Technologies
+- **Registered user (authenticated, role = `user`)**
+  - Can register/login/logout.
+  - Can create appointments and manage own appointment data where allowed by RLS.
+  - Can use site chat (user-to-admin flow).
+  - Can view/update own profile.
 
-· Frontend: Implement your app in HTML, CSS, JavaScript and Bootstrap. Use UI libraries and components of your choice. Keep it simple, without TypeScript and UI frameworks like React and Vue.
-
-· Backend: Use Supabase as a backend (database, authentication and storage).
-
-· Build tools: Node.js, npm, Vite
+- **Admin (authenticated, role = `admin`)**
+  - Full access to admin dashboard and task workspace.
+  - Can manage roles in `user_roles`.
+  - Can read/update/delete all appointments and service tasks.
+  - Can manage appointment configuration rules.
+  - Can participate in and moderate chat conversations.
+  - Can manage protected media/storage operations via policies.
 
 ## Architecture
 
-· Use a client-server architecture: JavaScript frontend app with Supabase backend, communicating via the Supabase REST API.
+### Front-end
 
-· Use Node.js, npm and Vite to structure your app with modular components.
+- **Stack:** HTML, CSS, JavaScript (ES Modules), Vite, Bootstrap Icons.
+- **Rendering model:** client-side route rendering for public pages via `my/src/main.js` + `my/src/app.js`.
+- **UI modules:** split by responsibility (`auth.js`, `admin.js`, `adminTasks.js`, `chat.js`, `i18n.js`, etc.).
+- **Pages:**
+  - `my/index.html` (public app)
+  - `my/admin.html` (admin panel)
+  - `my/admin-tasks.html` (admin task workspace)
 
-· Use multi-page navigation (instead of single page with popups) and keep each page in separate file.
+### Back-end (Supabase)
 
-· Use modular design: split your app into self-contained components (e.g. UI pages, services, utils) to improve project maintenance. When reasonable, use separate files for the UI, business logic, styles, and other app assets. Avoid big and complex monolith code.
+- **Auth:** Supabase Auth for account lifecycle and JWT-based access.
+- **Database:** Postgres schema in `public` with RLS enabled on key tables.
+- **Storage:** media buckets for images/videos and appointment-related files.
+- **Realtime:** chat table is added to realtime publication for live updates.
 
-· Define "Agent Instructions" (.github/copilot-instructions.md) to provide app context, architectural guidelines and project-wide instructions for the AI dev agent.
+### Security model
 
-## User Interface (UI)
+- Role management is centralized in `public.user_roles`.
+- SQL helper functions (`public.is_admin`, `public.is_owner_or_admin`) are used by RLS policies.
+- Sensitive operations (role changes, admin updates/deletes, storage management) are restricted to admins by policy.
 
-· Implement minimum 5 app screens (pages / popups / others).
+## Database Schema Design
 
-· Example: register, login, main page, view / add / edit / delete entity, admin panel.
+Main schema entities and relationships:
 
-· Implement responsive design for desktop and mobile browsers.
+```mermaid
+erDiagram
+  AUTH_USERS {
+    uuid id PK
+  }
 
-· Use icons, effects and visual cues to enhance user experience and make the app more intuitive.
+  USER_ROLES {
+    uuid user_id PK, FK
+    app_role user_role
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-· Place different app screens in separate files (for better maintenance).
+  USER_PROFILES {
+    uuid user_id PK, FK
+    text username
+    text contact
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-## Backend
+  APPOINTMENT_CONFIGURATIONS {
+    text service PK
+    integer slot_minutes
+    integer work_start_hour
+    integer work_end_hour
+    boolean allow_weekends
+    integer max_appointments_per_slot
+    uuid updated_by FK
+    timestamptz updated_at
+  }
 
-· Use Supabase as a backend to keep all your app data.
+  APPOINTMENTS {
+    uuid id PK
+    text service
+    text title
+    text notes
+    timestamptz appointment_at
+    text name
+    text telephone
+    text email
+    jsonb attachment_files
+    uuid created_by FK
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-· Use Supabase DB for data tables.
+  SERVICE_TASKS {
+    uuid id PK
+    text service
+    text title
+    text description
+    date due_date
+    boolean is_done
+    uuid created_by FK
+    uuid source_appointment_id FK
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-· Use Supabase Auth for authentication (users, register, login, logout).
+  CHAT_MESSAGES {
+    bigint id PK
+    uuid sender_user_id FK
+    uuid recipient_user_id FK
+    text sender_contact
+    text body
+    boolean is_read
+    timestamptz created_at
+  }
 
-· Use Supabase Storage to upload photos and files at the server-side.
+  AUTH_USERS ||--|| USER_ROLES : has
+  AUTH_USERS ||--|| USER_PROFILES : has
+  AUTH_USERS ||--o{ APPOINTMENTS : creates
+  AUTH_USERS ||--o{ SERVICE_TASKS : creates
+  AUTH_USERS ||--o{ CHAT_MESSAGES : sends
+  AUTH_USERS ||--o{ CHAT_MESSAGES : receives
+  AUTH_USERS ||--o{ APPOINTMENT_CONFIGURATIONS : updates
+  APPOINTMENTS ||--o| SERVICE_TASKS : generates
+```
 
-· Optionally, use Supabase Edge Functions for special server-side interactions.
+### Notes
 
-## Authentication and Authorization
+- `service_tasks.source_appointment_id` links generated operational tasks to appointments.
+- Chat supports two modes via RLS constraints:
+  - user messages with `recipient_user_id = null`
+  - admin replies directed to a concrete recipient user.
+- Schema evolution is tracked through SQL migrations in `supabase/migrations/`.
 
-· Use Supabase Auth for authentication and authorization with JWT tokens.
+## Local Development Setup
 
-· Implement users (register, login, logout) and roles (normal and admin users).
+### Prerequisites
 
-· Use Row-Level Security (RLS) policies to implement access control.
-
-· If role-based access control (RBAC) is needed, use `user_roles` table + RLS to implement it.
-
-· Implement admin panel (or similar concept for special users, different from regular).
-
-## Database
-
-· Your database should hold minimum 4 DB tables (with relationships when needed).
-
-· Example (blog): users, profiles, articles, photos. Example (social network): users, posts, photos, comments.
-
-· Use best practices to design the Supabase DB schema, including normalization, indexing, and relationships.
-
-· When changing the DB schema, always use Supabase migrations.
-
-· Sync the DB migrations history from Supabase to a local project folder.
-
-· Your DB migration SQL scripts should be committed in the GitHub repo.
-
-## Storage
-
-· Store app user files (like photos and documents) in Supabase Storage.
-
-· Your project should use file upload and download somewhere, e.g. profile pictures or product photos.
-
-## Deployment
-
-· Your project should be deployed live on the Internet (e.g. in Netlify, Vercel or similar platform).
-
-· Provide sample credentials (e.g. demo / demo123) to simplify testing your app.
-
-## GitHub Repo
-
-· Use a GitHub repo to hold your project assets.
-
-· Commit and push each successful change during the development.
-
-Your public GitHub repo is the most important project asset for your capstone project. The commit history in your repo demonstrates that you have worked seriously to develop your app yourself, and you have spent several days working on it. Without a solid history of commits in GitHub you cannot demonstrate that your project is your own work (not taken from someone else).
-
-· Create minimum 15 commits in GitHub.
-
-· Create your commits on at least 3 different days.
-
-· Optionally, you can create branches and merge them with pull requests.
-
-## Documentation
-
-· Generate a project documentation in your GitHub repository.
-
-· Project description: describe briefly your project (what it does, who can do what, etc.).
-
-· Architecture: front-end, back-end, technologies used, database, etc.
-
-· Database schema design: visualize the main DB tables and their relationships.
-
-· Local development setup guide.
-
-· Key folders and files and their purpose.
-
-
-## Project Structure
-
-- `my/` – frontend app root
-  - `index.html` – public app entry
-  - `admin.html` – admin page entry
-  - `admin-tasks.html` – admin task workspace entry
-  - `src/main.js` – app bootstrap + animated background + route handling
-  - `src/app.js` – page rendering + layout + auth modal markup
-  - `src/auth.js` – auth/session logic + admin visibility checks
-  - `src/admin.js` – admin access guard + user role management UI + appointment management
-  - `src/adminTasks.js` – dedicated admin task workspace logic (CRUD + filtering + metrics)
-  - `src/adminTasks.css` – dedicated task workspace styles
-  - `src/config.js` – Supabase env config
-- `supabase/migrations/` – SQL migrations
-  - `20260215120000_user_roles_rls.sql`
-
-## Getting Started
+- Node.js 18+ and npm
+- A Supabase project with access to SQL editor/migrations
 
 ### 1) Install dependencies
 
+From repository root:
+
 ```bash
-cd my
 npm install
+npm --prefix my install
 ```
 
 ### 2) Configure environment
 
-Copy `.env.example` to `.env.local` inside `my/` and set real values:
+Create `my/.env.local` from `my/.env.example`:
+
+```bash
+copy my\.env.example my\.env.local
+```
+
+Set real values in `my/.env.local`:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-# or use VITE_SUPABASE_PUBLISHABLE_KEY
+# Optional alternative:
+# VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_MEDIA_BUCKET=movephysio-media
 ```
 
-### 3) Run the app
+### 3) Apply database migrations
+
+Run your Supabase migration workflow so all files from `supabase/migrations/` are applied in order.
+
+### 4) Start local dev server
+
+From repository root:
 
 ```bash
-npm run dev
+npm --prefix my run dev
 ```
 
-Then open the local Vite URL (usually `http://localhost:5173`).
+Open the printed local URL (usually `http://localhost:5173`).
 
-## Scripts
+### 5) (Optional) Sync local media to Supabase Storage
+
+```bash
+npm --prefix my run sync:media
+```
+
+Dry-run preview:
+
+```bash
+npm --prefix my run sync:media -- --dry-run
+```
+
+## Key Folders and Files
+
+### Root-level
+
+- `README.md` — project documentation.
+- `package.json` — root dependency metadata.
+- `supabase/migrations/` — authoritative SQL migration history.
+- `Images/` and `Videos/` — local source media used for storage sync.
+
+### Frontend app (`my/`)
+
+- `my/package.json` — app scripts (`dev`, `build`, `preview`, `sync:media`).
+- `my/index.html` — public app entry point.
+- `my/admin.html` — admin dashboard entry point.
+- `my/admin-tasks.html` — admin service-task workspace entry point.
+- `my/src/main.js` — app bootstrap, route rendering, live background, feature initialization.
+- `my/src/app.js` — page templates/layout for public routes.
+- `my/src/auth.js` — auth flows, session UI state, admin button visibility.
+- `my/src/admin.js` — admin panel logic (roles, appointments, configurations, admin chat bootstrapping).
+- `my/src/adminTasks.js` — admin task CRUD, metrics, appointment-linked task context.
+- `my/src/chat.js` — site/admin chat UI + Supabase realtime integration.
+- `my/src/config.js` — Supabase environment configuration loader.
+- `my/scripts/sync-media-to-supabase.mjs` — uploads local Images/Videos to Supabase Storage.
+
+## Available Scripts
 
 From `my/`:
 
-- `npm run dev` – start development server
-- `npm run build` – create production build
-- `npm run preview` – preview production build locally
-- `npm run sync:media` – upload all files from `../Images` and `../Videos` to Supabase Storage
-
-## Supabase Setup
-
-Apply migration(s) from `supabase/migrations/` to create:
-
-- `public.app_role` enum (`user`, `admin`)
-- `public.user_roles` table
-- helper SQL functions (`is_admin`, `is_owner_or_admin`)
-- RLS policies for admin-controlled role changes
-
-### Bootstrap first admin user
-
-Because role updates are admin-protected, set the first admin manually once via Supabase SQL Editor:
-
-```sql
-insert into public.user_roles (user_id, user_role)
-select id, 'admin'::public.app_role
-from auth.users
-where email = 'your-admin@email.com'
-on conflict (user_id) do update
-set user_role = excluded.user_role,
-    updated_at = now();
-```
-
-After this, that user can access `admin.html` and manage roles from the UI.
-
-### Sync project media to Supabase Storage
-
-Apply migration `supabase/migrations/20260301170000_create_movephysio_media_bucket.sql` and run:
-
-```bash
-cd my
-npm run sync:media
-```
-
-Optional dry run to preview mapping only:
-
-```bash
-npm run sync:media -- --dry-run
-```
-
-Destination structure in bucket `movephysio-media`:
-
-- `Pictures/Pilates/*`
-- `Pictures/Physiotherapy/*`
-- `Pictures/Movephysio/*`
-- `Videos/Pilates/*`
-- `Videos/Physiotherapy/*`
-- `Videos/Movephysio/*`
-
-## Deployment
-
-- Build with `npm run build`
-- Deploy the `my/dist` output to Netlify, Vercel, or similar
-- Ensure all required `VITE_` env variables are set in your hosting provider
-
-## Notes
-
-- If Supabase credentials are missing or placeholders, auth is disabled and the app shows a setup warning in the auth modal.
-- Admin panel access is denied automatically for non-admin users.
+- `npm run dev` — start Vite development server.
+- `npm run build` — production build.
+- `npm run preview` — preview built app.
+- `npm run sync:media` — upload media assets to Supabase bucket.
