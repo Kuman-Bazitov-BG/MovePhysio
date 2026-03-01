@@ -81,6 +81,8 @@ async function updateAuthUI(session) {
   const logoutButton = document.querySelector('#logout-btn')
   const adminButton = document.querySelector('#admin-btn')
   const authUserPill = document.querySelector('#auth-user-pill')
+  const chatToggleButton = document.querySelector('#chat-toggle-btn')
+  const authActions = document.querySelector('.auth-actions')
 
   if (!registerButton || !loginButton || !logoutButton) return
 
@@ -103,6 +105,14 @@ async function updateAuthUI(session) {
         adminButton.classList.add('d-none')
       }
     }
+
+    if (chatToggleButton) {
+      chatToggleButton.classList.remove('d-none')
+    }
+
+    if (authActions) {
+      authActions.classList.toggle('is-admin-chat-stacked', isAdmin)
+    }
   } else {
     registerButton.classList.remove('d-none')
     loginButton.classList.remove('d-none')
@@ -113,6 +123,13 @@ async function updateAuthUI(session) {
     }
     if (adminButton) {
       adminButton.classList.add('d-none')
+    }
+    if (chatToggleButton) {
+      chatToggleButton.classList.add('d-none')
+    }
+
+    if (authActions) {
+      authActions.classList.remove('is-admin-chat-stacked')
     }
   }
 }

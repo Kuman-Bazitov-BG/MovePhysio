@@ -28,6 +28,12 @@
   align-items: center;
 }
 
+.admin-header .admin-actions .chat-pill-btn {
+  width: auto;
+  min-width: 7.2rem;
+  white-space: nowrap;
+}
+
 .admin-pill-btn {
   color: #f6fdff;
   border: 1px solid transparent;

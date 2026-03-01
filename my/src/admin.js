@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { getSupabaseConfig } from './config.js'
 import { applyTranslations, initI18n } from './i18n.js'
+import { initAdminChat, teardownAdminChat } from './chat.js'
 
 const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig()
 const hasConfig =
@@ -907,6 +908,10 @@ async function renderAdminPanel() {
           <div class="d-flex justify-content-between align-items-center">
             <h1><i class="bi bi-shield-check me-2"></i>Admin Panel</h1>
             <div class="admin-actions">
+              <button id="admin-chat-toggle-btn" class="btn admin-pill-btn chat-pill-btn" type="button" aria-label="Open chat">
+                <i class="bi bi-chat-dots-fill me-2"></i><span class="chat-pill-label">Chat</span>
+                <span class="chat-unread-badge d-none" aria-live="polite"></span>
+              </button>
               <a href="/" class="btn admin-pill-btn">
                 <i class="bi bi-house-door me-2"></i>Back to Site
               </a>
@@ -1214,6 +1219,8 @@ async function handleLogout() {
   if (!supabase) return
 
   try {
+    teardownAdminChat()
+
     if (adminRealtimeChannel) {
       adminRealtimeChannel.unsubscribe()
       adminRealtimeChannel = null
@@ -1248,6 +1255,8 @@ async function initAdminPanel() {
     adminRealtimeChannel = null
   }
 
+  teardownAdminChat()
+
   if (adminRealtimeTimer) {
     window.clearTimeout(adminRealtimeTimer)
     adminRealtimeTimer = null
@@ -1275,6 +1284,7 @@ async function initAdminPanel() {
     try {
       appElement.innerHTML = await renderAdminPanel()
       applyTranslations(appElement)
+      await initAdminChat()
 
     const totalUsersCard = document.querySelector('#stat-total-users')
     const appointmentsCard = document.querySelector('#stat-appointments')
@@ -1719,6 +1729,8 @@ async function initAdminPanel() {
     .subscribe()
 
   window.addEventListener('beforeunload', () => {
+    teardownAdminChat()
+
     if (adminRealtimeChannel) {
       adminRealtimeChannel.unsubscribe()
       adminRealtimeChannel = null

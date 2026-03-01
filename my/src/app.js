@@ -905,6 +905,11 @@ export function renderApp(pathname = '/') {
               <i class="bi bi-box-arrow-in-right action-icon me-1" aria-hidden="true"></i>Login
             </button>
             <button id="auth-user-pill" type="button" class="auth-user-pill d-none" aria-live="polite" aria-label="Open session options"></button>
+            <button id="chat-toggle-btn" type="button" class="btn auth-pill-btn chat-pill-btn d-none" aria-label="Open chat">
+              <i class="bi bi-chat-dots-fill action-icon" aria-hidden="true"></i>
+              <span class="chat-pill-label">Chat</span>
+              <span class="chat-unread-badge d-none" aria-live="polite"></span>
+            </button>
             <button id="logout-btn" class="btn auth-pill-btn d-none">
               Logout
             </button>

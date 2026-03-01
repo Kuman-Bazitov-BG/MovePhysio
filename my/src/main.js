@@ -3,6 +3,7 @@ import { initAuth } from './auth.js'
 import { renderApp } from './app.js'
 import { initServiceFeatures } from './serviceFeatures.js'
 import { applyTranslations, initI18n } from './i18n.js'
+import { initSiteChat, teardownSiteChat } from './chat.js'
 
 function initLiveBackground(canvas) {
   if (!canvas) return () => {}
@@ -96,6 +97,7 @@ function bootstrap() {
 
   const renderRoute = () => {
     cleanupBackground()
+    teardownSiteChat()
     
     // Cleanup any orphaned Bootstrap backdrops or body classes from closing modals/offcanvas during navigation
     document.querySelectorAll('.modal-backdrop, .offcanvas-backdrop').forEach(el => el.remove())
@@ -108,6 +110,7 @@ function bootstrap() {
     const backgroundCanvas = document.querySelector('#live-bg-canvas')
     cleanupBackground = initLiveBackground(backgroundCanvas)
     initAuth()
+    initSiteChat()
     initServiceFeatures(window.location.pathname)
     applyTranslations(root)
   }
