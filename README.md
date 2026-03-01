@@ -211,21 +211,6 @@ Dry-run preview:
 npm --prefix my run sync:media -- --dry-run
 ```
 
-### 6) Seed simple sample users + data
-
-This seeds:
-
-- Auth users: `maria@gmail.com`, `peter@gmail.com`, `steve@gmail.com` (password: `pass123`)
-- Role mapping in `user_roles` (Steve is `admin`)
-- 4 sample appointments assigned across the seeded users
-- To Do default task states in `service_tasks`: Active, Done, Overdue
-
-Run:
-
-```bash
-npm --prefix my run seed:simple
-```
-
 ## Key Folders and Files
 
 ### Root-level
@@ -258,4 +243,12 @@ From `my/`:
 - `npm run build` — production build.
 - `npm run preview` — preview built app.
 - `npm run sync:media` — upload media assets to Supabase bucket.
-- `npm run seed:simple` — seed simple auth users, appointments, and default task statuses.
+- `npm run seed:demo` — create demo auth users, set admin role, seed 4 appointments, and set task-board states (Active/Done/Overdue).
+
+Run from repository root:
+
+```bash
+npm --prefix my run seed:demo
+```
+
+Requires `VITE_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `my/.env.local` (or `my/.env`).
